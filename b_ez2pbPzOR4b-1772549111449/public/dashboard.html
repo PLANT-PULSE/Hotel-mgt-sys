@@ -6,9 +6,18 @@
     <title>Dashboard - LuxeStay</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Navigation Bar -->
+    <!-- Offline Indicator -->
+    <div class="offline-indicator" id="offlineIndicator">
+        <i class="fas fa-wifi"></i>
+        <span>You are offline</span>
+    </div>
+
+    <!-- Navigation -->
     <nav class="navbar sticky-navbar">
         <div class="nav-container">
             <div class="nav-logo">
@@ -23,308 +32,204 @@
                 <li><a href="dashboard.html" class="nav-link active">Dashboard</a></li>
             </ul>
             <div class="nav-controls">
+                <button class="offline-toggle" id="offlineToggle" title="Toggle Offline Mode" onclick="toggleOfflineMode()">
+                    <i class="fas fa-plane"></i>
+                </button>
                 <button class="theme-toggle" id="themeToggle">
                     <i class="fas fa-moon"></i>
                 </button>
                 <select class="lang-selector" id="langSelector">
-                    <option value="en">English</option>
-                    <option value="fr">Français</option>
+                    <option value="en">EN</option>
+                    <option value="fr">FR</option>
                 </select>
                 <select class="currency-selector" id="currencySelector">
                     <option value="usd">USD</option>
                     <option value="ghs">GHS</option>
                     <option value="eur">EUR</option>
                 </select>
+                <button class="nav-hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
             </div>
         </div>
     </nav>
 
-    <div class="dashboard-container">
-        <!-- Sidebar Navigation -->
-        <aside class="dashboard-sidebar">
-            <div class="sidebar-header">
-                <img src="https://via.placeholder.com/80" alt="Avatar" class="user-avatar">
-                <div class="user-info">
-                    <h4>John Doe</h4>
-                    <p>Gold Member</p>
+    <!-- Dashboard Content -->
+    <section class="dashboard-page">
+        <div class="container">
+            <!-- Welcome Banner -->
+            <div class="welcome-banner">
+                <h2>Welcome back, Guest!</h2>
+                <p>Manage your bookings, view history, and earn loyalty points</p>
+            </div>
+
+            <!-- Dashboard Cards -->
+            <div class="dashboard-cards">
+                <div class="dashboard-card">
+                    <div class="dashboard-card-icon bookings">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h3>Total Bookings</h3>
+                    <div class="value">12</div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-card-icon nights">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <h3>Nights Stayed</h3>
+                    <div class="value">28</div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-card-icon revenue">
+                        <i class="fas fa-suitcase"></i>
+                    </div>
+                    <h3>Total Spent</h3>
+                    <div class="value">$8,450</div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-card-icon points">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h3>Loyalty Points</h3>
+                    <div class="value" id="loyaltyPoints">2,450</div>
                 </div>
             </div>
 
-            <nav class="sidebar-nav">
-                <a href="#overview" class="sidebar-link active">
-                    <i class="fas fa-chart-line"></i> Overview
-                </a>
-                <a href="#bookings" class="sidebar-link">
-                    <i class="fas fa-calendar"></i> My Bookings
-                </a>
-                <a href="#loyalty" class="sidebar-link">
-                    <i class="fas fa-star"></i> Loyalty Points
-                </a>
-                <a href="#preferences" class="sidebar-link">
-                    <i class="fas fa-cog"></i> Preferences
-                </a>
-                <a href="#profile" class="sidebar-link">
-                    <i class="fas fa-user"></i> Profile Settings
-                </a>
-            </nav>
-
-            <button class="btn btn-outline" onclick="logout()">Logout</button>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="dashboard-main">
-            <!-- Overview Section -->
-            <section id="overview" class="dashboard-section">
-                <h2>Welcome Back, John!</h2>
-                <p>Here's your booking overview</p>
-
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h4>Total Bookings</h4>
-                            <p class="stat-value">12</p>
-                        </div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h4>Loyalty Points</h4>
-                            <p class="stat-value" id="loyaltyPoints">2,450</p>
-                        </div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-dollar-sign"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h4>Total Spent</h4>
-                            <p class="stat-value">$8,940</p>
-                        </div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-medal"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h4>Member Tier</h4>
-                            <p class="stat-value">Gold</p>
-                        </div>
-                    </div>
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <div class="quick-action-btn" onclick="window.location.href='rooms.html'">
+                    <i class="fas fa-bed"></i>
+                    <h4>Book a Room</h4>
+                    <p>Find your next stay</p>
                 </div>
-            </section>
-
-            <!-- Bookings Section -->
-            <section id="bookings" class="dashboard-section">
-                <h3>Upcoming Bookings</h3>
-
-                <div class="bookings-list">
-                    <div class="booking-item">
-                        <div class="booking-item-image">
-                            <img src="https://via.placeholder.com/120x120" alt="Room">
-                        </div>
-                        <div class="booking-item-details">
-                            <h4>Luxury Suite</h4>
-                            <p><i class="fas fa-calendar"></i> March 20 - 23, 2024</p>
-                            <p><i class="fas fa-map-marker-alt"></i> Room 501</p>
-                            <span class="badge badge-success">Confirmed</span>
-                        </div>
-                        <div class="booking-item-actions">
-                            <a href="room-details.html" class="btn btn-sm btn-outline">View Details</a>
-                            <a href="checkin.html" class="btn btn-sm btn-primary">Check-in</a>
-                        </div>
-                    </div>
-
-                    <div class="booking-item">
-                        <div class="booking-item-image">
-                            <img src="https://via.placeholder.com/120x120" alt="Room">
-                        </div>
-                        <div class="booking-item-details">
-                            <h4>Deluxe Double Room</h4>
-                            <p><i class="fas fa-calendar"></i> April 10 - 15, 2024</p>
-                            <p><i class="fas fa-map-marker-alt"></i> Room 302</p>
-                            <span class="badge badge-info">Pending</span>
-                        </div>
-                        <div class="booking-item-actions">
-                            <a href="room-details.html" class="btn btn-sm btn-outline">View Details</a>
-                            <button class="btn btn-sm btn-danger">Cancel</button>
-                        </div>
-                    </div>
+                <div class="quick-action-btn" onclick="window.location.href='checkin.html'">
+                    <i class="fas fa-check-circle"></i>
+                    <h4>Online Check-in</h4>
+                    <p>Skip the queue</p>
                 </div>
-            </section>
-
-            <!-- Loyalty Points Section -->
-            <section id="loyalty" class="dashboard-section">
-                <h3>Loyalty Program</h3>
-
-                <div class="loyalty-card">
-                    <div class="loyalty-header">
-                        <h4>Your Points</h4>
-                        <span class="loyalty-points">2,450 PTS</span>
-                    </div>
-                    <div class="loyalty-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 65%;"></div>
-                        </div>
-                        <p>1,750 more points to reach Platinum status</p>
-                    </div>
-                    <div class="loyalty-benefits">
-                        <h5>Current Benefits (Gold Member)</h5>
-                        <ul>
-                            <li><i class="fas fa-check"></i> 10% discount on all bookings</li>
-                            <li><i class="fas fa-check"></i> Free room upgrade (if available)</li>
-                            <li><i class="fas fa-check"></i> 2x points on all bookings</li>
-                            <li><i class="fas fa-check"></i> Priority customer support</li>
-                        </ul>
-                    </div>
+                <div class="quick-action-btn" onclick="window.location.href='reviews.html'">
+                    <i class="fas fa-pen"></i>
+                    <h4>Write a Review</h4>
+                    <p>Share your experience</p>
                 </div>
-            </section>
-
-            <!-- Preferences Section -->
-            <section id="preferences" class="dashboard-section">
-                <h3>Saved Preferences</h3>
-
-                <div class="preferences-grid">
-                    <div class="preference-card">
-                        <h4>Room Preferences</h4>
-                        <ul>
-                            <li>Room Type: Deluxe Suite</li>
-                            <li>Bed Type: King Size</li>
-                            <li>Floor: High floor with view</li>
-                            <li>Smoking: Non-smoking</li>
-                        </ul>
-                        <button class="btn btn-sm btn-secondary">Edit</button>
-                    </div>
-
-                    <div class="preference-card">
-                        <h4>Special Requests</h4>
-                        <ul>
-                            <li>Extra pillows</li>
-                            <li>Late check-out</li>
-                            <li>Fruit basket</li>
-                        </ul>
-                        <button class="btn btn-sm btn-secondary">Edit</button>
-                    </div>
-
-                    <div class="preference-card">
-                        <h4>Contact Preferences</h4>
-                        <ul>
-                            <li><i class="fas fa-check"></i> Email notifications</li>
-                            <li><i class="fas fa-times"></i> SMS notifications</li>
-                            <li><i class="fas fa-check"></i> Promotional emails</li>
-                        </ul>
-                        <button class="btn btn-sm btn-secondary">Edit</button>
-                    </div>
-
-                    <div class="preference-card">
-                        <h4>Saved Wishlist</h4>
-                        <p>You have 5 rooms saved</p>
-                        <a href="rooms.html" class="btn btn-sm btn-primary">View Wishlist</a>
-                    </div>
+                <div class="quick-action-btn" onclick="window.location.href='contact.html'">
+                    <i class="fas fa-headset"></i>
+                    <h4>Contact Support</h4>
+                    <p>We're here to help</p>
                 </div>
-            </section>
+            </div>
 
-            <!-- Profile Settings Section -->
-            <section id="profile" class="dashboard-section">
-                <h3>Profile Settings</h3>
+            <!-- Recent Bookings -->
+            <div class="recent-bookings">
+                <div class="section-title">
+                    <h2>Recent Bookings</h2>
+                    <a href="#" class="btn btn-outline">View All</a>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Room</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th>Status</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>LXS-2024-001</td>
+                            <td>Luxury Suite</td>
+                            <td>Dec 15, 2024</td>
+                            <td>Dec 18, 2024</td>
+                            <td><span class="badge badge-success">Completed</span></td>
+                            <td>$897</td>
+                        </tr>
+                        <tr>
+                            <td>LXS-2024-002</td>
+                            <td>Deluxe King Room</td>
+                            <td>Jan 10, 2025</td>
+                            <td>Jan 12, 2025</td>
+                            <td><span class="badge badge-info">Upcoming</span></td>
+                            <td>$398</td>
+                        </tr>
+                        <tr>
+                            <td>LXS-2024-003</td>
+                            <td>Penthouse Suite</td>
+                            <td>Feb 20, 2025</td>
+                            <td>Feb 25, 2025</td>
+                            <td><span class="badge badge-warning">Pending</span></td>
+                            <td>$2,495</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-                <form class="settings-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>First Name</label>
-                            <input type="text" value="John">
-                        </div>
-                        <div class="form-group">
-                            <label>Last Name</label>
-                            <input type="text" value="Doe">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" value="john@example.com">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Phone</label>
-                        <input type="tel" value="+1 (555) 000-0000">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Country</label>
-                        <select>
-                            <option>United States</option>
-                            <option>United Kingdom</option>
-                            <option>Canada</option>
-                            <option>Ghana</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Password</label>
-                        <button type="button" class="btn btn-secondary">Change Password</button>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                </form>
-            </section>
-        </main>
-    </div>
+            <!-- Loyalty Section -->
+            <div class="loyalty-card" style="margin-top: 36px;">
+                <h3><i class="fas fa-crown"></i> Loyalty Rewards</h3>
+                <div class="loyalty-points">2,450</div>
+                <span class="loyalty-tier">Gold Member</span>
+                <p style="margin-top: 16px; color: rgba(255,255,255,0.8);">You're 550 points away from Platinum status!</p>
+                <a href="#" class="btn btn-white" style="margin-top: 16px;">View Benefits</a>
+            </div>
+        </div>
+    </section>
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>About LuxeStay</h4>
-                <ul>
-                    <li><a href="about.html">About Us</a></li>
-                    <li><a href="#">Careers</a></li>
-                    <li><a href="#">Press</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Support</h4>
-                <ul>
-                    <li><a href="contact.html">Contact Us</a></li>
-                    <li><a href="#">FAQ</a></li>
-                    <li><a href="#">Policies</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Follow Us</h4>
-                <div class="social-links">
-                    <a href="#"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-linkedin"></i></a>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-hotel"></i>
+                        <span>LuxeStay</span>
+                    </div>
+                    <p>Experience the pinnacle of luxury hospitality.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="rooms.html">Rooms</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Help Center</a></li>
+                        <li><a href="#">Terms</a></li>
+                        <li><a href="#">Privacy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Newsletter</h4>
+                    <form class="newsletter-form" id="newsletterForm">
+                        <input type="email" placeholder="Your email" required>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+                    </form>
                 </div>
             </div>
-            <div class="footer-section">
-                <h4>Newsletter</h4>
-                <form class="newsletter-form" id="newsletterForm">
-                    <input type="email" placeholder="Your email" required>
-                    <button type="submit" class="btn btn-primary">Subscribe</button>
-                </form>
+            <div class="footer-bottom">
+                <p>&copy; 2024 LuxeStay. All rights reserved.</p>
             </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2024 LuxeStay. All rights reserved.</p>
         </div>
     </footer>
 
-    <!-- Back to Top Button -->
     <button class="back-to-top" id="backToTop">
         <i class="fas fa-arrow-up"></i>
     </button>
 
-    <!-- Toast Notification -->
     <div class="toast" id="toast"></div>
 
     <script src="js/main.js"></script>

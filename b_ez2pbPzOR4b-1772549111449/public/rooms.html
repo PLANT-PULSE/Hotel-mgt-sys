@@ -3,12 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rooms - LuxeStay</title>
+    <title>Rooms & Suites - LuxeStay</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Navigation Bar -->
+    <!-- Offline Indicator -->
+    <div class="offline-indicator" id="offlineIndicator">
+        <i class="fas fa-wifi"></i>
+        <span>You are offline</span>
+    </div>
+
+    <!-- Navigation -->
     <nav class="navbar sticky-navbar">
         <div class="nav-container">
             <div class="nav-logo">
@@ -23,192 +32,180 @@
                 <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
             </ul>
             <div class="nav-controls">
+                <button class="offline-toggle" id="offlineToggle" title="Toggle Offline Mode" onclick="toggleOfflineMode()">
+                    <i class="fas fa-plane"></i>
+                </button>
                 <button class="theme-toggle" id="themeToggle">
                     <i class="fas fa-moon"></i>
                 </button>
                 <select class="lang-selector" id="langSelector">
-                    <option value="en">English</option>
-                    <option value="fr">Français</option>
+                    <option value="en">EN</option>
+                    <option value="fr">FR</option>
                 </select>
                 <select class="currency-selector" id="currencySelector">
                     <option value="usd">USD</option>
                     <option value="ghs">GHS</option>
                     <option value="eur">EUR</option>
                 </select>
+                <button class="nav-hamburger" id="navHamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
             </div>
         </div>
     </nav>
 
     <!-- Page Header -->
-    <div class="page-header">
-        <h1>Our Rooms</h1>
-        <p>Find your perfect room and book today</p>
-    </div>
+    <section class="page-header">
+        <div class="page-header-bg" style="background: linear-gradient(135deg, rgba(15, 41, 66, 0.9) 0%, rgba(30, 74, 109, 0.8) 100%), url('https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=1920&q=80');"></div>
+        <div class="container">
+            <h1>Our Rooms & Suites</h1>
+            <p>Discover your perfect retreat</p>
+        </div>
+    </section>
 
-    <!-- Main Content -->
-    <div class="container rooms-container">
-        <!-- Sidebar -->
-        <aside class="filter-sidebar">
-            <div class="filter-section">
-                <h3>Filters</h3>
-                <button class="filter-reset" id="resetFilters">Reset All</button>
-            </div>
+    <!-- Rooms Page -->
+    <section class="rooms-page">
+        <div class="container">
+            <div class="rooms-layout">
+                <!-- Filters Sidebar -->
+                <aside class="filters-sidebar">
+                    <h3><i class="fas fa-filter"></i> Filters</h3>
+                    
+                    <div class="filter-section">
+                        <h4>Price Range</h4>
+                        <input type="range" class="price-slider" id="priceRange" min="100" max="600" value="500">
+                        <div class="price-display" id="priceDisplay">$500</div>
+                    </div>
 
-            <div class="filter-section">
-                <h4>Price Range</h4>
-                <div class="price-filter">
-                    <input type="range" id="priceRange" min="50" max="500" value="500" class="slider">
-                    <div class="price-display">
-                        <span>$50</span> - <span id="priceDisplay">$500</span>
+                    <div class="filter-section">
+                        <h4>Room Type</h4>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" class="room-type-filter" value="single"> Single Room
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" class="room-type-filter" value="double"> Double Room
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" class="room-type-filter" value="suite"> Suite
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" class="room-type-filter" value="penthouse"> Penthouse
+                        </label>
+                    </div>
+
+                    <div class="filter-section">
+                        <h4>Amenities</h4>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" class="amenity-filter" value="wifi"> Free Wi-Fi
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" class="amenity-filter" value="pool"> Swimming Pool
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" class="amenity-filter" value="spa"> Spa
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" class="amenity-filter" value="ac"> Air Conditioning
+                        </label>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" class="amenity-filter" value="minibar"> Mini Bar
+                        </label>
+                    </div>
+
+                    <div class="filter-section">
+                        <h4>Availability</h4>
+                        <label class="filter-checkbox">
+                            <input type="checkbox" class="availability-filter" value="available"> Available Now
+                        </label>
+                    </div>
+
+                    <button class="filter-btn" id="resetFilters">
+                        <i class="fas fa-redo"></i> Reset Filters
+                    </button>
+                </aside>
+
+                <!-- Rooms Grid -->
+                <div class="rooms-content">
+                    <div class="rooms-header">
+                        <h2>Available Rooms</h2>
+                        <div class="compare-floating" id="compareBtn" style="display: none;">
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-balance-scale"></i> Compare 
+                                <span class="compare-count" id="compareCount">0</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="rooms-grid" id="roomsGrid">
+                        <!-- Populated by JavaScript -->
                     </div>
                 </div>
             </div>
-
-            <div class="filter-section">
-                <h4>Room Type</h4>
-                <div class="checkbox-group">
-                    <label>
-                        <input type="checkbox" class="room-type-filter" value="single"> Single Room
-                    </label>
-                    <label>
-                        <input type="checkbox" class="room-type-filter" value="double"> Double Room
-                    </label>
-                    <label>
-                        <input type="checkbox" class="room-type-filter" value="suite"> Suite
-                    </label>
-                    <label>
-                        <input type="checkbox" class="room-type-filter" value="penthouse"> Penthouse
-                    </label>
-                </div>
-            </div>
-
-            <div class="filter-section">
-                <h4>Amenities</h4>
-                <div class="checkbox-group">
-                    <label>
-                        <input type="checkbox" class="amenity-filter" value="wifi"> Free Wi-Fi
-                    </label>
-                    <label>
-                        <input type="checkbox" class="amenity-filter" value="pool"> Pool Access
-                    </label>
-                    <label>
-                        <input type="checkbox" class="amenity-filter" value="spa"> Spa
-                    </label>
-                    <label>
-                        <input type="checkbox" class="amenity-filter" value="ac"> Air Conditioning
-                    </label>
-                    <label>
-                        <input type="checkbox" class="amenity-filter" value="mini-bar"> Mini Bar
-                    </label>
-                </div>
-            </div>
-
-            <div class="filter-section">
-                <h4>Rating</h4>
-                <div class="rating-filter">
-                    <label>
-                        <input type="radio" name="rating" value="5"> ★★★★★ 5 Star
-                    </label>
-                    <label>
-                        <input type="radio" name="rating" value="4"> ★★★★☆ 4+ Star
-                    </label>
-                    <label>
-                        <input type="radio" name="rating" value="3"> ★★★☆☆ 3+ Star
-                    </label>
-                </div>
-            </div>
-
-            <div class="filter-section">
-                <h4>Availability</h4>
-                <div class="checkbox-group">
-                    <label>
-                        <input type="checkbox" class="availability-filter" value="available"> Available Now
-                    </label>
-                    <label>
-                        <input type="checkbox" class="availability-filter" value="soon"> Available Soon
-                    </label>
-                </div>
-            </div>
-
-            <button class="btn btn-primary" style="width: 100%; margin-top: 20px;">Apply Filters</button>
-        </aside>
-
-        <!-- Room Cards Section -->
-        <div class="rooms-section">
-            <!-- Comparison Button -->
-            <div class="comparison-bar">
-                <button class="btn btn-outline" id="compareBtn">
-                    <i class="fas fa-compress"></i> Compare Rooms (<span id="compareCount">0</span>/3)
-                </button>
-            </div>
-
-            <!-- Rooms Grid -->
-            <div class="rooms-grid" id="roomsGrid">
-                <!-- Populated by JavaScript -->
-            </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Comparison Modal -->
+    <!-- Compare Modal -->
     <div class="modal" id="compareModal">
-        <div class="modal-content modal-lg">
-            <div class="modal-header">
-                <h2>Compare Rooms</h2>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="comparison-table" id="comparisonTable">
-                <!-- Populated by JavaScript -->
-            </div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="document.getElementById('compareModal').classList.remove('show')">×</button>
+            <h3>Room Comparison</h3>
+            <div id="comparisonTable"></div>
         </div>
     </div>
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>About LuxeStay</h4>
-                <ul>
-                    <li><a href="about.html">About Us</a></li>
-                    <li><a href="#">Careers</a></li>
-                    <li><a href="#">Press</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Support</h4>
-                <ul>
-                    <li><a href="contact.html">Contact Us</a></li>
-                    <li><a href="#">FAQ</a></li>
-                    <li><a href="#">Policies</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Follow Us</h4>
-                <div class="social-links">
-                    <a href="#"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-linkedin"></i></a>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-hotel"></i>
+                        <span>LuxeStay</span>
+                    </div>
+                    <p>Experience the pinnacle of luxury hospitality.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="rooms.html">Rooms</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Help Center</a></li>
+                        <li><a href="#">Terms</a></li>
+                        <li><a href="#">Privacy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Newsletter</h4>
+                    <form class="newsletter-form" id="newsletterForm">
+                        <input type="email" placeholder="Your email" required>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+                    </form>
                 </div>
             </div>
-            <div class="footer-section">
-                <h4>Newsletter</h4>
-                <form class="newsletter-form" id="newsletterForm">
-                    <input type="email" placeholder="Your email" required>
-                    <button type="submit" class="btn btn-primary">Subscribe</button>
-                </form>
+            <div class="footer-bottom">
+                <p>&copy; 2024 LuxeStay. All rights reserved.</p>
             </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2024 LuxeStay. All rights reserved.</p>
         </div>
     </footer>
 
-    <!-- Back to Top Button -->
     <button class="back-to-top" id="backToTop">
         <i class="fas fa-arrow-up"></i>
     </button>
 
-    <!-- Toast Notification -->
     <div class="toast" id="toast"></div>
 
     <script src="js/main.js"></script>

@@ -3,12 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About - LuxeStay</title>
+    <title>About Us - LuxeStay</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Navigation Bar -->
+    <!-- Offline Indicator -->
+    <div class="offline-indicator" id="offlineIndicator">
+        <i class="fas fa-wifi"></i>
+        <span>You are offline</span>
+    </div>
+
+    <!-- Navigation -->
     <nav class="navbar sticky-navbar">
         <div class="nav-container">
             <div class="nav-logo">
@@ -23,266 +32,305 @@
                 <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
             </ul>
             <div class="nav-controls">
+                <button class="offline-toggle" id="offlineToggle" title="Toggle Offline Mode" onclick="toggleOfflineMode()">
+                    <i class="fas fa-plane"></i>
+                </button>
                 <button class="theme-toggle" id="themeToggle">
                     <i class="fas fa-moon"></i>
                 </button>
                 <select class="lang-selector" id="langSelector">
-                    <option value="en">English</option>
-                    <option value="fr">Français</option>
+                    <option value="en">EN</option>
+                    <option value="fr">FR</option>
                 </select>
                 <select class="currency-selector" id="currencySelector">
                     <option value="usd">USD</option>
                     <option value="ghs">GHS</option>
                     <option value="eur">EUR</option>
                 </select>
+                <button class="nav-hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="about-hero">
-        <div class="about-hero-content">
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="page-header-bg" style="background: linear-gradient(135deg, rgba(15, 41, 66, 0.92) 0%, rgba(30, 74, 109, 0.85) 100%), url('https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=1920&q=80');"></div>
+        <div class="container">
             <h1>About LuxeStay</h1>
             <p>Crafting unforgettable luxury experiences since 2010</p>
         </div>
     </section>
 
-    <div class="container">
-        <!-- Story Section -->
-        <section class="about-section">
-            <div class="about-content">
-                <div class="about-text">
-                    <h2>Our Story</h2>
-                    <p>
-                        LuxeStay was founded in 2010 with a simple vision: to provide world-class hospitality experiences that exceed expectations. What started as a single boutique hotel has grown into a premier hotel chain with properties across major cities worldwide.
-                    </p>
-                    <p>
-                        Our commitment to excellence, attention to detail, and personalized service have earned us the trust and loyalty of millions of guests. We believe that a great stay goes beyond comfortable rooms—it's about creating meaningful memories and experiences.
-                    </p>
-                    <p>
-                        Today, LuxeStay stands as a symbol of luxury, comfort, and exceptional hospitality. We continue to innovate and enhance our offerings to ensure that every guest enjoys their stay with us.
-                    </p>
-                </div>
-                <div class="about-image">
-                    <img src="https://via.placeholder.com/500x400" alt="Hotel Story">
+    <!-- About Content -->
+    <section class="about-page-content">
+        <div class="container">
+            <!-- Story Section -->
+            <div class="about-hero-section">
+                <div class="about-hero-grid">
+                    <div class="about-hero-text">
+                        <span class="section-subtitle">Our Story</span>
+                        <h2>A Legacy of Luxury Hospitality</h2>
+                        <p>LuxeStay was founded in 2010 with a simple vision: to provide world-class hospitality experiences that exceed expectations. What started as a single boutique hotel has grown into a premier hotel chain with properties across major cities worldwide.</p>
+                        <p>Our commitment to excellence, attention to detail, and personalized service have earned us the trust and loyalty of millions of guests. We believe that a great stay goes beyond comfortable rooms—it's about creating meaningful memories and experiences.</p>
+                        <div class="about-stats">
+                            <div class="about-stat">
+                                <span class="stat-number">15+</span>
+                                <span class="stat-label">Years Experience</span>
+                            </div>
+                            <div class="about-stat">
+                                <span class="stat-number">50K+</span>
+                                <span class="stat-label">Happy Guests</span>
+                            </div>
+                            <div class="about-stat">
+                                <span class="stat-number">120+</span>
+                                <span class="stat-label">Properties</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="about-hero-image">
+                        <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80" alt="LuxeStay Hotel">
+                        <div class="image-accent"></div>
+                    </div>
                 </div>
             </div>
-        </section>
 
-        <!-- Mission & Vision -->
-        <section class="about-section">
-            <div class="mission-vision-grid">
-                <div class="mission-card">
-                    <i class="fas fa-bullseye"></i>
-                    <h3>Our Mission</h3>
-                    <p>To deliver exceptional hospitality experiences by combining luxury accommodation with personalized service, creating memorable stays that exceed every expectation.</p>
-                </div>
-                <div class="vision-card">
-                    <i class="fas fa-star"></i>
-                    <h3>Our Vision</h3>
-                    <p>To be the world's most trusted luxury hotel brand, recognized for our unwavering commitment to quality, innovation, and guest satisfaction.</p>
+            <!-- Mission Vision -->
+            <div class="mission-vision-section">
+                <div class="mv-grid">
+                    <div class="mv-card">
+                        <div class="mv-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3>Our Mission</h3>
+                        <p>To deliver exceptional hospitality experiences by combining luxury accommodation with personalized service, creating memorable stays that exceed every expectation.</p>
+                    </div>
+                    <div class="mv-card">
+                        <div class="mv-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h3>Our Vision</h3>
+                        <p>To be the world's most trusted luxury hotel brand, recognized for our unwavering commitment to quality, innovation, and guest satisfaction.</p>
+                    </div>
                 </div>
             </div>
-        </section>
 
-        <!-- Values Section -->
-        <section class="about-section">
-            <h2 style="text-align: center; margin-bottom: 40px;">Our Core Values</h2>
-            <div class="values-grid">
-                <div class="value-card">
-                    <i class="fas fa-heart"></i>
-                    <h4>Guest-Centric</h4>
-                    <p>We put our guests first in every decision we make, ensuring their comfort and satisfaction is our top priority.</p>
+            <!-- Values Section -->
+            <div class="values-section">
+                <div class="section-header">
+                    <span class="section-subtitle">What Drives Us</span>
+                    <h2>Our Core Values</h2>
+                    <p>The principles that guide every decision we make</p>
                 </div>
-                <div class="value-card">
-                    <i class="fas fa-gem"></i>
-                    <h4>Excellence</h4>
-                    <p>We strive for perfection in every aspect of our service, from room amenities to staff training.</p>
-                </div>
-                <div class="value-card">
-                    <i class="fas fa-leaf"></i>
-                    <h4>Sustainability</h4>
-                    <p>We're committed to environmental responsibility and sustainable practices throughout our operations.</p>
-                </div>
-                <div class="value-card">
-                    <i class="fas fa-handshake"></i>
-                    <h4>Integrity</h4>
-                    <p>We conduct our business with honesty and transparency, building trust with our guests and partners.</p>
-                </div>
-                <div class="value-card">
-                    <i class="fas fa-lightbulb"></i>
-                    <h4>Innovation</h4>
-                    <p>We continuously evolve and adopt new technologies to enhance the guest experience.</p>
-                </div>
-                <div class="value-card">
-                    <i class="fas fa-users"></i>
-                    <h4>Community</h4>
-                    <p>We believe in giving back to the communities we serve and supporting local initiatives.</p>
+                <div class="values-grid">
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h4>Guest-Centric</h4>
+                        <p>We put our guests first in every decision we make, ensuring their comfort and satisfaction is our top priority.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-gem"></i>
+                        </div>
+                        <h4>Excellence</h4>
+                        <p>We strive for perfection in every aspect of our service, from room amenities to staff training.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <h4>Sustainability</h4>
+                        <p>We're committed to environmental responsibility and sustainable practices throughout our operations.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h4>Integrity</h4>
+                        <p>We conduct our business with honesty and transparency, building trust with our guests and partners.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h4>Innovation</h4>
+                        <p>We continuously evolve and adopt new technologies to enhance the guest experience.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4>Community</h4>
+                        <p>We believe in giving back to the communities we serve and supporting local initiatives.</p>
+                    </div>
                 </div>
             </div>
-        </section>
 
-        <!-- Team Section -->
-        <section class="about-section">
-            <h2 style="text-align: center; margin-bottom: 40px;">Our Leadership Team</h2>
-            <div class="team-grid">
-                <div class="team-member">
-                    <img src="https://via.placeholder.com/200x200" alt="Team Member">
-                    <h4>John Sterling</h4>
-                    <p class="position">Chief Executive Officer</p>
-                    <p class="bio">With over 25 years of hospitality experience, John leads our company's vision and strategy.</p>
+            <!-- Team Section -->
+            <div class="team-section">
+                <div class="section-header">
+                    <span class="section-subtitle">Meet The Experts</span>
+                    <h2>Our Leadership Team</h2>
+                    <p>The dedicated professionals behind our success</p>
                 </div>
-                <div class="team-member">
-                    <img src="https://via.placeholder.com/200x200" alt="Team Member">
-                    <h4>Maria Garcia</h4>
-                    <p class="position">Chief Operating Officer</p>
-                    <p class="bio">Maria ensures seamless operations across all our properties worldwide.</p>
-                </div>
-                <div class="team-member">
-                    <img src="https://via.placeholder.com/200x200" alt="Team Member">
-                    <h4>Robert Chen</h4>
-                    <p class="position">Chief Financial Officer</p>
-                    <p class="bio">Robert manages our financial strategy and ensures sustainable growth.</p>
-                </div>
-                <div class="team-member">
-                    <img src="https://via.placeholder.com/200x200" alt="Team Member">
-                    <h4>Sophie Laurent</h4>
-                    <p class="position">Director of Guest Experience</p>
-                    <p class="bio">Sophie oversees all guest-facing services and experience innovation.</p>
+                <div class="team-grid">
+                    <div class="team-card">
+                        <div class="team-image">
+                            <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80" alt="John Sterling">
+                        </div>
+                        <div class="team-info">
+                            <h4>James Mitchell</h4>
+                            <span class="team-position">Chief Executive Officer</span>
+                            <p>With over 25 years in hospitality, James leads our company's vision and strategy with passion and expertise.</p>
+                            <div class="team-social">
+                                <a href="#"><i class="fab fa-linkedin"></i></a>
+                                <a href="#"><i class="fab fa-twitter"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-image">
+                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80" alt="Maria Garcia">
+                        </div>
+                        <div class="team-info">
+                            <h4>Sarah Johnson</h4>
+                            <span class="team-position">Chief Operating Officer</span>
+                            <p>Sarah ensures seamless operations across all our properties worldwide with her keen attention to detail.</p>
+                            <div class="team-social">
+                                <a href="#"><i class="fab fa-linkedin"></i></a>
+                                <a href="#"><i class="fab fa-twitter"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-image">
+                            <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80" alt="Robert Chen">
+                        </div>
+                        <div class="team-info">
+                            <h4>Michael Chen</h4>
+                            <span class="team-position">Chief Financial Officer</span>
+                            <p>Robert manages our financial strategy and ensures sustainable growth for all stakeholders.</p>
+                            <div class="team-social">
+                                <a href="#"><i class="fab fa-linkedin"></i></a>
+                                <a href="#"><i class="fab fa-twitter"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="team-card">
+                        <div class="team-image">
+                            <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80" alt="Sophie Laurent">
+                        </div>
+                        <div class="team-info">
+                            <h4>Emma Williams</h4>
+                            <span class="team-position">Director of Guest Experience</span>
+                            <p>Emma crafts unforgettable experiences for our guests, ensuring every stay is memorable.</p>
+                            <div class="team-social">
+                                <a href="#"><i class="fab fa-linkedin"></i></a>
+                                <a href="#"><i class="fab fa-twitter"></i></a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </section>
 
-        <!-- Awards & Certifications -->
-        <section class="about-section">
-            <h2 style="text-align: center; margin-bottom: 40px;">Awards & Recognition</h2>
-            <div class="awards-grid">
-                <div class="award-card">
-                    <i class="fas fa-medal"></i>
-                    <h4>Best Luxury Hotel Chain 2023</h4>
-                    <p>Travel Excellence Awards</p>
+            <!-- Awards Section -->
+            <div class="awards-section">
+                <div class="section-header">
+                    <span class="section-subtitle">Recognition</span>
+                    <h2>Awards & Certifications</h2>
+                    <p>Industry recognition for excellence</p>
                 </div>
-                <div class="award-card">
-                    <i class="fas fa-award"></i>
-                    <h4>World's Most Guest-Friendly Hotel</h4>
-                    <p>Global Hospitality Review</p>
-                </div>
-                <div class="award-card">
-                    <i class="fas fa-star"></i>
-                    <h4>Top 5 Hotels Worldwide</h4>
-                    <p>TripAdvisor Travelers' Choice</p>
-                </div>
-                <div class="award-card">
-                    <i class="fas fa-trophy"></i>
-                    <h4>Sustainability Excellence Award</h4>
-                    <p>Green Hospitality Initiative</p>
-                </div>
-                <div class="award-card">
-                    <i class="fas fa-heart"></i>
-                    <h4>Best Workplace 2023</h4>
-                    <p>Employee Satisfaction Survey</p>
-                </div>
-                <div class="award-card">
-                    <i class="fas fa-certificate"></i>
-                    <h4>ISO 9001 Certified</h4>
-                    <p>Quality Management Standards</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Statistics -->
-        <section class="about-section about-stats">
-            <h2 style="text-align: center; margin-bottom: 40px;">By The Numbers</h2>
-            <div class="stats-row">
-                <div class="stat-block">
-                    <h3>50+</h3>
-                    <p>Properties Worldwide</p>
-                </div>
-                <div class="stat-block">
-                    <h3>5M+</h3>
-                    <p>Happy Guests Annually</p>
-                </div>
-                <div class="stat-block">
-                    <h3>10K+</h3>
-                    <p>Dedicated Staff Members</p>
-                </div>
-                <div class="stat-block">
-                    <h3>14</h3>
-                    <p>Years of Excellence</p>
+                <div class="awards-showcase">
+                    <div class="award-item">
+                        <div class="award-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h4>Best Luxury Hotel 2024</h4>
+                        <p>World Travel Awards</p>
+                    </div>
+                    <div class="award-item">
+                        <div class="award-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h4>Five Star Diamond Award</h4>
+                        <p>American Academy</p>
+                    </div>
+                    <div class="award-item">
+                        <div class="award-icon">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+                        <h4>ISO 9001 Certified</h4>
+                        <p>Quality Management</p>
+                    </div>
+                    <div class="award-item">
+                        <div class="award-icon">
+                            <i class="fas fa-medal"></i>
+                        </div>
+                        <h4>Guest Choice Award</h4>
+                        <p>Booking.com Excellence</p>
+                    </div>
                 </div>
             </div>
-        </section>
-
-        <!-- Social Responsibility -->
-        <section class="about-section">
-            <h2>Social Responsibility</h2>
-            <div class="about-content">
-                <div class="about-text">
-                    <p>
-                        At LuxeStay, we believe in creating positive impact beyond our walls. We actively support local communities through various initiatives including:
-                    </p>
-                    <ul style="list-style: none; padding: 0;">
-                        <li><i class="fas fa-check"></i> Employment and skills training for local youth</li>
-                        <li><i class="fas fa-check"></i> Environmental conservation projects</li>
-                        <li><i class="fas fa-check"></i> Support for local charities and NGOs</li>
-                        <li><i class="fas fa-check"></i> Sustainable sourcing from local suppliers</li>
-                        <li><i class="fas fa-check"></i> Educational scholarships for underprivileged students</li>
-                    </ul>
-                </div>
-                <div class="about-image">
-                    <img src="https://via.placeholder.com/500x400" alt="Community Initiatives">
-                </div>
-            </div>
-        </section>
-    </div>
+        </div>
+    </section>
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>About LuxeStay</h4>
-                <ul>
-                    <li><a href="about.html">About Us</a></li>
-                    <li><a href="#">Careers</a></li>
-                    <li><a href="#">Press</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Support</h4>
-                <ul>
-                    <li><a href="contact.html">Contact Us</a></li>
-                    <li><a href="#">FAQ</a></li>
-                    <li><a href="#">Policies</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Follow Us</h4>
-                <div class="social-links">
-                    <a href="#"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-linkedin"></i></a>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-hotel"></i>
+                        <span>LuxeStay</span>
+                    </div>
+                    <p>Experience the pinnacle of luxury hospitality.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="rooms.html">Rooms</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Help Center</a></li>
+                        <li><a href="#">Terms</a></li>
+                        <li><a href="#">Privacy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Newsletter</h4>
+                    <form class="newsletter-form" id="newsletterForm">
+                        <input type="email" placeholder="Your email" required>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+                    </form>
                 </div>
             </div>
-            <div class="footer-section">
-                <h4>Newsletter</h4>
-                <form class="newsletter-form" id="newsletterForm">
-                    <input type="email" placeholder="Your email" required>
-                    <button type="submit" class="btn btn-primary">Subscribe</button>
-                </form>
+            <div class="footer-bottom">
+                <p>&copy; 2024 LuxeStay. All rights reserved.</p>
             </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2024 LuxeStay. All rights reserved.</p>
         </div>
     </footer>
 
-    <!-- Back to Top Button -->
     <button class="back-to-top" id="backToTop">
         <i class="fas fa-arrow-up"></i>
     </button>
 
-    <!-- Toast Notification -->
     <div class="toast" id="toast"></div>
 
     <script src="js/main.js"></script>

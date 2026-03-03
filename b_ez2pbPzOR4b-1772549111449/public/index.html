@@ -6,8 +6,17 @@
     <title>LuxeStay - Premium Hotel Booking</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Offline Indicator -->
+    <div class="offline-indicator" id="offlineIndicator">
+        <i class="fas fa-wifi"></i>
+        <span>You are offline</span>
+    </div>
+
     <!-- Navigation Bar -->
     <nav class="navbar sticky-navbar">
         <div class="nav-container">
@@ -23,19 +32,22 @@
                 <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
             </ul>
             <div class="nav-controls">
-                <button class="theme-toggle" id="themeToggle">
+                <button class="offline-toggle" id="offlineToggle" title="Toggle Offline Mode" onclick="toggleOfflineMode()">
+                    <i class="fas fa-plane"></i>
+                </button>
+                <button class="theme-toggle" id="themeToggle" title="Toggle Theme">
                     <i class="fas fa-moon"></i>
                 </button>
                 <select class="lang-selector" id="langSelector">
-                    <option value="en">English</option>
-                    <option value="fr">Français</option>
+                    <option value="en">EN</option>
+                    <option value="fr">FR</option>
                 </select>
                 <select class="currency-selector" id="currencySelector">
                     <option value="usd">USD</option>
                     <option value="ghs">GHS</option>
                     <option value="eur">EUR</option>
                 </select>
-                <button class="nav-hamburger">
+                <button class="nav-hamburger" id="navHamburger">
                     <span></span>
                     <span></span>
                     <span></span>
@@ -44,35 +56,49 @@
         </div>
     </nav>
 
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <ul class="mobile-nav-menu">
+            <li><a href="index.html" class="mobile-nav-link active">Home</a></li>
+            <li><a href="rooms.html" class="mobile-nav-link">Rooms</a></li>
+            <li><a href="about.html" class="mobile-nav-link">About</a></li>
+            <li><a href="contact.html" class="mobile-nav-link">Contact</a></li>
+            <li><a href="dashboard.html" class="mobile-nav-link">Dashboard</a></li>
+        </ul>
+    </div>
+
     <!-- Hero Section -->
     <section class="hero">
-        <div class="hero-background" style="background: linear-gradient(135deg, #1a3a52 0%, #2d5a7b 100%);"></div>
+        <div class="hero-background" style="background: linear-gradient(135deg, rgba(26, 58, 82, 0.9) 0%, rgba(45, 90, 123, 0.8) 100%), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920&q=80'); background-size: cover; background-position: center;"></div>
+        <div class="hero-overlay"></div>
         <div class="hero-content">
-            <h1>Discover Your Next Perfect Stay</h1>
-            <p>Experience luxury and comfort at unbeatable prices</p>
+            <div class="hero-badge">★★★★★ Luxury Hotel</div>
+            <h1>Discover Your Perfect <span class="text-gradient">Getaway</span></h1>
+            <p>Experience world-class hospitality in the heart of paradise</p>
             
             <!-- Search Form -->
-            <div class="search-form-container">
+            <div class="search-form-container glass-effect">
                 <form class="search-form" id="searchForm">
                     <div class="form-group">
-                        <label>Check-in</label>
+                        <label><i class="fas fa-calendar-check"></i> Check-in</label>
                         <input type="date" id="checkInDate" required>
                     </div>
                     <div class="form-group">
-                        <label>Check-out</label>
+                        <label><i class="fas fa-calendar-check"></i> Check-out</label>
                         <input type="date" id="checkOutDate" required>
                     </div>
                     <div class="form-group">
-                        <label>Guests</label>
+                        <label><i class="fas fa-user"></i> Guests</label>
                         <select id="guestCount">
                             <option value="1">1 Guest</option>
-                            <option value="2">2 Guests</option>
+                            <option value="2" selected>2 Guests</option>
                             <option value="3">3 Guests</option>
-                            <option value="4">4+ Guests</option>
+                            <option value="4">4 Guests</option>
+                            <option value="5">5+ Guests</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Room Type</label>
+                        <label><i class="fas fa-bed"></i> Room Type</label>
                         <select id="roomType">
                             <option value="all">All Rooms</option>
                             <option value="single">Single</option>
@@ -81,7 +107,9 @@
                             <option value="penthouse">Penthouse</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary">Search Rooms</button>
+                    <button type="submit" class="btn btn-primary btn-large">
+                        <i class="fas fa-search"></i> Search
+                    </button>
                 </form>
             </div>
         </div>
@@ -91,14 +119,15 @@
     <section class="featured-rooms">
         <div class="container">
             <div class="section-header">
+                <span class="section-subtitle">Premium Selection</span>
                 <h2>Featured Rooms</h2>
-                <p>Handpicked selections for your comfort</p>
+                <p>Handpicked selections for your ultimate comfort</p>
             </div>
             <div class="rooms-grid" id="featuredRoomsGrid">
                 <!-- Populated by JavaScript -->
             </div>
             <div class="view-all-rooms">
-                <a href="rooms.html" class="btn btn-outline">View All Rooms</a>
+                <a href="rooms.html" class="btn btn-outline btn-large">View All Rooms <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
     </section>
@@ -107,39 +136,76 @@
     <section class="amenities">
         <div class="container">
             <div class="section-header">
+                <span class="section-subtitle">World-Class Facilities</span>
                 <h2>Premium Amenities</h2>
-                <p>Everything you need for a perfect stay</p>
+                <p>Everything you need for an unforgettable stay</p>
             </div>
             <div class="amenities-grid">
                 <div class="amenity-card">
-                    <i class="fas fa-wifi"></i>
-                    <h3>Free Wi-Fi</h3>
-                    <p>High-speed internet in all rooms</p>
+                    <div class="amenity-icon">
+                        <i class="fas fa-wifi"></i>
+                    </div>
+                    <h3>Free High-Speed Wi-Fi</h3>
+                    <p>Stay connected with lightning-fast internet in all rooms and public areas</p>
                 </div>
                 <div class="amenity-card">
-                    <i class="fas fa-dumbbell"></i>
-                    <h3>Fitness Center</h3>
-                    <p>State-of-the-art gym facilities</p>
+                    <div class="amenity-icon">
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                    <h3>State-of-the-Art Gym</h3>
+                    <p>24/7 fitness center with premium equipment and personal trainers</p>
                 </div>
                 <div class="amenity-card">
-                    <i class="fas fa-utensils"></i>
-                    <h3>Fine Dining</h3>
-                    <p>Award-winning restaurants</p>
+                    <div class="amenity-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <h3>Award-Winning Dining</h3>
+                    <p>Experience culinary excellence at our Michelin-starred restaurants</p>
                 </div>
                 <div class="amenity-card">
-                    <i class="fas fa-swimming-pool"></i>
-                    <h3>Swimming Pool</h3>
-                    <p>Olympic-sized heated pool</p>
+                    <div class="amenity-icon">
+                        <i class="fas fa-swimming-pool"></i>
+                    </div>
+                    <h3>Infinity Pool</h3>
+                    <p>Heated outdoor pool with stunning views and poolside service</p>
                 </div>
                 <div class="amenity-card">
-                    <i class="fas fa-spa"></i>
-                    <h3>Spa & Wellness</h3>
-                    <p>Relaxation and rejuvenation</p>
+                    <div class="amenity-icon">
+                        <i class="fas fa-spa"></i>
+                    </div>
+                    <h3>Luxury Spa & Wellness</h3>
+                    <p>Rejuvenate your body and soul with our world-class treatments</p>
                 </div>
                 <div class="amenity-card">
-                    <i class="fas fa-concierge-bell"></i>
+                    <div class="amenity-icon">
+                        <i class="fas fa-concierge-bell"></i>
+                    </div>
                     <h3>24/7 Concierge</h3>
-                    <p>Premium guest services</p>
+                    <p>Our dedicated team is here to fulfill your every request</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number">15+</span>
+                    <span class="stat-label">Years of Excellence</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">50K+</span>
+                    <span class="stat-label">Happy Guests</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">120+</span>
+                    <span class="stat-label">Luxury Rooms</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">98%</span>
+                    <span class="stat-label">Return Rate</span>
                 </div>
             </div>
         </div>
@@ -149,27 +215,37 @@
     <section class="testimonials">
         <div class="container">
             <div class="section-header">
-                <h2>Guest Reviews</h2>
-                <p>What our guests say about us</p>
+                <span class="section-subtitle">Guest Experiences</span>
+                <h2>What Our Guests Say</h2>
+                <p>Real stories from our valued guests</p>
             </div>
             <div class="testimonials-grid">
                 <div class="testimonial-card">
+                    <div class="testimonial-image">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80" alt="Sarah Johnson">
+                    </div>
                     <div class="stars">★★★★★</div>
-                    <p>"An absolutely wonderful experience. The service was impeccable and the rooms were immaculate."</p>
+                    <p>"An absolutely wonderful experience. The service was impeccable and the rooms were immaculate. Will definitely return!"</p>
                     <h4>Sarah Johnson</h4>
-                    <span>New York, USA</span>
+                    <span><i class="fas fa-map-marker-alt"></i> New York, USA</span>
                 </div>
-                <div class="testimonial-card">
+                <div class="testimonial-card featured-testimonial">
+                    <div class="testimonial-image">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80" alt="Michael Chen">
+                    </div>
                     <div class="stars">★★★★★</div>
-                    <p>"Best hotel I've ever stayed at. Will definitely come back for my next vacation."</p>
+                    <p>"Best hotel I've ever stayed at. The attention to detail is remarkable. Will definitely come back for my next vacation."</p>
                     <h4>Michael Chen</h4>
-                    <span>Singapore</span>
+                    <span><i class="fas fa-map-marker-alt"></i> Singapore</span>
                 </div>
                 <div class="testimonial-card">
-                    <div class="stars">★★★★☆</div>
-                    <p>"Excellent location and beautiful rooms. The staff was very helpful and friendly."</p>
+                    <div class="testimonial-image">
+                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&q=80" alt="Emma Williams">
+                    </div>
+                    <div class="stars">★★★★★</div>
+                    <p>"Excellent location and beautiful rooms. The staff was very helpful and friendly. Highly recommended!"</p>
                     <h4>Emma Williams</h4>
-                    <span>London, UK</span>
+                    <span><i class="fas fa-map-marker-alt"></i> London, UK</span>
                 </div>
             </div>
         </div>
@@ -177,63 +253,87 @@
 
     <!-- CTA Section -->
     <section class="cta-section">
-        <div class="cta-content">
-            <h2>Ready to Book Your Stay?</h2>
-            <p>Join thousands of satisfied guests worldwide</p>
-            <a href="rooms.html" class="btn btn-white">Start Exploring</a>
+        <div class="cta-background" style="background: linear-gradient(135deg, rgba(26, 58, 82, 0.95) 0%, rgba(45, 90, 123, 0.9) 100%), url('https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1920&q=80'); background-size: cover; background-position: center;"></div>
+        <div class="container">
+            <div class="cta-content">
+                <span class="cta-badge">Limited Time Offer</span>
+                <h2>Ready to Experience Luxury?</h2>
+                <p>Book now and enjoy exclusive benefits including free breakfast, spa credit, and room upgrades</p>
+                <div class="cta-buttons">
+                    <a href="rooms.html" class="btn btn-white btn-large">Book Now <i class="fas fa-arrow-right"></i></a>
+                    <a href="about.html" class="btn btn-outline-white btn-large">Learn More</a>
+                </div>
+            </div>
         </div>
     </section>
+
+    <!-- Chatbot Toggle Button -->
+    <button class="chatbot-toggle" id="chatbotToggleBtn">
+        <i class="fas fa-comments"></i>
+    </button>
 
     <!-- Chatbot Widget -->
     <div class="chatbot-widget" id="chatbotWidget">
         <div class="chatbot-header">
-            <span>Chat with us</span>
+            <span><i class="fas fa-headset"></i> Live Chat</span>
             <button class="chatbot-close">×</button>
         </div>
         <div class="chatbot-messages" id="chatbotMessages">
-            <div class="message bot-message">Hello! How can we help you today?</div>
+            <div class="message bot-message">
+                <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                <div class="message-text">Hello! Welcome to LuxeStay. How can I help you today?</div>
+            </div>
         </div>
         <input type="text" placeholder="Type your message..." class="chatbot-input" id="chatbotInput">
     </div>
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>About LuxeStay</h4>
-                <ul>
-                    <li><a href="about.html">About Us</a></li>
-                    <li><a href="#">Careers</a></li>
-                    <li><a href="#">Press</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Support</h4>
-                <ul>
-                    <li><a href="contact.html">Contact Us</a></li>
-                    <li><a href="#">FAQ</a></li>
-                    <li><a href="#">Policies</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Follow Us</h4>
-                <div class="social-links">
-                    <a href="#"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-linkedin"></i></a>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-hotel"></i>
+                        <span>LuxeStay</span>
+                    </div>
+                    <p>Experience the pinnacle of luxury hospitality. Your perfect getaway starts here.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="rooms.html">Rooms</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Help Center</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Cancellation Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Newsletter</h4>
+                    <p>Subscribe for exclusive offers and updates</p>
+                    <form class="newsletter-form" id="newsletterForm">
+                        <input type="email" placeholder="Enter your email" required>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+                    </form>
                 </div>
             </div>
-            <div class="footer-section">
-                <h4>Newsletter</h4>
-                <form class="newsletter-form" id="newsletterForm">
-                    <input type="email" placeholder="Your email" required>
-                    <button type="submit" class="btn btn-primary">Subscribe</button>
-                </form>
+            <div class="footer-bottom">
+                <p>&copy; 2024 LuxeStay. All rights reserved. | Designed with <i class="fas fa-heart" style="color: var(--accent-gold);"></i> for luxury</p>
             </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2024 LuxeStay. All rights reserved.</p>
         </div>
     </footer>
 
