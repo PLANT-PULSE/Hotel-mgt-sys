@@ -3,211 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rooms & Suites - LuxeStay</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Our Rooms - Luxe Hotel</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
     <!-- Offline Indicator -->
     <div class="offline-indicator" id="offlineIndicator">
         <i class="fas fa-wifi"></i>
-        <span>You are offline</span>
+        You are currently offline. Some features may be limited.
     </div>
 
-    <!-- Navigation -->
-    <nav class="navbar sticky-navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <i class="fas fa-hotel"></i>
-                <span>LuxeStay</span>
-            </div>
-            <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link">Home</a></li>
-                <li><a href="rooms.html" class="nav-link active">Rooms</a></li>
-                <li><a href="about.html" class="nav-link">About</a></li>
-                <li><a href="contact.html" class="nav-link">Contact</a></li>
-                <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
-            </ul>
-            <div class="nav-controls">
-                <button class="offline-toggle" id="offlineToggle" title="Toggle Offline Mode" onclick="toggleOfflineMode()">
-                    <i class="fas fa-plane"></i>
-                </button>
-                <button class="theme-toggle" id="themeToggle">
-                    <i class="fas fa-moon"></i>
-                </button>
-                <select class="lang-selector" id="langSelector">
-                    <option value="en">EN</option>
-                    <option value="fr">FR</option>
-                </select>
-                <select class="currency-selector" id="currencySelector">
-                    <option value="usd">USD</option>
-                    <option value="ghs">GHS</option>
-                    <option value="eur">EUR</option>
-                </select>
-                <button class="nav-hamburger" id="navHamburger">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="navbar-inner">
+                <a href="index.html" class="navbar-brand">
+                    <div class="navbar-logo"><i class="fas fa-hotel"></i></div>
+                    Luxe Hotel
+                </a>
+                <ul class="navbar-menu" id="navbarMenu">
+                    <li><a href="index.html" class="navbar-link">Home</a></li>
+                    <li><a href="rooms.html" class="navbar-link active">Rooms</a></li>
+                    <li><a href="about.html" class="navbar-link">About</a></li>
+                    <li><a href="contact.html" class="navbar-link">Contact</a></li>
+                </ul>
+                <div class="navbar-actions">
+                    <select class="language-selector">
+                        <option>EN</option>
+                        <option>FR</option>
+                    </select>
+                    <select id="currencySelector" class="currency-selector">
+                        <option value="USD">USD ($)</option>
+                        <option value="GHS">GHS (₵)</option>
+                        <option value="EUR">EUR (€)</option>
+                    </select>
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="cart-icon" onclick="document.getElementById('cartModal').classList.add('show')" style="position: relative; cursor: pointer;">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </div>
+                    <a href="dashboard.html" class="btn btn-secondary btn-sm">My Account</a>
+                    <button class="navbar-toggle" id="navbarToggle" aria-label="Toggle menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
 
+    <!-- Cart Modal -->
+    <div class="cart-modal" id="cartModal">
+        <div class="cart-header">
+            <h3><i class="fas fa-shopping-cart"></i> Your Cart</h3>
+            <span class="cart-close" onclick="document.getElementById('cartModal').classList.remove('show')">
+                <i class="fas fa-times"></i>
+            </span>
+        </div>
+        <div class="cart-items" id="cartItems"></div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total</span>
+                <span id="cartTotal">$0.00</span>
+            </div>
+            <a href="booking.html" class="btn btn-primary" style="width: 100%;">Proceed to Checkout</a>
+        </div>
+    </div>
+
     <!-- Page Header -->
-    <section class="page-header">
-        <div class="page-header-bg" style="background: linear-gradient(135deg, rgba(15, 41, 66, 0.9) 0%, rgba(30, 74, 109, 0.8) 100%), url('https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=1920&q=80');"></div>
+    <section style="background: linear-gradient(135deg, rgba(15, 41, 66, 0.9), rgba(15, 41, 66, 0.7)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920&q=80') center/cover; padding: 160px 0 80px; text-align: center; color: var(--white);">
         <div class="container">
-            <h1>Our Rooms & Suites</h1>
-            <p>Discover your perfect retreat</p>
+            <h1 style="color: var(--white); margin-bottom: 15px;">Our Accommodations</h1>
+            <p style="color: var(--gray-300); font-size: 1.1rem;">Choose from our selection of luxury rooms and suites</p>
         </div>
     </section>
 
-    <!-- Rooms Page -->
-    <section class="rooms-page">
+    <!-- Rooms Listing -->
+    <section class="rooms-container">
         <div class="container">
-            <div class="rooms-layout">
-                <!-- Filters Sidebar -->
-                <aside class="filters-sidebar">
-                    <h3><i class="fas fa-filter"></i> Filters</h3>
-                    
-                    <div class="filter-section">
-                        <h4>Price Range</h4>
-                        <input type="range" class="price-slider" id="priceRange" min="100" max="600" value="500">
-                        <div class="price-display" id="priceDisplay">$500</div>
+            <div class="filters-sidebar">
+                <h3><i class="fas fa-filter"></i> Filters</h3>
+                
+                <div class="filter-group">
+                    <h4>Price Range</h4>
+                    <div class="price-slider">
+                        <input type="range" id="priceRange" min="100" max="600" value="600">
+                        <p class="price-display" id="priceDisplay">$600</p>
                     </div>
-
-                    <div class="filter-section">
-                        <h4>Room Type</h4>
-                        <label class="filter-checkbox">
-                            <input type="checkbox" class="room-type-filter" value="single"> Single Room
-                        </label>
-                        <label class="filter-checkbox">
-                            <input type="checkbox" class="room-type-filter" value="double"> Double Room
-                        </label>
-                        <label class="filter-checkbox">
-                            <input type="checkbox" class="room-type-filter" value="suite"> Suite
-                        </label>
-                        <label class="filter-checkbox">
-                            <input type="checkbox" class="room-type-filter" value="penthouse"> Penthouse
-                        </label>
-                    </div>
-
-                    <div class="filter-section">
-                        <h4>Amenities</h4>
-                        <label class="filter-checkbox">
-                            <input type="checkbox" class="amenity-filter" value="wifi"> Free Wi-Fi
-                        </label>
-                        <label class="filter-checkbox">
-                            <input type="checkbox" class="amenity-filter" value="pool"> Swimming Pool
-                        </label>
-                        <label class="filter-checkbox">
-                            <input type="checkbox" class="amenity-filter" value="spa"> Spa
-                        </label>
-                        <label class="filter-checkbox">
-                            <input type="checkbox" class="amenity-filter" value="ac"> Air Conditioning
-                        </label>
-                        <label class="filter-checkbox">
-                            <input type="checkbox" class="amenity-filter" value="minibar"> Mini Bar
-                        </label>
-                    </div>
-
-                    <div class="filter-section">
-                        <h4>Availability</h4>
-                        <label class="filter-checkbox">
-                            <input type="checkbox" class="availability-filter" value="available"> Available Now
-                        </label>
-                    </div>
-
-                    <button class="filter-btn" id="resetFilters">
-                        <i class="fas fa-redo"></i> Reset Filters
-                    </button>
-                </aside>
-
-                <!-- Rooms Grid -->
-                <div class="rooms-content">
-                    <div class="rooms-header">
-                        <h2>Available Rooms</h2>
-                        <div class="compare-floating" id="compareBtn" style="display: none;">
-                            <button class="btn btn-secondary">
-                                <i class="fas fa-balance-scale"></i> Compare 
-                                <span class="compare-count" id="compareCount">0</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="rooms-grid" id="roomsGrid">
-                        <!-- Populated by JavaScript -->
-                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <h4>Room Type</h4>
+                    <label>
+                        <input type="checkbox" class="room-type-filter" value="suite"> Suite
+                    </label>
+                    <label>
+                        <input type="checkbox" class="room-type-filter" value="double"> Double
+                    </label>
+                    <label>
+                        <input type="checkbox" class="room-type-filter" value="single"> Single
+                    </label>
+                    <label>
+                        <input type="checkbox" class="room-type-filter" value="penthouse"> Penthouse
+                    </label>
+                </div>
+                
+                <div class="filter-group">
+                    <h4>Amenities</h4>
+                    <label>
+                        <input type="checkbox" class="amenity-filter" value="wifi"> WiFi
+                    </label>
+                    <label>
+                        <input type="checkbox" class="amenity-filter" value="pool"> Pool
+                    </label>
+                    <label>
+                        <input type="checkbox" class="amenity-filter" value="spa"> Spa
+                    </label>
+                    <label>
+                        <input type="checkbox" class="amenity-filter" value="minibar"> Minibar
+                    </label>
+                </div>
+                
+                <button class="reset-filters" id="resetFilters">
+                    <i class="fas fa-redo"></i> Reset Filters
+                </button>
+            </div>
+            
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <h2>Available Rooms</h2>
+                    <select style="padding: 10px 15px; border: 2px solid var(--border); border-radius: 8px;">
+                        <option>Sort by: Recommended</option>
+                        <option>Price: Low to High</option>
+                        <option>Price: High to Low</option>
+                        <option>Rating</option>
+                    </select>
+                </div>
+                
+                <div class="rooms-grid" id="roomsGrid">
+                    <!-- Rooms rendered via JS -->
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Compare Modal -->
-    <div class="modal" id="compareModal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="document.getElementById('compareModal').classList.remove('show')">×</button>
-            <h3>Room Comparison</h3>
-            <div id="comparisonTable"></div>
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop"><i class="fas fa-arrow-up"></i></button>
+
+    <!-- Chat Widget -->
+    <div class="chat-widget">
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <h4><i class="fas fa-headset"></i> Live Support</h4>
+                <span class="chat-close" onclick="document.getElementById('chatWindow').classList.remove('show')">
+                    <i class="fas fa-times"></i>
+                </span>
+            </div>
+            <div class="chat-messages">
+                <div class="chat-message bot">
+                    <p>Hello! How can I help you today?</p>
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" placeholder="Type a message...">
+                <button><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+        <div class="chat-toggle" onclick="document.getElementById('chatWindow').classList.toggle('show')">
+            <i class="fas fa-comments"></i>
         </div>
     </div>
 
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <div class="footer-logo">
-                        <i class="fas fa-hotel"></i>
-                        <span>LuxeStay</span>
+            <div class="footer-features">
+                <div class="footer-feature">
+                    <div class="footer-feature-icon">
+                        <i class="fas fa-phone-alt"></i>
                     </div>
-                    <p>Experience the pinnacle of luxury hospitality.</p>
-                    <div class="social-links">
+                    <div class="footer-feature-text">
+                        <h5>24/7 Support</h5>
+                        <p>We're here to help</p>
+                    </div>
+                </div>
+                <div class="footer-feature">
+                    <div class="footer-feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="footer-feature-text">
+                        <h5>Secure Booking</h5>
+                        <p>Your data is safe</p>
+                    </div>
+                </div>
+                <div class="footer-feature">
+                    <div class="footer-feature-icon">
+                        <i class="fas fa-percent"></i>
+                    </div>
+                    <div class="footer-feature-text">
+                        <h5>Best Prices</h5>
+                        <p>Guaranteed value</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-grid">
+                <div class="footer-about">
+                    <div class="footer-brand">
+                        <div class="footer-logo"><i class="fas fa-hotel"></i></div>
+                        Luxe Hotel
+                    </div>
+                    <p>Experience luxury redefined at Luxe Hotel. Where every moment becomes a cherished memory.</p>
+                    <div class="footer-social">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
                         <a href="#"><i class="fab fa-twitter"></i></a>
                         <a href="#"><i class="fab fa-instagram"></i></a>
                         <a href="#"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
-                <div class="footer-section">
+                <div class="footer-links">
                     <h4>Quick Links</h4>
                     <ul>
                         <li><a href="index.html">Home</a></li>
                         <li><a href="rooms.html">Rooms</a></li>
-                        <li><a href="about.html">About</a></li>
+                        <li><a href="about.html">About Us</a></li>
                         <li><a href="contact.html">Contact</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
-                    <h4>Support</h4>
+                <div class="footer-links">
+                    <h4>Services</h4>
                     <ul>
-                        <li><a href="contact.html">Help Center</a></li>
-                        <li><a href="#">Terms</a></li>
-                        <li><a href="#">Privacy</a></li>
+                        <li><a href="#">Spa & Wellness</a></li>
+                        <li><a href="#">Dining</a></li>
+                        <li><a href="#">Events</a></li>
+                        <li><a href="#">Airport Transfer</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
+                <div class="footer-newsletter">
                     <h4>Newsletter</h4>
+                    <p>Subscribe for exclusive offers and updates</p>
                     <form class="newsletter-form" id="newsletterForm">
                         <input type="email" placeholder="Your email" required>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+                        <button type="submit"><i class="fas fa-paper-plane"></i></button>
                     </form>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 LuxeStay. All rights reserved.</p>
+                <p>&copy; 2024 Luxe Hotel. All rights reserved.</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Sitemap</a>
+                </div>
             </div>
         </div>
     </footer>
 
-    <button class="back-to-top" id="backToTop">
-        <i class="fas fa-arrow-up"></i>
-    </button>
-
-    <div class="toast" id="toast"></div>
-
     <script src="js/main.js"></script>
+    <script>
+        document.getElementById('navbarToggle').addEventListener('click', function() {
+            this.classList.toggle('active');
+            document.getElementById('navbarMenu').classList.toggle('show');
+        });
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            navbar.classList.toggle('scrolled', window.scrollY > 50);
+        });
+    </script>
 </body>
 </html>

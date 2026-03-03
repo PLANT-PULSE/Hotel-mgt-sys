@@ -3,300 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us - LuxeStay</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>About Us - Luxe Hotel</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <!-- Offline Indicator -->
     <div class="offline-indicator" id="offlineIndicator">
         <i class="fas fa-wifi"></i>
-        <span>You are offline</span>
+        You are currently offline.
     </div>
 
-    <!-- Navigation -->
-    <nav class="navbar sticky-navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <i class="fas fa-hotel"></i>
-                <span>LuxeStay</span>
-            </div>
-            <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link">Home</a></li>
-                <li><a href="rooms.html" class="nav-link">Rooms</a></li>
-                <li><a href="about.html" class="nav-link active">About</a></li>
-                <li><a href="contact.html" class="nav-link">Contact</a></li>
-                <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
-            </ul>
-            <div class="nav-controls">
-                <button class="offline-toggle" id="offlineToggle" title="Toggle Offline Mode" onclick="toggleOfflineMode()">
-                    <i class="fas fa-plane"></i>
-                </button>
-                <button class="theme-toggle" id="themeToggle">
-                    <i class="fas fa-moon"></i>
-                </button>
-                <select class="lang-selector" id="langSelector">
-                    <option value="en">EN</option>
-                    <option value="fr">FR</option>
-                </select>
-                <select class="currency-selector" id="currencySelector">
-                    <option value="usd">USD</option>
-                    <option value="ghs">GHS</option>
-                    <option value="eur">EUR</option>
-                </select>
-                <button class="nav-hamburger">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="navbar-inner">
+                <a href="index.html" class="navbar-brand">
+                    <div class="navbar-logo"><i class="fas fa-hotel"></i></div>
+                    Luxe Hotel
+                </a>
+                <ul class="navbar-menu" id="navbarMenu">
+                    <li><a href="index.html" class="navbar-link">Home</a></li>
+                    <li><a href="rooms.html" class="navbar-link">Rooms</a></li>
+                    <li><a href="about.html" class="navbar-link active">About</a></li>
+                    <li><a href="contact.html" class="navbar-link">Contact</a></li>
+                </ul>
+                <div class="navbar-actions">
+                    <select class="language-selector"><option>EN</option><option>FR</option></select>
+                    <select id="currencySelector" class="currency-selector">
+                        <option value="USD">USD ($)</option>
+                        <option value="GHS">GHS (₵)</option>
+                        <option value="EUR">EUR (€)</option>
+                    </select>
+                    <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
+                    <a href="dashboard.html" class="btn btn-secondary btn-sm">My Account</a>
+                    <button class="navbar-toggle" id="navbarToggle"><span></span><span></span><span></span></button>
+                </div>
             </div>
         </div>
     </nav>
 
-    <!-- Page Header -->
-    <section class="page-header">
-        <div class="page-header-bg" style="background: linear-gradient(135deg, rgba(15, 41, 66, 0.92) 0%, rgba(30, 74, 109, 0.85) 100%), url('https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=1920&q=80');"></div>
+    <section class="about-hero">
         <div class="container">
-            <h1>About LuxeStay</h1>
-            <p>Crafting unforgettable luxury experiences since 2010</p>
+            <h1>About Luxe Hotel</h1>
+            <p>Where elegance meets comfort, and every moment becomes a cherished memory</p>
         </div>
     </section>
 
-    <!-- About Content -->
-    <section class="about-page-content">
+    <section class="about-content">
         <div class="container">
-            <!-- Story Section -->
-            <div class="about-hero-section">
-                <div class="about-hero-grid">
-                    <div class="about-hero-text">
-                        <span class="section-subtitle">Our Story</span>
-                        <h2>A Legacy of Luxury Hospitality</h2>
-                        <p>LuxeStay was founded in 2010 with a simple vision: to provide world-class hospitality experiences that exceed expectations. What started as a single boutique hotel has grown into a premier hotel chain with properties across major cities worldwide.</p>
-                        <p>Our commitment to excellence, attention to detail, and personalized service have earned us the trust and loyalty of millions of guests. We believe that a great stay goes beyond comfortable rooms—it's about creating meaningful memories and experiences.</p>
-                        <div class="about-stats">
-                            <div class="about-stat">
-                                <span class="stat-number">15+</span>
-                                <span class="stat-label">Years Experience</span>
-                            </div>
-                            <div class="about-stat">
-                                <span class="stat-number">50K+</span>
-                                <span class="stat-label">Happy Guests</span>
-                            </div>
-                            <div class="about-stat">
-                                <span class="stat-number">120+</span>
-                                <span class="stat-label">Properties</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="about-hero-image">
-                        <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80" alt="LuxeStay Hotel">
-                        <div class="image-accent"></div>
-                    </div>
+            <div class="about-grid">
+                <div class="about-image">
+                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80" alt="Hotel Exterior">
+                </div>
+                <div class="about-text">
+                    <h2>Our Story</h2>
+                    <p>Founded in 2010, Luxe Hotel has been a beacon of hospitality, offering world-class accommodations in the heart of the city. Our commitment to excellence has earned us numerous accolades and a loyal clientele.</p>
+                    <p>Every detail of our hotel has been carefully curated to provide an unparalleled experience. From the moment you step through our doors, you'll be greeted with warm smiles and impeccable service.</p>
+                    <p>Our mission is simple: to create memorable moments for every guest, every time.</p>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <!-- Mission Vision -->
-            <div class="mission-vision-section">
-                <div class="mv-grid">
-                    <div class="mv-card">
-                        <div class="mv-icon">
-                            <i class="fas fa-bullseye"></i>
-                        </div>
-                        <h3>Our Mission</h3>
-                        <p>To deliver exceptional hospitality experiences by combining luxury accommodation with personalized service, creating memorable stays that exceed every expectation.</p>
-                    </div>
-                    <div class="mv-card">
-                        <div class="mv-icon">
-                            <i class="fas fa-eye"></i>
-                        </div>
-                        <h3>Our Vision</h3>
-                        <p>To be the world's most trusted luxury hotel brand, recognized for our unwavering commitment to quality, innovation, and guest satisfaction.</p>
-                    </div>
-                </div>
+    <section class="section section-gray">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-subtitle">Meet Our Team</p>
+                <h2 class="section-title">The People Behind Luxe</h2>
             </div>
-
-            <!-- Values Section -->
-            <div class="values-section">
-                <div class="section-header">
-                    <span class="section-subtitle">What Drives Us</span>
-                    <h2>Our Core Values</h2>
-                    <p>The principles that guide every decision we make</p>
-                </div>
-                <div class="values-grid">
-                    <div class="value-card">
-                        <div class="value-icon">
-                            <i class="fas fa-heart"></i>
-                        </div>
-                        <h4>Guest-Centric</h4>
-                        <p>We put our guests first in every decision we make, ensuring their comfort and satisfaction is our top priority.</p>
-                    </div>
-                    <div class="value-card">
-                        <div class="value-icon">
-                            <i class="fas fa-gem"></i>
-                        </div>
-                        <h4>Excellence</h4>
-                        <p>We strive for perfection in every aspect of our service, from room amenities to staff training.</p>
-                    </div>
-                    <div class="value-card">
-                        <div class="value-icon">
-                            <i class="fas fa-leaf"></i>
-                        </div>
-                        <h4>Sustainability</h4>
-                        <p>We're committed to environmental responsibility and sustainable practices throughout our operations.</p>
-                    </div>
-                    <div class="value-card">
-                        <div class="value-icon">
-                            <i class="fas fa-handshake"></i>
-                        </div>
-                        <h4>Integrity</h4>
-                        <p>We conduct our business with honesty and transparency, building trust with our guests and partners.</p>
-                    </div>
-                    <div class="value-card">
-                        <div class="value-icon">
-                            <i class="fas fa-lightbulb"></i>
-                        </div>
-                        <h4>Innovation</h4>
-                        <p>We continuously evolve and adopt new technologies to enhance the guest experience.</p>
-                    </div>
-                    <div class="value-card">
-                        <div class="value-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <h4>Community</h4>
-                        <p>We believe in giving back to the communities we serve and supporting local initiatives.</p>
+            <div class="team-grid">
+                <div class="team-card">
+                    <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80" alt="CEO">
+                    <div class="team-card-body">
+                        <h4>James Morrison</h4>
+                        <span>General Manager</span>
                     </div>
                 </div>
-            </div>
-
-            <!-- Team Section -->
-            <div class="team-section">
-                <div class="section-header">
-                    <span class="section-subtitle">Meet The Experts</span>
-                    <h2>Our Leadership Team</h2>
-                    <p>The dedicated professionals behind our success</p>
-                </div>
-                <div class="team-grid">
-                    <div class="team-card">
-                        <div class="team-image">
-                            <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80" alt="John Sterling">
-                        </div>
-                        <div class="team-info">
-                            <h4>James Mitchell</h4>
-                            <span class="team-position">Chief Executive Officer</span>
-                            <p>With over 25 years in hospitality, James leads our company's vision and strategy with passion and expertise.</p>
-                            <div class="team-social">
-                                <a href="#"><i class="fab fa-linkedin"></i></a>
-                                <a href="#"><i class="fab fa-twitter"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="team-card">
-                        <div class="team-image">
-                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80" alt="Maria Garcia">
-                        </div>
-                        <div class="team-info">
-                            <h4>Sarah Johnson</h4>
-                            <span class="team-position">Chief Operating Officer</span>
-                            <p>Sarah ensures seamless operations across all our properties worldwide with her keen attention to detail.</p>
-                            <div class="team-social">
-                                <a href="#"><i class="fab fa-linkedin"></i></a>
-                                <a href="#"><i class="fab fa-twitter"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="team-card">
-                        <div class="team-image">
-                            <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80" alt="Robert Chen">
-                        </div>
-                        <div class="team-info">
-                            <h4>Michael Chen</h4>
-                            <span class="team-position">Chief Financial Officer</span>
-                            <p>Robert manages our financial strategy and ensures sustainable growth for all stakeholders.</p>
-                            <div class="team-social">
-                                <a href="#"><i class="fab fa-linkedin"></i></a>
-                                <a href="#"><i class="fab fa-twitter"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="team-card">
-                        <div class="team-image">
-                            <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80" alt="Sophie Laurent">
-                        </div>
-                        <div class="team-info">
-                            <h4>Emma Williams</h4>
-                            <span class="team-position">Director of Guest Experience</span>
-                            <p>Emma crafts unforgettable experiences for our guests, ensuring every stay is memorable.</p>
-                            <div class="team-social">
-                                <a href="#"><i class="fab fa-linkedin"></i></a>
-                                <a href="#"><i class="fab fa-twitter"></i></a>
-                            </div>
-                        </div>
+                <div class="team-card">
+                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80" alt="CEO">
+                    <div class="team-card-body">
+                        <h4>Sarah Parker</h4>
+                        <span>Head of Operations</span>
                     </div>
                 </div>
-            </div>
-
-            <!-- Awards Section -->
-            <div class="awards-section">
-                <div class="section-header">
-                    <span class="section-subtitle">Recognition</span>
-                    <h2>Awards & Certifications</h2>
-                    <p>Industry recognition for excellence</p>
+                <div class="team-card">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80" alt="CEO">
+                    <div class="team-card-body">
+                        <h4>David Chen</h4>
+                        <span>Executive Chef</span>
+                    </div>
                 </div>
-                <div class="awards-showcase">
-                    <div class="award-item">
-                        <div class="award-icon">
-                            <i class="fas fa-trophy"></i>
-                        </div>
-                        <h4>Best Luxury Hotel 2024</h4>
-                        <p>World Travel Awards</p>
-                    </div>
-                    <div class="award-item">
-                        <div class="award-icon">
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <h4>Five Star Diamond Award</h4>
-                        <p>American Academy</p>
-                    </div>
-                    <div class="award-item">
-                        <div class="award-icon">
-                            <i class="fas fa-certificate"></i>
-                        </div>
-                        <h4>ISO 9001 Certified</h4>
-                        <p>Quality Management</p>
-                    </div>
-                    <div class="award-item">
-                        <div class="award-icon">
-                            <i class="fas fa-medal"></i>
-                        </div>
-                        <h4>Guest Choice Award</h4>
-                        <p>Booking.com Excellence</p>
+                <div class="team-card">
+                    <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80" alt="CEO">
+                    <div class="team-card-body">
+                        <h4>Emily Roberts</h4>
+                        <span>Guest Relations</span>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-subtitle">Recognition</p>
+                <h2 class="section-title">Awards & Certifications</h2>
+            </div>
+            <div class="awards-grid">
+                <div class="award-card">
+                    <i class="fas fa-trophy"></i>
+                    <h4>Best Luxury Hotel 2024</h4>
+                    <p>World Travel Awards</p>
+                </div>
+                <div class="award-card">
+                    <i class="fas fa-star"></i>
+                    <h4>5-Star Rating</h4>
+                    <p>Forbes Travel Guide</p>
+                </div>
+                <div class="award-card">
+                    <i class="fas fa-certificate"></i>
+                    <h4>ISO 9001 Certified</h4>
+                    <p>Quality Management</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="toast" id="toast"></div>
+    <button class="back-to-top" id="backToTop"><i class="fas fa-arrow-up"></i></button>
+
+    <div class="chat-widget">
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <h4><i class="fas fa-headset"></i> Live Support</h4>
+                <span class="chat-close" onclick="document.getElementById('chatWindow').classList.remove('show')"><i class="fas fa-times"></i></span>
+            </div>
+            <div class="chat-messages">
+                <div class="chat-message bot"><p>Hello! How can I help you?</p></div>
+            </div>
+            <div class="chat-input">
+                <input type="text" placeholder="Type a message...">
+                <button><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+        <div class="chat-toggle" onclick="document.getElementById('chatWindow').classList.toggle('show')"><i class="fas fa-comments"></i></div>
+    </div>
+
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <div class="footer-logo">
-                        <i class="fas fa-hotel"></i>
-                        <span>LuxeStay</span>
-                    </div>
-                    <p>Experience the pinnacle of luxury hospitality.</p>
-                    <div class="social-links">
+            <div class="footer-features">
+                <div class="footer-feature"><div class="footer-feature-icon"><i class="fas fa-phone-alt"></i></div><div class="footer-feature-text"><h5>24/7 Support</h5><p>We're here to help</p></div></div>
+                <div class="footer-feature"><div class="footer-feature-icon"><i class="fas fa-shield-alt"></i></div><div class="footer-feature-text"><h5>Secure Booking</h5><p>Your data is safe</p></div></div>
+                <div class="footer-feature"><div class="footer-feature-icon"><i class="fas fa-percent"></i></div><div class="footer-feature-text"><h5>Best Prices</h5><p>Guaranteed value</p></div></div>
+            </div>
+            <div class="footer-grid">
+                <div class="footer-about">
+                    <div class="footer-brand"><div class="footer-logo"><i class="fas fa-hotel"></i></div>Luxe Hotel</div>
+                    <p>Experience luxury redefined at Luxe Hotel.</p>
+                    <div class="footer-social">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
                         <a href="#"><i class="fab fa-twitter"></i></a>
                         <a href="#"><i class="fab fa-instagram"></i></a>
                         <a href="#"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
-                <div class="footer-section">
+                <div class="footer-links">
                     <h4>Quick Links</h4>
                     <ul>
                         <li><a href="index.html">Home</a></li>
@@ -305,34 +179,37 @@
                         <li><a href="contact.html">Contact</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
-                    <h4>Support</h4>
+                <div class="footer-links">
+                    <h4>Services</h4>
                     <ul>
-                        <li><a href="contact.html">Help Center</a></li>
-                        <li><a href="#">Terms</a></li>
-                        <li><a href="#">Privacy</a></li>
+                        <li><a href="#">Spa</a></li>
+                        <li><a href="#">Dining</a></li>
+                        <li><a href="#">Events</a></li>
+                        <li><a href="#">Transfer</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
+                <div class="footer-newsletter">
                     <h4>Newsletter</h4>
-                    <form class="newsletter-form" id="newsletterForm">
-                        <input type="email" placeholder="Your email" required>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
-                    </form>
+                    <p>Subscribe for updates</p>
+                    <form class="newsletter-form"><input type="email" placeholder="Your email"><button type="submit"><i class="fas fa-paper-plane"></i></button></form>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 LuxeStay. All rights reserved.</p>
+                <p>&copy; 2024 Luxe Hotel. All rights reserved.</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy</a><a href="#">Terms</a>
+                </div>
             </div>
         </div>
     </footer>
 
-    <button class="back-to-top" id="backToTop">
-        <i class="fas fa-arrow-up"></i>
-    </button>
-
-    <div class="toast" id="toast"></div>
-
     <script src="js/main.js"></script>
+    <script>
+        document.getElementById('navbarToggle').addEventListener('click', function() {
+            this.classList.toggle('active');
+            document.getElementById('navbarMenu').classList.toggle('show');
+        });
+        window.addEventListener('scroll', () => document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50));
+    </script>
 </body>
 </html>

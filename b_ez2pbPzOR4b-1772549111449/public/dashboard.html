@@ -3,199 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - LuxeStay</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>My Dashboard - Luxe Hotel</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <!-- Offline Indicator -->
     <div class="offline-indicator" id="offlineIndicator">
         <i class="fas fa-wifi"></i>
-        <span>You are offline</span>
+        You are currently offline.
     </div>
 
-    <!-- Navigation -->
-    <nav class="navbar sticky-navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <i class="fas fa-hotel"></i>
-                <span>LuxeStay</span>
-            </div>
-            <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link">Home</a></li>
-                <li><a href="rooms.html" class="nav-link">Rooms</a></li>
-                <li><a href="about.html" class="nav-link">About</a></li>
-                <li><a href="contact.html" class="nav-link">Contact</a></li>
-                <li><a href="dashboard.html" class="nav-link active">Dashboard</a></li>
-            </ul>
-            <div class="nav-controls">
-                <button class="offline-toggle" id="offlineToggle" title="Toggle Offline Mode" onclick="toggleOfflineMode()">
-                    <i class="fas fa-plane"></i>
-                </button>
-                <button class="theme-toggle" id="themeToggle">
-                    <i class="fas fa-moon"></i>
-                </button>
-                <select class="lang-selector" id="langSelector">
-                    <option value="en">EN</option>
-                    <option value="fr">FR</option>
-                </select>
-                <select class="currency-selector" id="currencySelector">
-                    <option value="usd">USD</option>
-                    <option value="ghs">GHS</option>
-                    <option value="eur">EUR</option>
-                </select>
-                <button class="nav-hamburger">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="navbar-inner">
+                <a href="index.html" class="navbar-brand">
+                    <div class="navbar-logo"><i class="fas fa-hotel"></i></div>
+                    Luxe Hotel
+                </a>
+                <ul class="navbar-menu" id="navbarMenu">
+                    <li><a href="index.html" class="navbar-link">Home</a></li>
+                    <li><a href="rooms.html" class="navbar-link">Rooms</a></li>
+                    <li><a href="about.html" class="navbar-link">About</a></li>
+                    <li><a href="contact.html" class="navbar-link">Contact</a></li>
+                </ul>
+                <div class="navbar-actions">
+                    <select class="language-selector"><option>EN</option><option>FR</option></select>
+                    <select id="currencySelector" class="currency-selector">
+                        <option value="USD">USD ($)</option>
+                        <option value="GHS">GHS (₵)</option>
+                        <option value="EUR">EUR (€)</option>
+                    </select>
+                    <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
+                    <a href="dashboard.html" class="btn btn-secondary btn-sm">My Account</a>
+                    <button class="navbar-toggle" id="navbarToggle"><span></span><span></span><span></span></button>
+                </div>
             </div>
         </div>
     </nav>
 
-    <!-- Dashboard Content -->
-    <section class="dashboard-page">
+    <section class="dashboard-container">
         <div class="container">
-            <!-- Welcome Banner -->
-            <div class="welcome-banner">
-                <h2>Welcome back, Guest!</h2>
-                <p>Manage your bookings, view history, and earn loyalty points</p>
-            </div>
-
-            <!-- Dashboard Cards -->
-            <div class="dashboard-cards">
-                <div class="dashboard-card">
-                    <div class="dashboard-card-icon bookings">
-                        <i class="fas fa-calendar-check"></i>
+            <div class="dashboard-grid">
+                <div class="dashboard-sidebar">
+                    <div class="user-profile">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80" alt="Profile">
+                        <h4>John Doe</h4>
+                        <span>john@example.com</span>
                     </div>
-                    <h3>Total Bookings</h3>
-                    <div class="value">12</div>
+                    <ul class="sidebar-menu">
+                        <li><a href="#" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="#"><i class="fas fa-calendar-check"></i> My Bookings</a></li>
+                        <li><a href="#"><i class="fas fa-heart"></i> Wishlist</a></li>
+                        <li><a href="#"><i class="fas fa-crown"></i> Loyalty Points</a></li>
+                        <li><a href="#"><i class="fas fa-user-cog"></i> Profile Settings</a></li>
+                        <li><a href="#"><i class="fas fa-credit-card"></i> Payment Methods</a></li>
+                        <li><a href="checkin.html"><i class="fas fa-sign-in-alt"></i> Online Check-in</a></li>
+                        <li><a href="#"><i class="fas fa-sign-out-alt"></i> Sign Out</a></li>
+                    </ul>
                 </div>
-                <div class="dashboard-card">
-                    <div class="dashboard-card-icon nights">
-                        <i class="fas fa-moon"></i>
+                
+                <div class="dashboard-content">
+                    <h2>Welcome back, John!</h2>
+                    
+                    <div class="loyalty-card">
+                        <div>
+                            <h3><i class="fas fa-crown"></i> Loyalty Points</h3>
+                            <p>You're a Silver Member</p>
+                        </div>
+                        <div class="points" id="loyaltyPoints">2,450</div>
                     </div>
-                    <h3>Nights Stayed</h3>
-                    <div class="value">28</div>
-                </div>
-                <div class="dashboard-card">
-                    <div class="dashboard-card-icon revenue">
-                        <i class="fas fa-suitcase"></i>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-card-icon"><i class="fas fa-calendar-check"></i></div>
+                            <h3>5</h3>
+                            <p>Total Bookings</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-icon"><i class="fas fa-heart"></i></div>
+                            <h3>3</h3>
+                            <p>Wishlist Items</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-icon"><i class="fas fa-star"></i></div>
+                            <h3>4.8</h3>
+                            <p>Average Rating</p>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-icon"><i class="fas fa-calendar"></i></div>
+                            <h3>12</h3>
+                            <p>Nights Stayed</p>
+                        </div>
                     </div>
-                    <h3>Total Spent</h3>
-                    <div class="value">$8,450</div>
-                </div>
-                <div class="dashboard-card">
-                    <div class="dashboard-card-icon points">
-                        <i class="fas fa-star"></i>
+                    
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3>Recent Bookings</h3>
+                            <a href="#" class="btn btn-sm btn-outline">View All</a>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Booking ID</th>
+                                    <th>Room</th>
+                                    <th>Dates</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>LXS-2024-001</td>
+                                    <td>Luxury Suite</td>
+                                    <td>Dec 15-18, 2024</td>
+                                    <td><span class="status-badge confirmed">Confirmed</span></td>
+                                    <td><a href="#" class="btn btn-sm btn-outline">View</a></td>
+                                </tr>
+                                <tr>
+                                    <td>LXS-2024-002</td>
+                                    <td>Deluxe King</td>
+                                    <td>Nov 10-12, 2024</td>
+                                    <td><span class="status-badge completed">Completed</span></td>
+                                    <td><a href="#" class="btn btn-sm btn-outline">View</a></td>
+                                </tr>
+                                <tr>
+                                    <td>LXS-2024-003</td>
+                                    <td>Standard Room</td>
+                                    <td>Oct 5-7, 2024</td>
+                                    <td><span class="status-badge completed">Completed</span></td>
+                                    <td><a href="#" class="btn btn-sm btn-outline">View</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <h3>Loyalty Points</h3>
-                    <div class="value" id="loyaltyPoints">2,450</div>
                 </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="quick-actions">
-                <div class="quick-action-btn" onclick="window.location.href='rooms.html'">
-                    <i class="fas fa-bed"></i>
-                    <h4>Book a Room</h4>
-                    <p>Find your next stay</p>
-                </div>
-                <div class="quick-action-btn" onclick="window.location.href='checkin.html'">
-                    <i class="fas fa-check-circle"></i>
-                    <h4>Online Check-in</h4>
-                    <p>Skip the queue</p>
-                </div>
-                <div class="quick-action-btn" onclick="window.location.href='reviews.html'">
-                    <i class="fas fa-pen"></i>
-                    <h4>Write a Review</h4>
-                    <p>Share your experience</p>
-                </div>
-                <div class="quick-action-btn" onclick="window.location.href='contact.html'">
-                    <i class="fas fa-headset"></i>
-                    <h4>Contact Support</h4>
-                    <p>We're here to help</p>
-                </div>
-            </div>
-
-            <!-- Recent Bookings -->
-            <div class="recent-bookings">
-                <div class="section-title">
-                    <h2>Recent Bookings</h2>
-                    <a href="#" class="btn btn-outline">View All</a>
-                </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Booking ID</th>
-                            <th>Room</th>
-                            <th>Check-in</th>
-                            <th>Check-out</th>
-                            <th>Status</th>
-                            <th>Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>LXS-2024-001</td>
-                            <td>Luxury Suite</td>
-                            <td>Dec 15, 2024</td>
-                            <td>Dec 18, 2024</td>
-                            <td><span class="badge badge-success">Completed</span></td>
-                            <td>$897</td>
-                        </tr>
-                        <tr>
-                            <td>LXS-2024-002</td>
-                            <td>Deluxe King Room</td>
-                            <td>Jan 10, 2025</td>
-                            <td>Jan 12, 2025</td>
-                            <td><span class="badge badge-info">Upcoming</span></td>
-                            <td>$398</td>
-                        </tr>
-                        <tr>
-                            <td>LXS-2024-003</td>
-                            <td>Penthouse Suite</td>
-                            <td>Feb 20, 2025</td>
-                            <td>Feb 25, 2025</td>
-                            <td><span class="badge badge-warning">Pending</span></td>
-                            <td>$2,495</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Loyalty Section -->
-            <div class="loyalty-card" style="margin-top: 36px;">
-                <h3><i class="fas fa-crown"></i> Loyalty Rewards</h3>
-                <div class="loyalty-points">2,450</div>
-                <span class="loyalty-tier">Gold Member</span>
-                <p style="margin-top: 16px; color: rgba(255,255,255,0.8);">You're 550 points away from Platinum status!</p>
-                <a href="#" class="btn btn-white" style="margin-top: 16px;">View Benefits</a>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
+    <div class="toast" id="toast"></div>
+    <button class="back-to-top" id="backToTop"><i class="fas fa-arrow-up"></i></button>
+
+    <div class="chat-widget">
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <h4><i class="fas fa-headset"></i> Live Support</h4>
+                <span class="chat-close" onclick="document.getElementById('chatWindow').classList.remove('show')"><i class="fas fa-times"></i></span>
+            </div>
+            <div class="chat-messages">
+                <div class="chat-message bot"><p>Hello! How can I help you?</p></div>
+            </div>
+            <div class="chat-input">
+                <input type="text" placeholder="Type a message...">
+                <button><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+        <div class="chat-toggle" onclick="document.getElementById('chatWindow').classList.toggle('show')"><i class="fas fa-comments"></i></div>
+    </div>
+
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <div class="footer-logo">
-                        <i class="fas fa-hotel"></i>
-                        <span>LuxeStay</span>
-                    </div>
-                    <p>Experience the pinnacle of luxury hospitality.</p>
-                    <div class="social-links">
+            <div class="footer-features">
+                <div class="footer-feature"><div class="footer-feature-icon"><i class="fas fa-phone-alt"></i></div><div class="footer-feature-text"><h5>24/7 Support</h5><p>We're here to help</p></div></div>
+                <div class="footer-feature"><div class="footer-feature-icon"><i class="fas fa-shield-alt"></i></div><div class="footer-feature-text"><h5>Secure Booking</h5><p>Your data is safe</p></div></div>
+                <div class="footer-feature"><div class="footer-feature-icon"><i class="fas fa-percent"></i></div><div class="footer-feature-text"><h5>Best Prices</h5><p>Guaranteed value</p></div></div>
+            </div>
+            <div class="footer-grid">
+                <div class="footer-about">
+                    <div class="footer-brand"><div class="footer-logo"><i class="fas fa-hotel"></i></div>Luxe Hotel</div>
+                    <p>Experience luxury redefined at Luxe Hotel.</p>
+                    <div class="footer-social">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
                         <a href="#"><i class="fab fa-twitter"></i></a>
                         <a href="#"><i class="fab fa-instagram"></i></a>
                         <a href="#"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
-                <div class="footer-section">
+                <div class="footer-links">
                     <h4>Quick Links</h4>
                     <ul>
                         <li><a href="index.html">Home</a></li>
@@ -204,34 +191,37 @@
                         <li><a href="contact.html">Contact</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
-                    <h4>Support</h4>
+                <div class="footer-links">
+                    <h4>Services</h4>
                     <ul>
-                        <li><a href="contact.html">Help Center</a></li>
-                        <li><a href="#">Terms</a></li>
-                        <li><a href="#">Privacy</a></li>
+                        <li><a href="#">Spa</a></li>
+                        <li><a href="#">Dining</a></li>
+                        <li><a href="#">Events</a></li>
+                        <li><a href="#">Transfer</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
+                <div class="footer-newsletter">
                     <h4>Newsletter</h4>
-                    <form class="newsletter-form" id="newsletterForm">
-                        <input type="email" placeholder="Your email" required>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
-                    </form>
+                    <p>Subscribe for updates</p>
+                    <form class="newsletter-form"><input type="email" placeholder="Your email"><button type="submit"><i class="fas fa-paper-plane"></i></button></form>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 LuxeStay. All rights reserved.</p>
+                <p>&copy; 2024 Luxe Hotel. All rights reserved.</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy</a><a href="#">Terms</a>
+                </div>
             </div>
         </div>
     </footer>
 
-    <button class="back-to-top" id="backToTop">
-        <i class="fas fa-arrow-up"></i>
-    </button>
-
-    <div class="toast" id="toast"></div>
-
     <script src="js/main.js"></script>
+    <script>
+        document.getElementById('navbarToggle').addEventListener('click', function() {
+            this.classList.toggle('active');
+            document.getElementById('navbarMenu').classList.toggle('show');
+        });
+        window.addEventListener('scroll', () => document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50));
+    </script>
 </body>
 </html>

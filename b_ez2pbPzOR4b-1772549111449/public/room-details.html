@@ -3,212 +3,378 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Room Details - LuxeStay</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Room Details - Luxe Hotel</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
     <!-- Offline Indicator -->
     <div class="offline-indicator" id="offlineIndicator">
         <i class="fas fa-wifi"></i>
-        <span>You are offline</span>
+        You are currently offline. Some features may be limited.
     </div>
 
-    <!-- Navigation -->
-    <nav class="navbar sticky-navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <i class="fas fa-hotel"></i>
-                <span>LuxeStay</span>
-            </div>
-            <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link">Home</a></li>
-                <li><a href="rooms.html" class="nav-link active">Rooms</a></li>
-                <li><a href="about.html" class="nav-link">About</a></li>
-                <li><a href="contact.html" class="nav-link">Contact</a></li>
-                <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
-            </ul>
-            <div class="nav-controls">
-                <button class="offline-toggle" id="offlineToggle" title="Toggle Offline Mode" onclick="toggleOfflineMode()">
-                    <i class="fas fa-plane"></i>
-                </button>
-                <button class="theme-toggle" id="themeToggle">
-                    <i class="fas fa-moon"></i>
-                </button>
-                <select class="lang-selector" id="langSelector">
-                    <option value="en">EN</option>
-                    <option value="fr">FR</option>
-                </select>
-                <select class="currency-selector" id="currencySelector">
-                    <option value="usd">USD</option>
-                    <option value="ghs">GHS</option>
-                    <option value="eur">EUR</option>
-                </select>
-                <button class="nav-hamburger">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-inner">
+                <a href="index.html" class="navbar-brand">
+                    <div class="navbar-logo"><i class="fas fa-hotel"></i></div>
+                    Luxe Hotel
+                </a>
+                <ul class="navbar-menu">
+                    <li><a href="index.html" class="navbar-link">Home</a></li>
+                    <li><a href="rooms.html" class="navbar-link">Rooms</a></li>
+                    <li><a href="about.html" class="navbar-link">About</a></li>
+                    <li><a href="contact.html" class="navbar-link">Contact</a></li>
+                </ul>
+                <div class="navbar-actions">
+                    <select class="language-selector">
+                        <option>EN</option>
+                        <option>FR</option>
+                    </select>
+                    <select id="currencySelector" class="currency-selector">
+                        <option value="USD">USD ($)</option>
+                        <option value="GHS">GHS (₵)</option>
+                        <option value="EUR">EUR (€)</option>
+                    </select>
+                    <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
+                    <div class="cart-icon" onclick="document.getElementById('cartModal').classList.add('show')">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </div>
+                    <a href="dashboard.html" class="btn btn-secondary btn-sm">My Account</a>
+                    <div class="navbar-toggle" onclick="document.querySelector('.navbar-menu').classList.toggle('show')">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
 
-    <!-- Page Header -->
-    <section class="page-header">
-        <div class="page-header-bg" style="background: linear-gradient(135deg, rgba(15, 41, 66, 0.9) 0%, rgba(30, 74, 109, 0.8) 100%), url('https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=1920&q=80');"></div>
-        <div class="container">
-            <h1 id="detailsRoomName">Luxury Suite</h1>
-            <p>Experience ultimate comfort</p>
+    <!-- Cart Modal -->
+    <div class="cart-modal" id="cartModal">
+        <div class="cart-header">
+            <h3><i class="fas fa-shopping-cart"></i> Your Cart</h3>
+            <span class="cart-close" onclick="document.getElementById('cartModal').classList.remove('show')"><i class="fas fa-times"></i></span>
         </div>
-    </section>
+        <div class="cart-items" id="cartItems">
+            <!-- Cart items will be rendered here -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total</span>
+                <span id="cartTotal">$0.00</span>
+            </div>
+            <a href="booking.html" class="btn btn-primary" style="width: 100%;">Proceed to Checkout</a>
+        </div>
+    </div>
 
     <!-- Room Details -->
-    <section class="room-details-page">
+    <section class="room-details-container">
         <div class="container">
-            <div class="room-details-grid">
-                <!-- Gallery -->
-                <div class="room-gallery">
-                    <img id="mainImage" src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=900&q=80" alt="Room Image">
-                    <div class="gallery-nav">
-                        <button class="gallery-dot active"></button>
-                        <button class="gallery-dot"></button>
-                        <button class="gallery-dot"></button>
-                        <button class="gallery-dot"></button>
-                    </div>
+            <!-- Room Gallery -->
+            <div class="room-gallery">
+                <div class="main-image">
+                    <img id="mainImage" src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80" alt="Room Image">
                 </div>
-
-                <!-- Booking Form -->
-                <div class="booking-sidebar">
-                    <div class="booking-form-card">
-                        <h3>Book This Room</h3>
-                        <div class="room-pricing">
-                            <span class="price" id="roomPrice">$299</span>
-                            <span class="per-night">per night</span>
-                        </div>
-                        <form id="bookingForm">
-                            <div class="form-group">
-                                <label><i class="fas fa-calendar-check"></i> Check-in</label>
-                                <input type="date" id="inlineCheckIn" required>
-                            </div>
-                            <div class="form-group">
-                                <label><i class="fas fa-calendar-check"></i> Check-out</label>
-                                <input type="date" id="inlineCheckOut" required>
-                            </div>
-                            <div class="form-group">
-                                <label><i class="fas fa-user"></i> Guests</label>
-                                <select id="guestCount">
-                                    <option value="1">1 Guest</option>
-                                    <option value="2" selected>2 Guests</option>
-                                    <option value="3">3 Guests</option>
-                                    <option value="4">4 Guests</option>
-                                </select>
-                            </div>
-                            <div class="booking-summary-mini">
-                                <div class="summary-item">
-                                    <span>Nights</span>
-                                    <span id="nightsCount">1</span>
-                                </div>
-                                <div class="summary-item">
-                                    <span>Total</span>
-                                    <span id="totalPrice">$299</span>
-                                </div>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-large" style="width: 100%;">
-                                <i class="fas fa-calendar-check"></i> Book Now
-                            </button>
-                        </form>
-                    </div>
+                <div class="gallery-thumbs">
+                    <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400&q=80" alt="Room" class="active" onclick="changeImage(this)">
+                    <img src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&q=80" alt="Room" onclick="changeImage(this)">
+                    <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&q=80" alt="Room" onclick="changeImage(this)">
                 </div>
             </div>
 
-            <!-- Room Info -->
-            <div class="room-info" style="margin-top: 48px;">
+            <div class="room-info">
+                <!-- Room Description -->
                 <div class="room-description">
-                    <h2>About This Room</h2>
-                    <p>Experience the pinnacle of luxury in our Premium Suite. This elegantly appointed suite features a king-sized bed with premium linens, a spacious living area, and floor-to-ceiling windows offering breathtaking views. The en-suite bathroom includes a deep soaking tub and rain shower.</p>
-                    <p>Perfect for couples seeking a romantic getaway or business travelers who appreciate the finer things in life.</p>
+                    <h2 id="detailsRoomName">Luxury Suite</h2>
+                    <div class="room-card-meta" style="margin-bottom: 20px;">
+                        <span><i class="fas fa-star"></i> <span id="detailsRating">5.0</span></span>
+                        <span><i class="fas fa-door-open"></i> <span id="detailsType">Suite</span></span>
+                        <span><i class="fas fa-ruler-combined"></i> <span id="detailsSize">65m²</span></span>
+                        <span><i class="fas fa-user"></i> <span id="detailsGuests">4 Guests</span></span>
+                    </div>
+                    
+                    <p>Experience unparalleled luxury in our Premium Suite, where elegant design meets supreme comfort. This spacious sanctuary features a private balcony with breathtaking views, a plush king-size bed dressed in Egyptian cotton linens, and a marble bathroom with a deep soaking tub.</p>
+                    
+                    <p>Perfect for both business and leisure travelers, the suite offers a dedicated workspace, high-speed WiFi, and access to our world-class amenities. Wake up to stunning sunrise views and enjoy complimentary breakfast at our award-winning restaurant.</p>
+
+                    <!-- Amenities -->
+                    <div class="room-amenities">
+                        <h3>Room Amenities</h3>
+                        <div class="amenities-list" id="amenitiesList">
+                            <div class="amenity-item"><i class="fas fa-wifi"></i> Free WiFi</div>
+                            <div class="amenity-item"><i class="fas fa-snowflake"></i> Air Conditioning</div>
+                            <div class="amenity-item"><i class="fas fa-tv"></i> Smart TV</div>
+                            <div class="amenity-item"><i class="fas fa-coffee"></i> Coffee Maker</div>
+                            <div class="amenity-item"><i class="fas fa-bath"></i> Bathtub</div>
+                            <div class="amenity-item"><i class="fas fa-concierge-bell"></i> Room Service</div>
+                            <div class="amenity-item"><i class="fas fa-safe"></i> Safe</div>
+                            <div class="amenity-item"><i class="fas fa-minibar"></i> Mini Bar</div>
+                            <div class="amenity-item"><i class="fas fa-water"></i> Ocean View</div>
+                        </div>
+                    </div>
+
+                    <!-- Real-time Availability -->
+                    <div style="background: rgba(39, 174, 96, 0.1); padding: 20px; border-radius: 12px; margin: 30px 0;">
+                        <h4 style="margin-bottom: 15px;"><i class="fas fa-clock"></i> Real-Time Availability</h4>
+                        <p id="availabilityStatus" style="color: var(--success); font-weight: 600;"></p>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 10px;">Last updated: <span id="lastUpdated">Just now</span></p>
+                    </div>
+
+                    <!-- Dynamic Pricing Info -->
+                    <div style="background: rgba(201, 169, 98, 0.1); padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+                        <h4 style="margin-bottom: 10px;"><i class="fas fa-tags"></i> Smart Pricing</h4>
+                        <p style="font-size: 0.9rem; color: var(--text-muted);">Prices may vary based on demand, day of week, and season. Book now to lock in the best rate!</p>
+                    </div>
                 </div>
 
-                <div class="room-amenities-list">
-                    <h3>Amenities</h3>
-                    <div class="amenity-items">
-                        <div class="amenity-item"><i class="fas fa-wifi"></i> Free High-Speed WiFi</div>
-                        <div class="amenity-item"><i class="fas fa-tv"></i> Smart TV</div>
-                        <div class="amenity-item"><i class="fas fa-coffee"></i> Coffee Maker</div>
-                        <div class="amenity-item"><i class="fas fa-temperature-low"></i> Air Conditioning</div>
-                        <div class="amenity-item"><i class="fas fa-bath"></i> Private Bathroom</div>
-                        <div class="amenity-item"><i class="fas fa-safe"></i> In-Room Safe</div>
-                        <div class="amenity-item"><i class="fas fa-concierge-bell"></i> Room Service</div>
-                        <div class="amenity-item"><i class="fas fa-parking"></i> Free Parking</div>
+                <!-- Booking Card -->
+                <div class="booking-card">
+                    <div class="booking-price" id="roomPrice" data-price="299" data-base-price="299">
+                        $299<small>/night</small>
+                    </div>
+                    
+                    <div id="dynamicPricingBadge" style="text-align: center; margin-bottom: 15px; font-size: 0.85rem; color: var(--secondary);">
+                        <i class="fas fa-info-circle"></i> Dynamic pricing applied
+                    </div>
+
+                    <form id="roomBookingForm">
+                        <div class="booking-form-group">
+                            <label>Check-in Date *</label>
+                            <input type="date" id="inlineCheckIn" required>
+                        </div>
+                        <div class="booking-form-group">
+                            <label>Check-out Date *</label>
+                            <input type="date" id="inlineCheckOut" required>
+                        </div>
+                        <div class="booking-form-group">
+                            <label>Guests</label>
+                            <select id="inlineGuests">
+                                <option value="1">1 Guest</option>
+                                <option value="2" selected>2 Guests</option>
+                                <option value="3">3 Guests</option>
+                                <option value="4">4 Guests</option>
+                            </select>
+                        </div>
+                        <div class="booking-form-group">
+                            <label>Rooms</label>
+                            <select id="inlineRooms">
+                                <option value="1" selected>1 Room</option>
+                                <option value="2">2 Rooms</option>
+                                <option value="3">3 Rooms</option>
+                            </select>
+                        </div>
+
+                        <div style="margin: 20px 0; padding: 15px; background: var(--gray-100); border-radius: 8px;">
+                            <p style="font-size: 0.9rem;"><strong>Price Breakdown:</strong></p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);" id="priceBreakdown">$299 × 1 night × 1 room</p>
+                        </div>
+
+                        <button type="button" class="btn btn-primary btn-lg" style="width: 100%;" onclick="addToCart(1)">
+                            <i class="fas fa-cart-plus"></i> Add to Cart
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-lg" style="width: 100%; margin-top: 10px;" onclick="addToCart(1); setTimeout(() => window.location.href='booking.html', 500)">
+                            <i class="fas fa-bolt"></i> Book Now
+                        </button>
+                    </form>
+
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button class="wishlist-btn" onclick="toggleWishlist(this, 1)" style="position: static; background: var(--gray-100);">
+                            <i class="far fa-heart"></i> Add to Wishlist
+                        </button>
+                    </div>
+
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button class="btn btn-outline btn-sm" onclick="compareRooms(1)" style="width: 100%;">
+                            <i class="fas fa-balance-scale"></i> Compare Rooms
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- Recommendations -->
-            <div class="recommendations" style="margin-top: 60px;">
-                <h2>You May Also Like</h2>
-                <div class="rooms-grid" id="recommendationsGrid"></div>
+            <div class="recommendations">
+                <h3><i class="fas fa-lightbulb"></i> You May Also Like</h3>
+                <div class="rooms-grid" id="recommendationsGrid">
+                    <!-- Recommendations will be loaded here -->
+                </div>
             </div>
         </div>
     </section>
 
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop"><i class="fas fa-arrow-up"></i></button>
+
+    <!-- Chat Widget -->
+    <div class="chat-widget">
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <h4><i class="fas fa-headset"></i> Live Support</h4>
+                <span class="chat-close" onclick="document.getElementById('chatWindow').classList.remove('show')">
+                    <i class="fas fa-times"></i>
+                </span>
+            </div>
+            <div class="chat-messages">
+                <div class="chat-message bot">
+                    <p>Hello! How can I help you today?</p>
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" placeholder="Type a message...">
+                <button><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+        <div class="chat-toggle" onclick="document.getElementById('chatWindow').classList.toggle('show')">
+            <i class="fas fa-comments"></i>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <div class="footer-logo">
-                        <i class="fas fa-hotel"></i>
-                        <span>LuxeStay</span>
+            <div class="footer-grid">
+                <div class="footer-about">
+                    <div class="footer-brand">
+                        <div class="footer-logo"><i class="fas fa-hotel"></i></div>
+                        Luxe Hotel
                     </div>
-                    <p>Experience the pinnacle of luxury hospitality.</p>
-                    <div class="social-links">
+                    <p>Experience luxury redefined at Luxe Hotel. Where every moment becomes a cherished memory.</p>
+                    <div class="footer-social">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
                         <a href="#"><i class="fab fa-twitter"></i></a>
                         <a href="#"><i class="fab fa-instagram"></i></a>
                         <a href="#"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
-                <div class="footer-section">
+                <div class="footer-links">
                     <h4>Quick Links</h4>
                     <ul>
                         <li><a href="index.html">Home</a></li>
                         <li><a href="rooms.html">Rooms</a></li>
-                        <li><a href="about.html">About</a></li>
+                        <li><a href="about.html">About Us</a></li>
                         <li><a href="contact.html">Contact</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
-                    <h4>Support</h4>
+                <div class="footer-links">
+                    <h4>Services</h4>
                     <ul>
-                        <li><a href="contact.html">Help Center</a></li>
-                        <li><a href="#">Terms</a></li>
-                        <li><a href="#">Privacy</a></li>
+                        <li><a href="#">Spa & Wellness</a></li>
+                        <li><a href="#">Dining</a></li>
+                        <li><a href="#">Events</a></li>
+                        <li><a href="#">Airport Transfer</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
+                <div class="footer-newsletter">
                     <h4>Newsletter</h4>
+                    <p>Subscribe for exclusive offers and updates</p>
                     <form class="newsletter-form" id="newsletterForm">
-                        <input type="email" placeholder="Your email" required>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+                        <input type="email" placeholder="Your email">
+                        <button type="submit"><i class="fas fa-paper-plane"></i></button>
                     </form>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 LuxeStay. All rights reserved.</p>
+                <p>&copy; 2024 Luxe Hotel. All rights reserved.</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Sitemap</a>
+                </div>
             </div>
         </div>
     </footer>
 
-    <button class="back-to-top" id="backToTop">
-        <i class="fas fa-arrow-up"></i>
-    </button>
-
-    <div class="toast" id="toast"></div>
-
     <script src="js/main.js"></script>
+    <script>
+        // Gallery
+        function changeImage(img) {
+            document.getElementById('mainImage').src = img.src.replace('w=400', 'w=800');
+            document.querySelectorAll('.gallery-thumbs img').forEach(i => i.classList.remove('active'));
+            img.classList.add('active');
+        }
+
+        // Compare rooms
+        function compareRooms(roomId) {
+            const compareList = JSON.parse(localStorage.getItem('compareList')) || [];
+            if (!compareList.includes(roomId)) {
+                if (compareList.length >= 3) {
+                    showToast('You can compare up to 3 rooms. Remove one first.');
+                    return;
+                }
+                compareList.push(roomId);
+                localStorage.setItem('compareList', JSON.stringify(compareList));
+                showToast('Room added to comparison list');
+            } else {
+                showToast('Room already in comparison list');
+            }
+        }
+
+        // Update availability status
+        function updateAvailabilityStatus() {
+            const statusEl = document.getElementById('availabilityStatus');
+            const roomsLeft = getRoomsLeft(1);
+            
+            if (roomsLeft === 0) {
+                statusEl.innerHTML = '<i class="fas fa-times-circle"></i> Sold Out - No rooms available';
+            } else if (roomsLeft <= 2) {
+                statusEl.innerHTML = `<i class="fas fa-fire"></i> High Demand! Only ${roomsLeft} rooms left at this price!`;
+            } else {
+                statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${roomsLeft} rooms available - Book now!`;
+            }
+            
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+        }
+
+        // Update price breakdown
+        function updatePriceBreakdown() {
+            const checkIn = document.getElementById('inlineCheckIn').value;
+            const checkOut = document.getElementById('inlineCheckOut').value;
+            const rooms = document.getElementById('inlineRooms').value;
+            const basePrice = 299;
+            
+            if (checkIn && checkOut) {
+                const nights = Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+                const dynamicPrice = calculateDynamicPrice(basePrice, checkIn, checkOut);
+                const total = dynamicPrice * nights * rooms;
+                
+                document.getElementById('priceBreakdown').innerHTML = `
+                    ${formatCurrency(dynamicPrice, getCurrency())} × ${nights} night${nights > 1 ? 's' : ''} × ${rooms} room${rooms > 1 ? 's' : ''} = 
+                    <strong>${formatCurrency(total, getCurrency())}</strong>
+                `;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAvailabilityStatus();
+            updatePriceBreakdown();
+            
+            // Set up event listeners
+            document.getElementById('inlineCheckIn').addEventListener('change', () => {
+                updateDynamicPricing();
+                updatePriceBreakdown();
+            });
+            
+            document.getElementById('inlineCheckOut').addEventListener('change', () => {
+                updateDynamicPricing();
+                updatePriceBreakdown();
+            });
+            
+            document.getElementById('inlineRooms').addEventListener('change', updatePriceBreakdown);
+            
+            // Simulate real-time availability updates
+            setInterval(updateAvailabilityStatus, 30000);
+        });
+    </script>
 </body>
 </html>
