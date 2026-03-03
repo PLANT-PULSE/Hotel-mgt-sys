@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - LuxeStay</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar sticky-navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-hotel"></i>
+                <span>LuxeStay</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="rooms.html" class="nav-link">Rooms</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="contact.html" class="nav-link active">Contact</a></li>
+                <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+            </ul>
+            <div class="nav-controls">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <select class="lang-selector" id="langSelector">
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                </select>
+                <select class="currency-selector" id="currencySelector">
+                    <option value="usd">USD</option>
+                    <option value="ghs">GHS</option>
+                    <option value="eur">EUR</option>
+                </select>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container contact-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>Contact Us</h1>
+            <p>We're here to help and answer any questions you might have</p>
+        </div>
+
+        <div class="contact-layout">
+            <!-- Contact Information -->
+            <aside class="contact-info-sidebar">
+                <div class="contact-info-card">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h4>Address</h4>
+                    <p>123 Luxury Avenue<br>New York, NY 10001<br>United States</p>
+                </div>
+
+                <div class="contact-info-card">
+                    <i class="fas fa-phone"></i>
+                    <h4>Phone</h4>
+                    <p><a href="tel:+1234567890">+1 (555) 000-0000</a><br>
+                    <a href="tel:+1234567891">+1 (555) 000-0001</a></p>
+                    <p class="small-text">Available 24/7</p>
+                </div>
+
+                <div class="contact-info-card">
+                    <i class="fas fa-envelope"></i>
+                    <h4>Email</h4>
+                    <p><a href="mailto:support@luxestay.com">support@luxestay.com</a><br>
+                    <a href="mailto:reservations@luxestay.com">reservations@luxestay.com</a></p>
+                </div>
+
+                <div class="contact-info-card">
+                    <i class="fas fa-clock"></i>
+                    <h4>Business Hours</h4>
+                    <p>Monday - Friday: 9:00 AM - 6:00 PM<br>
+                    Saturday: 10:00 AM - 4:00 PM<br>
+                    Sunday: Closed</p>
+                </div>
+
+                <div class="contact-info-card">
+                    <i class="fas fa-headset"></i>
+                    <h4>Live Chat</h4>
+                    <p>Chat with our team right now for instant support</p>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 10px;">Start Live Chat</button>
+                </div>
+            </aside>
+
+            <!-- Contact Form & Map -->
+            <main class="contact-main">
+                <!-- Contact Form -->
+                <section class="contact-form-section">
+                    <h2>Send us a Message</h2>
+                    <form class="contact-form" id="contactForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>First Name *</label>
+                                <input type="text" placeholder="John" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Last Name *</label>
+                                <input type="text" placeholder="Doe" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email Address *</label>
+                            <input type="email" placeholder="john@example.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" placeholder="+1 (555) 000-0000">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Subject *</label>
+                            <select required>
+                                <option value="">Select a subject</option>
+                                <option value="booking">Booking Inquiry</option>
+                                <option value="complaint">Complaint</option>
+                                <option value="feedback">Feedback</option>
+                                <option value="partnership">Partnership</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Message *</label>
+                            <textarea placeholder="Please tell us how we can help..." rows="6" required></textarea>
+                        </div>
+
+                        <div class="form-group checkbox">
+                            <label>
+                                <input type="checkbox"> I would like to receive updates about special offers
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </form>
+                </section>
+
+                <!-- Map Section -->
+                <section class="map-section">
+                    <h2>Find Us</h2>
+                    <div class="map-container">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3024.1519137372635!2d-74.00760502346022!3d40.71282097138042!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25a317e8bc5d9%3A0x8e5ae8fcd0d3e3f0!2s123%20Fashion%20Ave%2C%20New%20York%2C%20NY%2010018!5e0!3m2!1sen!2sus!4v1699564234567" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
+                </section>
+
+                <!-- FAQ Section -->
+                <section class="faq-section">
+                    <h2>Frequently Asked Questions</h2>
+                    <div class="faq-list">
+                        <div class="faq-item">
+                            <h4 class="faq-question">
+                                <span>How can I cancel my booking?</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </h4>
+                            <p class="faq-answer" style="display: none;">
+                                You can cancel your booking through your dashboard or contact our support team. Free cancellation is available up to 48 hours before check-in.
+                            </p>
+                        </div>
+
+                        <div class="faq-item">
+                            <h4 class="faq-question">
+                                <span>What's your check-in and check-out time?</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </h4>
+                            <p class="faq-answer" style="display: none;">
+                                Standard check-in is at 3:00 PM and check-out at 11:00 AM. Early check-in and late check-out can be arranged based on availability.
+                            </p>
+                        </div>
+
+                        <div class="faq-item">
+                            <h4 class="faq-question">
+                                <span>Do you offer airport shuttle service?</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </h4>
+                            <p class="faq-answer" style="display: none;">
+                                Yes, we offer complimentary airport shuttle service for all our guests. Please inform us of your arrival details during booking.
+                            </p>
+                        </div>
+
+                        <div class="faq-item">
+                            <h4 class="faq-question">
+                                <span>Are pets allowed?</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </h4>
+                            <p class="faq-answer" style="display: none;">
+                                Yes, we are pet-friendly. Pets stay for an additional fee of $25 per night. Please notify us in advance.
+                            </p>
+                        </div>
+
+                        <div class="faq-item">
+                            <h4 class="faq-question">
+                                <span>What payment methods do you accept?</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </h4>
+                            <p class="faq-answer" style="display: none;">
+                                We accept all major credit cards, PayPal, and bank transfers. Payment is secured with SSL encryption.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>About LuxeStay</h4>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Press</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="contact.html">Contact Us</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Policies</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Follow Us</h4>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Newsletter</h4>
+                <form class="newsletter-form" id="newsletterForm">
+                    <input type="email" placeholder="Your email" required>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 LuxeStay. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Check-in - LuxeStay</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar sticky-navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-hotel"></i>
+                <span>LuxeStay</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="rooms.html" class="nav-link">Rooms</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+            </ul>
+            <div class="nav-controls">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <select class="lang-selector" id="langSelector">
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                </select>
+                <select class="currency-selector" id="currencySelector">
+                    <option value="usd">USD</option>
+                    <option value="ghs">GHS</option>
+                    <option value="eur">EUR</option>
+                </select>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="checkin-container">
+            <h1>Online Check-in</h1>
+            <p class="subtitle">Complete your check-in process before arrival</p>
+
+            <!-- Progress Steps -->
+            <div class="progress-steps">
+                <div class="step active">
+                    <div class="step-number">1</div>
+                    <div class="step-label">ID Verification</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Arrival Time</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Confirmation</div>
+                </div>
+            </div>
+
+            <!-- Checkin Form -->
+            <form class="checkin-form" id="checkinForm">
+                <!-- Step 1: ID Upload -->
+                <div class="checkin-step" id="step1">
+                    <h3>Step 1: ID Verification</h3>
+
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="fullName" placeholder="Enter your full name" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ID Type</label>
+                            <select id="idType" required>
+                                <option value="">Select ID Type</option>
+                                <option value="passport">Passport</option>
+                                <option value="license">Driver's License</option>
+                                <option value="national">National ID</option>
+                                <option value="visa">Visa</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ID Number</label>
+                            <input type="text" id="idNumber" placeholder="Enter ID number" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Upload ID Photo</label>
+                        <div class="file-upload">
+                            <input type="file" id="idFile" accept="image/*" required>
+                            <div class="upload-area">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Drag and drop or click to upload</p>
+                                <small>Accepted formats: JPG, PNG (Max 5MB)</small>
+                            </div>
+                        </div>
+                        <div id="filePreview" class="file-preview"></div>
+                    </div>
+
+                    <div class="form-group checkbox">
+                        <label>
+                            <input type="checkbox" id="idConsent" required>
+                            I consent to upload my ID for verification purposes
+                        </label>
+                    </div>
+
+                    <button type="button" class="btn btn-primary" onclick="nextStep(1)">Continue to Next Step</button>
+                </div>
+
+                <!-- Step 2: Arrival Time -->
+                <div class="checkin-step hidden" id="step2">
+                    <h3>Step 2: Arrival Time</h3>
+
+                    <div class="form-group">
+                        <label>Expected Arrival Date</label>
+                        <input type="date" id="arrivalDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Expected Arrival Time</label>
+                        <select id="arrivalTime" required>
+                            <option value="">Select Arrival Time</option>
+                            <option value="08:00-10:00">8:00 AM - 10:00 AM</option>
+                            <option value="10:00-12:00">10:00 AM - 12:00 PM</option>
+                            <option value="12:00-14:00">12:00 PM - 2:00 PM</option>
+                            <option value="14:00-16:00">2:00 PM - 4:00 PM</option>
+                            <option value="16:00-18:00">4:00 PM - 6:00 PM</option>
+                            <option value="18:00-20:00">6:00 PM - 8:00 PM</option>
+                            <option value="20:00-22:00">8:00 PM - 10:00 PM</option>
+                            <option value="22:00+">After 10:00 PM</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Number of Guests</label>
+                        <input type="number" id="guestCount" min="1" value="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Special Requests</label>
+                        <textarea id="specialRequests" placeholder="Any special requests or needs?" rows="4"></textarea>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline" onclick="prevStep(2)">Back</button>
+                        <button type="button" class="btn btn-primary" onclick="nextStep(2)">Continue to Confirmation</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Confirmation -->
+                <div class="checkin-step hidden" id="step3">
+                    <h3>Step 3: Check-in Confirmation</h3>
+
+                    <div class="confirmation-summary">
+                        <div class="summary-section">
+                            <h4>Personal Information</h4>
+                            <p><strong>Name:</strong> <span id="confirmName">-</span></p>
+                            <p><strong>ID Type:</strong> <span id="confirmIdType">-</span></p>
+                            <p><strong>ID Number:</strong> <span id="confirmIdNumber">-</span></p>
+                        </div>
+
+                        <div class="summary-section">
+                            <h4>Arrival Details</h4>
+                            <p><strong>Date:</strong> <span id="confirmDate">-</span></p>
+                            <p><strong>Time:</strong> <span id="confirmTime">-</span></p>
+                            <p><strong>Guests:</strong> <span id="confirmGuests">-</span></p>
+                        </div>
+
+                        <div class="summary-section">
+                            <h4>Room Information</h4>
+                            <p><strong>Room:</strong> <span id="confirmRoom">Luxury Suite</span></p>
+                            <p><strong>Check-in Time:</strong> 3:00 PM</p>
+                            <p><strong>Check-out Time:</strong> 11:00 AM</p>
+                        </div>
+
+                        <div class="qr-code-section">
+                            <h4>Your Check-in QR Code</h4>
+                            <div class="qr-code">
+                                <i class="fas fa-qrcode"></i>
+                            </div>
+                            <p>Show this QR code at the front desk</p>
+                            <button type="button" class="btn btn-secondary">Download QR Code</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group checkbox">
+                        <label>
+                            <input type="checkbox" id="acceptTerms" required>
+                            I agree with the hotel policies and check-in terms
+                        </label>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline" onclick="prevStep(3)">Back</button>
+                        <button type="submit" class="btn btn-primary">Complete Check-in</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Help Section -->
+            <div class="help-section">
+                <h4>Need Help?</h4>
+                <p>Our support team is available 24/7 to assist you.</p>
+                <div class="help-options">
+                    <a href="contact.html" class="btn btn-outline">Contact Support</a>
+                    <a href="#" class="btn btn-outline">Live Chat</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>About LuxeStay</h4>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Press</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="contact.html">Contact Us</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Policies</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Follow Us</h4>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Newsletter</h4>
+                <form class="newsletter-form" id="newsletterForm">
+                    <input type="email" placeholder="Your email" required>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 LuxeStay. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

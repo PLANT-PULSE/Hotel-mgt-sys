@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviews - LuxeStay</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar sticky-navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-hotel"></i>
+                <span>LuxeStay</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="rooms.html" class="nav-link">Rooms</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+            </ul>
+            <div class="nav-controls">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <select class="lang-selector" id="langSelector">
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                </select>
+                <select class="currency-selector" id="currencySelector">
+                    <option value="usd">USD</option>
+                    <option value="ghs">GHS</option>
+                    <option value="eur">EUR</option>
+                </select>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container reviews-container">
+        <div class="reviews-header">
+            <h1>Guest Reviews</h1>
+            <p>Read what our guests say about their experience</p>
+        </div>
+
+        <div class="reviews-layout">
+            <!-- Review Statistics -->
+            <aside class="review-stats-sidebar">
+                <div class="rating-summary">
+                    <div class="overall-rating">
+                        <div class="rating-number">4.8</div>
+                        <div class="stars">★★★★★</div>
+                        <p>Based on 487 reviews</p>
+                    </div>
+                </div>
+
+                <div class="rating-breakdown">
+                    <div class="rating-row">
+                        <span>★★★★★</span>
+                        <div class="rating-bar">
+                            <div class="rating-fill" style="width: 80%;"></div>
+                        </div>
+                        <span>405</span>
+                    </div>
+                    <div class="rating-row">
+                        <span>★★★★☆</span>
+                        <div class="rating-bar">
+                            <div class="rating-fill" style="width: 15%;"></div>
+                        </div>
+                        <span>60</span>
+                    </div>
+                    <div class="rating-row">
+                        <span>★★★☆☆</span>
+                        <div class="rating-bar">
+                            <div class="rating-fill" style="width: 3%;"></div>
+                        </div>
+                        <span>15</span>
+                    </div>
+                    <div class="rating-row">
+                        <span>★★☆☆☆</span>
+                        <div class="rating-bar">
+                            <div class="rating-fill" style="width: 1%;"></div>
+                        </div>
+                        <span>5</span>
+                    </div>
+                    <div class="rating-row">
+                        <span>★☆☆☆☆</span>
+                        <div class="rating-bar">
+                            <div class="rating-fill" style="width: 1%;"></div>
+                        </div>
+                        <span>2</span>
+                    </div>
+                </div>
+
+                <!-- Filter -->
+                <div class="review-filter">
+                    <h4>Filter by Rating</h4>
+                    <label>
+                        <input type="checkbox" class="rating-checkbox" value="5"> 5 Stars
+                    </label>
+                    <label>
+                        <input type="checkbox" class="rating-checkbox" value="4"> 4 Stars
+                    </label>
+                    <label>
+                        <input type="checkbox" class="rating-checkbox" value="3"> 3 Stars
+                    </label>
+                    <label>
+                        <input type="checkbox" class="rating-checkbox" value="2"> 2 Stars
+                    </label>
+                    <label>
+                        <input type="checkbox" class="rating-checkbox" value="1"> 1 Star
+                    </label>
+                </div>
+
+                <!-- Sort -->
+                <div class="review-sort">
+                    <h4>Sort by</h4>
+                    <select id="sortReviews">
+                        <option value="recent">Most Recent</option>
+                        <option value="highest">Highest Rated</option>
+                        <option value="lowest">Lowest Rated</option>
+                        <option value="helpful">Most Helpful</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" style="width: 100%;">Write a Review</button>
+            </aside>
+
+            <!-- Reviews List -->
+            <main class="reviews-main">
+                <!-- Review Items -->
+                <div class="review-item">
+                    <div class="review-header">
+                        <div class="review-user">
+                            <img src="https://via.placeholder.com/50" alt="User Avatar" class="user-avatar">
+                            <div class="user-info">
+                                <h4>John Doe</h4>
+                                <p><span class="verified-badge"><i class="fas fa-check-circle"></i> Verified Guest</span></p>
+                                <small>Stayed on March 15-18, 2024</small>
+                            </div>
+                        </div>
+                        <div class="review-rating">★★★★★</div>
+                    </div>
+                    <h3 class="review-title">Amazing experience, highly recommended!</h3>
+                    <p class="review-content">
+                        The Luxury Suite was absolutely beautiful with stunning views. The staff was incredibly friendly and attentive, making our stay truly memorable. Every detail was perfect from the moment we arrived. Would definitely come back!
+                    </p>
+                    <div class="review-meta">
+                        <span class="review-room-type">Luxury Suite</span>
+                        <span class="review-date">2 weeks ago</span>
+                    </div>
+                    <div class="review-helpful">
+                        <button class="helpful-btn">
+                            <i class="far fa-thumbs-up"></i> Helpful <span>(24)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="review-item">
+                    <div class="review-header">
+                        <div class="review-user">
+                            <img src="https://via.placeholder.com/50" alt="User Avatar" class="user-avatar">
+                            <div class="user-info">
+                                <h4>Sarah Miller</h4>
+                                <p><span class="verified-badge"><i class="fas fa-check-circle"></i> Verified Guest</span></p>
+                                <small>Stayed on March 20-22, 2024</small>
+                            </div>
+                        </div>
+                        <div class="review-rating">★★★★☆</div>
+                    </div>
+                    <h3 class="review-title">Beautiful rooms and excellent service</h3>
+                    <p class="review-content">
+                        Great hotel with beautiful rooms and an excellent team. The only thing that could be improved is the speed of room service delivery, but overall a wonderful experience. The location is perfect for exploring the city.
+                    </p>
+                    <div class="review-meta">
+                        <span class="review-room-type">Deluxe Double Room</span>
+                        <span class="review-date">1 week ago</span>
+                    </div>
+                    <div class="review-helpful">
+                        <button class="helpful-btn">
+                            <i class="far fa-thumbs-up"></i> Helpful <span>(18)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="review-item">
+                    <div class="review-header">
+                        <div class="review-user">
+                            <img src="https://via.placeholder.com/50" alt="User Avatar" class="user-avatar">
+                            <div class="user-info">
+                                <h4>Michael Chen</h4>
+                                <p><span class="verified-badge"><i class="fas fa-check-circle"></i> Verified Guest</span></p>
+                                <small>Stayed on March 10-12, 2024</small>
+                            </div>
+                        </div>
+                        <div class="review-rating">★★★★★</div>
+                    </div>
+                    <h3 class="review-title">Best hotel in the city!</h3>
+                    <p class="review-content">
+                        Exceptional service and luxurious accommodation. The attention to detail is remarkable. Everything from the welcome amenities to the gym facilities is top-notch. We will definitely book again for our next visit. Highly recommended!
+                    </p>
+                    <div class="review-meta">
+                        <span class="review-room-type">Suite</span>
+                        <span class="review-date">3 weeks ago</span>
+                    </div>
+                    <div class="review-helpful">
+                        <button class="helpful-btn">
+                            <i class="far fa-thumbs-up"></i> Helpful <span>(35)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="review-item">
+                    <div class="review-header">
+                        <div class="review-user">
+                            <img src="https://via.placeholder.com/50" alt="User Avatar" class="user-avatar">
+                            <div class="user-info">
+                                <h4>Emma Johnson</h4>
+                                <p><span class="verified-badge"><i class="fas fa-check-circle"></i> Verified Guest</span></p>
+                                <small>Stayed on February 28 - March 2, 2024</small>
+                            </div>
+                        </div>
+                        <div class="review-rating">★★★★☆</div>
+                    </div>
+                    <h3 class="review-title">Great location, comfortable stay</h3>
+                    <p class="review-content">
+                        We had a pleasant stay at the hotel. The room was comfortable and clean, and the staff was helpful. The breakfast could have more variety but overall it was good. We appreciated the convenient location near all the major attractions.
+                    </p>
+                    <div class="review-meta">
+                        <span class="review-room-type">Standard Room</span>
+                        <span class="review-date">1 month ago</span>
+                    </div>
+                    <div class="review-helpful">
+                        <button class="helpful-btn">
+                            <i class="far fa-thumbs-up"></i> Helpful <span>(12)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Load More Button -->
+                <button class="btn btn-outline" style="width: 100%; margin-top: 20px;">Load More Reviews</button>
+            </main>
+        </div>
+
+        <!-- Write Review Modal -->
+        <div class="modal" id="reviewModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Write Your Review</h2>
+                    <button class="modal-close">&times;</button>
+                </div>
+
+                <form class="review-form" id="reviewForm">
+                    <div class="form-group">
+                        <label>Your Rating *</label>
+                        <div class="rating-input">
+                            <i class="fas fa-star star" data-value="1"></i>
+                            <i class="fas fa-star star" data-value="2"></i>
+                            <i class="fas fa-star star" data-value="3"></i>
+                            <i class="fas fa-star star" data-value="4"></i>
+                            <i class="fas fa-star star" data-value="5"></i>
+                        </div>
+                        <span id="ratingValue">No rating selected</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Review Title *</label>
+                        <input type="text" placeholder="Summarize your experience" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Your Review *</label>
+                        <textarea placeholder="Share your experience with other guests" rows="5" required></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Room Type</label>
+                            <select>
+                                <option>Luxury Suite</option>
+                                <option>Deluxe Room</option>
+                                <option>Standard Room</option>
+                                <option>Suite</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Visited</label>
+                            <input type="date">
+                        </div>
+                    </div>
+
+                    <div class="form-group checkbox">
+                        <label>
+                            <input type="checkbox"> I would recommend this hotel
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>About LuxeStay</h4>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Press</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="contact.html">Contact Us</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Policies</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Follow Us</h4>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Newsletter</h4>
+                <form class="newsletter-form" id="newsletterForm">
+                    <input type="email" placeholder="Your email" required>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 LuxeStay. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

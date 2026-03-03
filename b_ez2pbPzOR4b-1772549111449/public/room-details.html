@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Details - LuxeStay</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar sticky-navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-hotel"></i>
+                <span>LuxeStay</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="rooms.html" class="nav-link active">Rooms</a></li>
+                <li><a href="about.html" class="nav-link">About</a></li>
+                <li><a href="contact.html" class="nav-link">Contact</a></li>
+                <li><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+            </ul>
+            <div class="nav-controls">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <select class="lang-selector" id="langSelector">
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                </select>
+                <select class="currency-selector" id="currencySelector">
+                    <option value="usd">USD</option>
+                    <option value="ghs">GHS</option>
+                    <option value="eur">EUR</option>
+                </select>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span>/</span>
+        <a href="rooms.html">Rooms</a>
+        <span>/</span>
+        <span id="roomName">Room Details</span>
+    </div>
+
+    <div class="container room-details-container">
+        <!-- Image Carousel -->
+        <div class="room-carousel">
+            <div class="carousel-main">
+                <img id="mainImage" src="https://via.placeholder.com/900x500" alt="Room Image">
+            </div>
+            <div class="carousel-thumbnails">
+                <img src="https://via.placeholder.com/150x100" alt="Thumbnail" class="carousel-thumb active">
+                <img src="https://via.placeholder.com/150x100" alt="Thumbnail" class="carousel-thumb">
+                <img src="https://via.placeholder.com/150x100" alt="Thumbnail" class="carousel-thumb">
+                <img src="https://via.placeholder.com/150x100" alt="Thumbnail" class="carousel-thumb">
+            </div>
+        </div>
+
+        <!-- Room Details -->
+        <div class="room-details">
+            <div class="room-header">
+                <div>
+                    <h1 id="detailsRoomName">Luxury Suite</h1>
+                    <div class="room-rating">
+                        <span class="stars">★★★★★</span>
+                        <span id="reviewCount">(128 reviews)</span>
+                    </div>
+                </div>
+                <button class="wishlist-btn" id="wishlistBtn">
+                    <i class="far fa-heart"></i>
+                </button>
+            </div>
+
+            <div class="room-meta">
+                <span><i class="fas fa-bed"></i> 2 Double Beds</span>
+                <span><i class="fas fa-ruler"></i> 50 m²</span>
+                <span id="availabilityBadge" class="badge badge-success">Available</span>
+            </div>
+
+            <!-- Description -->
+            <div class="room-section">
+                <h3>Room Description</h3>
+                <p id="roomDescription">
+                    Experience luxury at its finest in our spacious Luxury Suite. Featuring premium furnishings, modern amenities, and breathtaking views, this room is perfect for discerning guests who demand the best.
+                </p>
+            </div>
+
+            <!-- Amenities -->
+            <div class="room-section">
+                <h3>Room Amenities</h3>
+                <div class="amenities-list" id="amenitiesList">
+                    <div class="amenity-item">
+                        <i class="fas fa-wifi"></i>
+                        <span>Free Wi-Fi</span>
+                    </div>
+                    <div class="amenity-item">
+                        <i class="fas fa-tv"></i>
+                        <span>Flat-screen TV</span>
+                    </div>
+                    <div class="amenity-item">
+                        <i class="fas fa-bath"></i>
+                        <span>Premium Bathroom</span>
+                    </div>
+                    <div class="amenity-item">
+                        <i class="fas fa-snowflake"></i>
+                        <span>Air Conditioning</span>
+                    </div>
+                    <div class="amenity-item">
+                        <i class="fas fa-cocktail"></i>
+                        <span>Mini Bar</span>
+                    </div>
+                    <div class="amenity-item">
+                        <i class="fas fa-concierge-bell"></i>
+                        <span>Room Service</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing -->
+            <div class="room-section pricing-section">
+                <h3>Pricing & Availability</h3>
+                <div class="price-card">
+                    <div class="price-info">
+                        <div>
+                            <label>Price per night:</label>
+                            <h2 id="roomPrice" class="price-value">$299</h2>
+                        </div>
+                        <div>
+                            <label>Total for <span id="nightsCount">3</span> nights:</label>
+                            <h3 id="totalPrice">$897</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="booking-form-inline">
+                    <div class="form-group">
+                        <label>Check-in Date</label>
+                        <input type="date" id="inlineCheckIn" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Check-out Date</label>
+                        <input type="date" id="inlineCheckOut" required>
+                    </div>
+                    <button class="btn btn-primary" onclick="window.location.href='booking.html'">Book Now</button>
+                </div>
+            </div>
+
+            <!-- Reviews Section -->
+            <div class="room-section">
+                <h3>Guest Reviews</h3>
+                <div class="reviews-container" id="reviewsContainer">
+                    <div class="review-card">
+                        <div class="review-header">
+                            <h4>John Doe</h4>
+                            <span class="verified-badge"><i class="fas fa-check-circle"></i> Verified</span>
+                        </div>
+                        <div class="review-rating">★★★★★</div>
+                        <p>"Amazing room with fantastic views. The staff was incredibly helpful."</p>
+                        <small>March 15, 2024</small>
+                    </div>
+                    <div class="review-card">
+                        <div class="review-header">
+                            <h4>Sarah Miller</h4>
+                            <span class="verified-badge"><i class="fas fa-check-circle"></i> Verified</span>
+                        </div>
+                        <div class="review-rating">★★★★☆</div>
+                        <p>"Beautiful room and excellent service. Highly recommended!"</p>
+                        <small>March 10, 2024</small>
+                    </div>
+                </div>
+                <a href="reviews.html" class="btn btn-outline">See All Reviews</a>
+            </div>
+
+            <!-- Similar Rooms -->
+            <div class="room-section">
+                <h3>You May Also Like</h3>
+                <div class="similar-rooms-grid" id="similarRoomsGrid">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>About LuxeStay</h4>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Press</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="contact.html">Contact Us</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Policies</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Follow Us</h4>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Newsletter</h4>
+                <form class="newsletter-form" id="newsletterForm">
+                    <input type="email" placeholder="Your email" required>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 LuxeStay. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

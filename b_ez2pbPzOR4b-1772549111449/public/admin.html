@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - LuxeStay</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar sticky-navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-hotel"></i>
+                <span>LuxeStay Admin</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
+                <li><a href="#rooms" class="nav-link">Rooms</a></li>
+                <li><a href="#bookings" class="nav-link">Bookings</a></li>
+                <li><a href="#analytics" class="nav-link">Analytics</a></li>
+            </ul>
+            <div class="nav-controls">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <nav class="admin-nav">
+                <a href="#dashboard" class="admin-nav-link active">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+                <a href="#rooms" class="admin-nav-link">
+                    <i class="fas fa-door-open"></i> Room Management
+                </a>
+                <a href="#bookings" class="admin-nav-link">
+                    <i class="fas fa-calendar-alt"></i> Bookings
+                </a>
+                <a href="#users" class="admin-nav-link">
+                    <i class="fas fa-users"></i> Users
+                </a>
+                <a href="#analytics" class="admin-nav-link">
+                    <i class="fas fa-chart-bar"></i> Analytics
+                </a>
+                <a href="#reports" class="admin-nav-link">
+                    <i class="fas fa-file-alt"></i> Reports
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Admin Content -->
+        <main class="admin-main">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="admin-section">
+                <h1>Dashboard</h1>
+
+                <!-- Analytics Cards -->
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <div class="analytics-header">
+                            <h4>Revenue</h4>
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <p class="analytics-value">$145,230</p>
+                        <p class="analytics-change positive">↑ 12.5% from last month</p>
+                    </div>
+
+                    <div class="analytics-card">
+                        <div class="analytics-header">
+                            <h4>Occupancy Rate</h4>
+                            <i class="fas fa-percent"></i>
+                        </div>
+                        <p class="analytics-value">87.3%</p>
+                        <p class="analytics-change positive">↑ 5.2% from last month</p>
+                    </div>
+
+                    <div class="analytics-card">
+                        <div class="analytics-header">
+                            <h4>Total Bookings</h4>
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <p class="analytics-value">1,243</p>
+                        <p class="analytics-change positive">↑ 8.3% from last month</p>
+                    </div>
+
+                    <div class="analytics-card">
+                        <div class="analytics-header">
+                            <h4>Avg Rating</h4>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p class="analytics-value">4.8/5</p>
+                        <p class="analytics-change positive">↑ 0.3 from last month</p>
+                    </div>
+                </div>
+
+                <!-- Chart Placeholders -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h4>Revenue Trend</h4>
+                        <div class="chart-placeholder">
+                            <canvas id="revenueChart"></canvas>
+                            <p style="text-align: center; color: #999; padding: 20px;">Chart: Monthly Revenue Trend</p>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h4>Occupancy Rate</h4>
+                        <div class="chart-placeholder">
+                            <canvas id="occupancyChart"></canvas>
+                            <p style="text-align: center; color: #999; padding: 20px;">Chart: Occupancy by Room Type</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Room Status Section -->
+            <section id="rooms" class="admin-section">
+                <h2>Room Management</h2>
+
+                <div class="room-status-filter">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="available">Available</button>
+                    <button class="filter-btn" data-filter="occupied">Occupied</button>
+                    <button class="filter-btn" data-filter="cleaning">Cleaning</button>
+                    <button class="filter-btn" data-filter="maintenance">Maintenance</button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Room #</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Current Guest</th>
+                                <th>Check-out</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>501</td>
+                                <td>Luxury Suite</td>
+                                <td><span class="status-badge status-occupied">Occupied</span></td>
+                                <td>John Doe</td>
+                                <td>March 23, 2024</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary">Edit</button>
+                                    <button class="btn btn-sm btn-danger">Mark for Cleaning</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>502</td>
+                                <td>Deluxe Room</td>
+                                <td><span class="status-badge status-cleaning">Cleaning</span></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary">Edit</button>
+                                    <button class="btn btn-sm btn-success">Mark as Ready</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>503</td>
+                                <td>Standard Room</td>
+                                <td><span class="status-badge status-available">Available</span></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary">Edit</button>
+                                    <button class="btn btn-sm btn-warning">Maintenance</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>504</td>
+                                <td>Suite</td>
+                                <td><span class="status-badge status-maintenance">Maintenance</span></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary">Edit</button>
+                                    <button class="btn btn-sm btn-success">Complete Maintenance</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>505</td>
+                                <td>Penthouse</td>
+                                <td><span class="status-badge status-occupied">Occupied</span></td>
+                                <td>Sarah Miller</td>
+                                <td>March 25, 2024</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary">Edit</button>
+                                    <button class="btn btn-sm btn-danger">Mark for Cleaning</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Bookings Management Section -->
+            <section id="bookings" class="admin-section">
+                <h2>Booking Management</h2>
+
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Confirmation #</th>
+                                <th>Guest Name</th>
+                                <th>Room</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Status</th>
+                                <th>Total</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>LXS-2024-001</td>
+                                <td>John Doe</td>
+                                <td>Luxury Suite (501)</td>
+                                <td>March 20, 2024</td>
+                                <td>March 23, 2024</td>
+                                <td><span class="status-badge status-confirmed">Confirmed</span></td>
+                                <td>$986.70</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary">View</button>
+                                    <button class="btn btn-sm btn-warning">Modify</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>LXS-2024-002</td>
+                                <td>Sarah Miller</td>
+                                <td>Penthouse (505)</td>
+                                <td>March 22, 2024</td>
+                                <td>March 25, 2024</td>
+                                <td><span class="status-badge status-confirmed">Confirmed</span></td>
+                                <td>$1,495.00</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary">View</button>
+                                    <button class="btn btn-sm btn-warning">Modify</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>LXS-2024-003</td>
+                                <td>Michael Chen</td>
+                                <td>Deluxe Room (502)</td>
+                                <td>April 1, 2024</td>
+                                <td>April 5, 2024</td>
+                                <td><span class="status-badge status-pending">Pending</span></td>
+                                <td>$895.20</td>
+                                <td>
+                                    <button class="btn btn-sm btn-secondary">View</button>
+                                    <button class="btn btn-sm btn-danger">Cancel</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analytics" class="admin-section">
+                <h2>Analytics</h2>
+
+                <div class="analytics-metrics">
+                    <div class="metric-card">
+                        <h4>Average Stay Duration</h4>
+                        <p class="metric-value">3.2 nights</p>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Booking Lead Time</h4>
+                        <p class="metric-value">21 days</p>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Cancellation Rate</h4>
+                        <p class="metric-value">5.3%</p>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Guest Satisfaction</h4>
+                        <p class="metric-value">92%</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-bottom">
+            <p>&copy; 2024 LuxeStay Admin Panel. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
