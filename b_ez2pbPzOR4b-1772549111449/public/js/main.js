@@ -694,12 +694,20 @@ if (roomsGrid) {
         });
 
         filtered.forEach(room => {
+            const typeLabels = {
+                suite: 'Suite',
+                double: 'Deluxe',
+                single: 'Standard',
+                penthouse: 'Penthouse'
+            };
+            
             const card = document.createElement('div');
             card.className = 'room-card';
             card.innerHTML = `
                 <div class="room-card-image">
                     <img src="${room.image}" alt="${room.name}" onerror="this.src='https://via.placeholder.com/400x300/1a3a52/ffffff?text=${room.name.replace(/ /g, '+')}'">
                     ${renderAvailabilityBadge(room.id)}
+                    <span class="room-type-badge">${typeLabels[room.type] || 'Room'}</span>
                     <button class="wishlist-btn" onclick="toggleWishlist(this, ${room.id})">
                         <i class="far fa-heart"></i>
                     </button>
@@ -710,6 +718,13 @@ if (roomsGrid) {
                         <span><i class="fas fa-star"></i> ${room.rating}</span>
                         <span><i class="fas fa-door-open"></i> ${room.type}</span>
                         <span><i class="fas fa-ruler-combined"></i> ${room.size}</span>
+                        <span><i class="fas fa-bed"></i> ${room.beds} Bed</span>
+                    </div>
+                    <div class="room-card-meta">
+                        <span><i class="fas fa-user"></i> Up to ${room.guests} guests</span>
+                    </div>
+                    <div class="room-card-rating">
+                        ${generateStars(room.rating)}
                     </div>
                     <div class="room-card-price" data-price="${room.price}">
                         ${formatCurrency(room.price, getCurrency())}<small>/night</small>
@@ -724,6 +739,20 @@ if (roomsGrid) {
             `;
             roomsGrid.appendChild(card);
         });
+
+        // Show empty state if no rooms
+        if (filtered.length === 0) {
+            roomsGrid.innerHTML = `
+                <div class="rooms-empty" style="grid-column: 1/-1;">
+                    <i class="fas fa-search"></i>
+                    <h3>No rooms found</h3>
+                    <p>Try adjusting your filters to see more options</p>
+                    <button class="btn btn-primary" onclick="document.getElementById('resetFilters').click()">
+                        <i class="fas fa-redo"></i> Reset Filters
+                    </button>
+                </div>
+            `;
+        }
     }
 
     // Price filter

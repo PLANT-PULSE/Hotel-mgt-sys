@@ -78,77 +78,132 @@
     </div>
 
     <!-- Page Header -->
-    <section style="background: linear-gradient(135deg, rgba(15, 41, 66, 0.9), rgba(15, 41, 66, 0.7)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920&q=80') center/cover; padding: 160px 0 80px; text-align: center; color: var(--white);">
-        <div class="container">
-            <h1 style="color: var(--white); margin-bottom: 15px;">Our Accommodations</h1>
-            <p style="color: var(--gray-300); font-size: 1.1rem;">Choose from our selection of luxury rooms and suites</p>
+    <section style="background: linear-gradient(135deg, rgba(15, 41, 66, 0.92), rgba(15, 41, 66, 0.75)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920&q=80') center/cover; padding: 180px 0 100px; text-align: center; color: var(--white); position: relative;">
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, transparent 50%, rgba(15, 41, 66, 0.8) 100%);"></div>
+        <div class="container" style="position: relative; z-index: 1;">
+            <p class="hero-subtitle">Accommodations</p>
+            <h1 style="color: var(--white); margin-bottom: 15px; font-size: 3rem;">Our Luxury Rooms</h1>
+            <p style="color: var(--gray-300); font-size: 1.1rem; max-width: 500px; margin: 0 auto;">Discover our collection of elegantly designed rooms and suites</p>
         </div>
     </section>
 
-    <!-- Rooms Listing -->
-    <section class="rooms-container">
+    <!-- Rooms Section -->
+    <section style="padding: 80px 0; background: var(--gray-100);">
         <div class="container">
-            <div class="filters-sidebar">
-                <h3><i class="fas fa-filter"></i> Filters</h3>
+            <!-- Filters & Header -->
+            <div class="rooms-header">
+                <h2><i class="fas fa-door-open"></i> Available Rooms</h2>
+                <div class="view-toggle">
+                    <button class="active" onclick="setRoomView('grid')"><i class="fas fa-th-large"></i> Grid</button>
+                    <button onclick="setRoomView('list')"><i class="fas fa-list"></i> List</button>
+                </div>
+            </div>
+
+            <!-- Filter Tags -->
+            <div class="filter-tags">
+                <span class="filter-tag"><i class="fas fa-star"></i> 5 Star</span>
+                <span class="filter-tag"><i class="fas fa-wifi"></i> Free WiFi</span>
+                <span class="filter-tag"><i class="fas fa-swimming-pool"></i> Pool</span>
+                <span class="filter-tag"><i class="fas fa-spa"></i> Spa</span>
+                <span class="filter-tag"><i class="fas fa-parking"></i> Parking</span>
+                <span class="filter-tag" style="background: var(--secondary); color: var(--primary-dark);"><i class="fas fa-percent"></i> Special Offers</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 280px 1fr; gap: 40px;">
+                <!-- Sidebar Filters -->
+                <div class="filters-sidebar">
+                    <h3><i class="fas fa-sliders-h"></i> Filters</h3>
+                    
+                    <div class="filter-group">
+                        <h4>Price Range</h4>
+                        <div class="price-slider">
+                            <input type="range" id="priceRange" min="100" max="600" value="600">
+                            <p class="price-display" id="priceDisplay">$600</p>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <h4>Room Type</h4>
+                        <label>
+                            <input type="checkbox" class="room-type-filter" value="suite"> Suite
+                        </label>
+                        <label>
+                            <input type="checkbox" class="room-type-filter" value="double"> Double
+                        </label>
+                        <label>
+                            <input type="checkbox" class="room-type-filter" value="single"> Single
+                        </label>
+                        <label>
+                            <input type="checkbox" class="room-type-filter" value="penthouse"> Penthouse
+                        </label>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <h4>Amenities</h4>
+                        <label>
+                            <input type="checkbox" class="amenity-filter" value="wifi"> WiFi
+                        </label>
+                        <label>
+                            <input type="checkbox" class="amenity-filter" value="pool"> Pool
+                        </label>
+                        <label>
+                            <input type="checkbox" class="amenity-filter" value="spa"> Spa
+                        </label>
+                        <label>
+                            <input type="checkbox" class="amenity-filter" value="minibar"> Minibar
+                        </label>
+                    </div>
+                    
+                    <button class="reset-filters" id="resetFilters">
+                        <i class="fas fa-redo"></i> Reset Filters
+                    </button>
+                </div>
                 
-                <div class="filter-group">
-                    <h4>Price Range</h4>
-                    <div class="price-slider">
-                        <input type="range" id="priceRange" min="100" max="600" value="600">
-                        <p class="price-display" id="priceDisplay">$600</p>
+                <!-- Room Grid -->
+                <div>
+                    <div class="rooms-grid" id="roomsGrid">
+                        <!-- Rooms rendered via JS -->
                     </div>
                 </div>
-                
-                <div class="filter-group">
-                    <h4>Room Type</h4>
-                    <label>
-                        <input type="checkbox" class="room-type-filter" value="suite"> Suite
-                    </label>
-                    <label>
-                        <input type="checkbox" class="room-type-filter" value="double"> Double
-                    </label>
-                    <label>
-                        <input type="checkbox" class="room-type-filter" value="single"> Single
-                    </label>
-                    <label>
-                        <input type="checkbox" class="room-type-filter" value="penthouse"> Penthouse
-                    </label>
-                </div>
-                
-                <div class="filter-group">
-                    <h4>Amenities</h4>
-                    <label>
-                        <input type="checkbox" class="amenity-filter" value="wifi"> WiFi
-                    </label>
-                    <label>
-                        <input type="checkbox" class="amenity-filter" value="pool"> Pool
-                    </label>
-                    <label>
-                        <input type="checkbox" class="amenity-filter" value="spa"> Spa
-                    </label>
-                    <label>
-                        <input type="checkbox" class="amenity-filter" value="minibar"> Minibar
-                    </label>
-                </div>
-                
-                <button class="reset-filters" id="resetFilters">
-                    <i class="fas fa-redo"></i> Reset Filters
-                </button>
             </div>
-            
-            <div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                    <h2>Available Rooms</h2>
-                    <select style="padding: 10px 15px; border: 2px solid var(--border); border-radius: 8px;">
-                        <option>Sort by: Recommended</option>
-                        <option>Price: Low to High</option>
-                        <option>Price: High to Low</option>
-                        <option>Rating</option>
-                    </select>
+        </div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section style="padding: 80px 0; background: var(--white);">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-subtitle">Why Choose Us</p>
+                <h2 class="section-title">The Luxe Experience</h2>
+            </div>
+            <div class="amenities-grid">
+                <div class="amenity-card">
+                    <div class="amenity-card-icon">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <h4>Award Winning</h4>
+                    <p>Recognized globally for exceptional hospitality and service excellence</p>
                 </div>
-                
-                <div class="rooms-grid" id="roomsGrid">
-                    <!-- Rooms rendered via JS -->
+                <div class="amenity-card">
+                    <div class="amenity-card-icon">
+                        <i class="fas fa-concierge-bell"></i>
+                    </div>
+                    <h4>24/7 Service</h4>
+                    <p>Our dedicated staff is always available to assist you</p>
+                </div>
+                <div class="amenity-card">
+                    <div class="amenity-card-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h4>Prime Location</h4>
+                    <p>Situated in the heart of the city with easy access</p>
+                </div>
+                <div class="amenity-card">
+                    <div class="amenity-card-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <h4>Fine Dining</h4>
+                    <p>Award-winning restaurants serving global cuisines</p>
                 </div>
             </div>
         </div>
@@ -271,13 +326,32 @@
 
     <script src="js/main.js"></script>
     <script>
+        // View toggle
+        function setRoomView(view) {
+            const grid = document.getElementById('roomsGrid');
+            const buttons = document.querySelectorAll('.view-toggle button');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (view === 'list') {
+                grid.style.gridTemplateColumns = '1fr';
+            } else {
+                grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(350px, 1fr))';
+            }
+        }
+
         document.getElementById('navbarToggle').addEventListener('click', function() {
             this.classList.toggle('active');
             document.getElementById('navbarMenu').classList.toggle('show');
         });
         window.addEventListener('scroll', function() {
             const navbar = document.getElementById('navbar');
-            navbar.classList.toggle('scrolled', window.scrollY > 50);
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
         });
     </script>
 </body>
