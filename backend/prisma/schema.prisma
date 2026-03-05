@@ -1,0 +1,329 @@
+// Hotel Management System - Database Schema
+// Normalized PostgreSQL schema (3NF+)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== CORE ENTITIES ====================
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  RECEPTIONIST
+  GUEST
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIAL
+}
+
+enum PaymentMethod {
+  CARD
+  MOBILE
+  PAYSTACK
+  FLUTTERWAVE
+  HOTEL
+  CASH
+}
+
+enum RoomStatus {
+  AVAILABLE
+  OCCUPIED
+  CLEANING
+  MAINTENANCE
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  firstName     String   @map("first_name")
+  lastName      String   @map("last_name")
+  phone         String?
+  role          UserRole @default(GUEST)
+  isActive      Boolean  @default(true) @map("is_active")
+  emailVerified Boolean  @default(false) @map("email_verified")
+  lastLoginAt   DateTime? @map("last_login_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  // Relations
+  refreshTokens   RefreshToken[]
+  bookings       Booking[]       @relation("GuestBookings")
+  createdBookings Booking[]      @relation("CreatedByBookings")
+  guestProfile   Guest?
+  staffProfile   Staff?
+  auditLogs      AuditLog[]
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+// ==================== GUEST & STAFF ====================
+
+model Guest {
+  id              String   @id @default(uuid())
+  userId          String   @unique @map("user_id")
+  loyaltyPoints   Int      @default(0) @map("loyalty_points")
+  loyaltyTier     String   @default("BRONZE") @map("loyalty_tier") // BRONZE, SILVER, GOLD, PLATINUM
+  preferences     Json?    // dietary, room preferences
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@map("guests")
+}
+
+model Staff {
+  id          String   @id @default(uuid())
+  userId      String   @unique @map("user_id")
+  department  String
+  employeeId  String   @unique @map("employee_id")
+  hireDate    DateTime @map("hire_date")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("staff")
+}
+
+// ==================== ROOMS ====================
+
+model RoomType {
+  id          String   @id @default(uuid())
+  name        String   // e.g., "Luxury Suite", "Deluxe King"
+  type        String   // suite, double, single, penthouse
+  basePrice   Decimal  @map("base_price") @db.Decimal(10, 2)
+  size        String   // e.g., "65m²"
+  maxGuests   Int      @map("max_guests")
+  beds        Int
+  amenities   String[] @default([])
+  description String?
+  image       String?
+  totalUnits  Int      @default(1) @map("total_units") // Inventory count
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  rooms   Room[]
+  bookingItems BookingItem[]
+
+  @@index([type])
+  @@map("room_types")
+}
+
+model Room {
+  id           String     @id @default(uuid())
+  roomTypeId   String     @map("room_type_id")
+  number       String     @unique // e.g., "101", "201A"
+  floor        Int
+  status       RoomStatus @default(AVAILABLE)
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  roomType RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
+
+  @@index([status])
+  @@index([roomTypeId])
+  @@map("rooms")
+}
+
+// ==================== PROMO CODES & ADD-ONS ====================
+
+model PromoCode {
+  id          String    @id @default(uuid())
+  code        String    @unique
+  discount    Decimal   @db.Decimal(5, 4) // 0.10 = 10%
+  description String?
+  validFrom   DateTime  @map("valid_from")
+  validTo     DateTime  @map("valid_to")
+  maxUses     Int?      @map("max_uses")
+  usedCount   Int       @default(0) @map("used_count")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([code])
+  @@map("promo_codes")
+}
+
+model AddOn {
+  id          String   @id @default(uuid())
+  key         String   @unique // breakfast, airportPickup, etc.
+  name        String
+  price       Decimal  @db.Decimal(10, 2)
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  bookingAddOns BookingAddOn[]
+
+  @@map("add_ons")
+}
+
+// ==================== BOOKINGS ====================
+
+model Booking {
+  id              String        @id @default(uuid())
+  bookingNumber   String        @unique @map("booking_number") // LXS-2024-00123
+  guestId         String?       @map("guest_id")
+  createdById     String?       @map("created_by_id") // Staff who created
+  checkInDate     DateTime      @map("check_in_date")
+  checkOutDate    DateTime      @map("check_out_date")
+  status          BookingStatus @default(PENDING)
+  specialRequests String?       @map("special_requests")
+  promoCodeId     String?       @map("promo_code_id")
+  totalAmount     Decimal       @map("total_amount") @db.Decimal(10, 2)
+  currency        String        @default("USD")
+  guestEmail      String        @map("guest_email")
+  guestFirstName  String        @map("guest_first_name")
+  guestLastName   String        @map("guest_last_name")
+  guestPhone      String?       @map("guest_phone")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  guest        Guest?      @relation(fields: [guestId], references: [id], onDelete: SetNull)
+  createdBy    User?       @relation("CreatedByBookings", fields: [createdById], references: [id], onDelete: SetNull)
+  items        BookingItem[]
+  addOns       BookingAddOn[]
+  payments     Payment[]
+  notifications Notification[]
+
+  @@index([bookingNumber])
+  @@index([guestId])
+  @@index([status])
+  @@index([checkInDate, checkOutDate])
+  @@map("bookings")
+}
+
+model BookingItem {
+  id              String   @id @default(uuid())
+  bookingId       String   @map("booking_id")
+  roomTypeId      String   @map("room_type_id")
+  quantity        Int      @default(1)
+  pricePerNight   Decimal  @map("price_per_night") @db.Decimal(10, 2)
+  totalPrice      Decimal  @map("total_price") @db.Decimal(10, 2)
+
+  booking  Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  roomType RoomType  @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
+
+  @@unique([bookingId, roomTypeId])
+  @@index([bookingId])
+  @@map("booking_items")
+}
+
+model BookingAddOn {
+  id        String  @id @default(uuid())
+  bookingId String  @map("booking_id")
+  addOnId   String  @map("add_on_id")
+  quantity  Int     @default(1)
+  price     Decimal @db.Decimal(10, 2)
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  addOn   AddOn   @relation(fields: [addOnId], references: [id], onDelete: Restrict)
+
+  @@unique([bookingId, addOnId])
+  @@index([bookingId])
+  @@map("booking_add_ons")
+}
+
+// ==================== PAYMENTS ====================
+
+model Payment {
+  id              String        @id @default(uuid())
+  bookingId       String        @map("booking_id")
+  amount          Decimal       @db.Decimal(10, 2)
+  currency        String        @default("USD")
+  method          PaymentMethod
+  status          PaymentStatus @default(PENDING)
+  transactionId   String?       @map("transaction_id")
+  metadata        Json?
+  paidAt          DateTime?     @map("paid_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+
+  @@index([bookingId])
+  @@index([transactionId])
+  @@index([status])
+  @@map("payments")
+}
+
+// ==================== NOTIFICATIONS ====================
+
+model Notification {
+  id         String   @id @default(uuid())
+  bookingId  String?  @map("booking_id")
+  type       String   // bookingConfirmation, reminder, paymentReceipt, cancellation
+  title      String
+  message    String
+  email      String?
+  sentAt     DateTime? @map("sent_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([bookingId])
+  @@index([type])
+  @@map("notifications")
+}
+
+// ==================== AUDIT LOG (Optional) ====================
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?  @map("user_id")
+  action     String
+  entity     String
+  entityId   String?  @map("entity_id")
+  changes    Json?
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
