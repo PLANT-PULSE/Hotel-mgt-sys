@@ -2,6 +2,8 @@
    LUXURY HOTEL BOOKING SYSTEM - JS
    ==================================== */
 
+const API_BASE_URL = 'http://localhost:4000/api/v1';
+
 // ====== UTILITIES ======
 
 // Show Toast Notification
@@ -90,109 +92,113 @@ if (navbar) {
 
 const featuredRoomsGrid = document.getElementById('featuredRoomsGrid');
 if (featuredRoomsGrid) {
-    const rooms = [
-        {
-            id: 1,
-            name: 'Luxury Suite',
-            type: 'suite',
-            price: 299,
-            image: 'https://via.placeholder.com/300x250',
-            rating: 5,
-            available: true
-        },
-        {
-            id: 2,
-            name: 'Deluxe Double Room',
-            type: 'double',
-            price: 199,
-            image: 'https://via.placeholder.com/300x250',
-            rating: 4.5,
-            available: true
-        },
-        {
-            id: 3,
-            name: 'Penthouse Suite',
-            type: 'penthouse',
-            price: 499,
-            image: 'https://via.placeholder.com/300x250',
-            rating: 5,
-            available: false
-        }
-    ];
+    async function loadFeaturedRooms() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/rooms?limit=3`);
+            if (!response.ok) throw new Error('Failed to fetch rooms');
 
-    rooms.forEach(room => {
-        const card = document.createElement('div');
-        card.className = 'room-card';
-        card.innerHTML = `
-            <div class="room-card-image">
-                <img src="${room.image}" alt="${room.name}">
-                <span class="room-card-badge">${room.available ? 'Available' : 'Unavailable'}</span>
-            </div>
-            <div class="room-card-body">
-                <h3>${room.name}</h3>
-                <div class="room-card-meta">
-                    <span><i class="fas fa-bed"></i> ${room.type}</span>
-                    <span><i class="fas fa-star"></i> ${room.rating}</span>
-                </div>
-                <div class="room-card-price">
-                    ${formatCurrency(room.price, getCurrency())}<small>/night</small>
-                </div>
-                <div class="room-card-actions">
-                    <a href="room-details.html" class="btn btn-primary" style="flex: 1;">View Details</a>
-                    <button class="wishlist-btn" onclick="toggleWishlist(this, ${room.id})">
-                        <i class="far fa-heart"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-        featuredRoomsGrid.appendChild(card);
-    });
+            const rooms = await response.json();
+
+            featuredRoomsGrid.innerHTML = ''; // clear loading state if any
+
+            rooms.forEach(room => {
+                const card = document.createElement('div');
+                card.className = 'room-card';
+                // Using room details from the API response
+                const isAvailable = room.totalUnits > 0;
+
+                card.innerHTML = `
+                    <div class="room-card-image">
+                        <img src="${room.image || 'https://via.placeholder.com/300x250'}" alt="${room.name}">
+                        <span class="room-card-badge">${isAvailable ? 'Available' : 'Unavailable'}</span>
+                    </div>
+                    <div class="room-card-body">
+                        <h3>${room.name}</h3>
+                        <div class="room-card-meta">
+                            <span><i class="fas fa-bed"></i> ${room.type}</span>
+                            <span><i class="fas fa-user-friends"></i> Up to ${room.maxGuests}</span>
+                        </div>
+                        <div class="room-card-price">
+                            ${formatCurrency(room.basePrice, getCurrency())}<small>/night</small>
+                        </div>
+                        <div class="room-card-actions">
+                            <a href="room-details.html?id=${room.id}" class="btn btn-primary" style="flex: 1;">View Details</a>
+                            <button class="wishlist-btn" onclick="toggleWishlist(this, '${room.id}')">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                featuredRoomsGrid.appendChild(card);
+            });
+        } catch (error) {
+            console.error('Error loading featured rooms:', error);
+            featuredRoomsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--danger);">Unable to load rooms. Please try again later.</p>';
+        }
+    }
+
+    // Initial load
+    featuredRoomsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Loading featured rooms...</p>';
+    loadFeaturedRooms();
 }
 
 // ====== ROOMS PAGE ======
 
 const roomsGrid = document.getElementById('roomsGrid');
 if (roomsGrid) {
-    const allRooms = [
-        { id: 1, name: 'Luxury Suite', type: 'suite', price: 299, rating: 5, amenities: ['wifi', 'pool', 'spa'], status: 'available' },
-        { id: 2, name: 'Deluxe Double', type: 'double', price: 199, rating: 4.5, amenities: ['wifi', 'ac'], status: 'available' },
-        { id: 3, name: 'Penthouse', type: 'penthouse', price: 499, rating: 5, amenities: ['wifi', 'pool', 'spa', 'mini-bar'], status: 'soon' },
-        { id: 4, name: 'Standard Room', type: 'single', price: 129, rating: 4, amenities: ['wifi', 'ac'], status: 'available' },
-        { id: 5, name: 'Family Suite', type: 'suite', price: 349, rating: 4.5, amenities: ['wifi', 'pool', 'mini-bar'], status: 'available' },
-        { id: 6, name: 'Ocean View', type: 'double', price: 249, rating: 4.8, amenities: ['wifi', 'spa', 'ac'], status: 'available' }
-    ];
+    let allRooms = []; // Will be populated from the API
+
+    async function loadAllRooms() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/rooms`);
+            if (!response.ok) throw new Error('Failed to fetch rooms');
+
+            allRooms = await response.json();
+            renderRooms();
+        } catch (error) {
+            console.error('Error loading rooms:', error);
+            roomsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--danger);">Unable to load rooms. Please try again later.</p>';
+        }
+    }
 
     function renderRooms(filter = {}) {
         roomsGrid.innerHTML = '';
         const filtered = allRooms.filter(room => {
-            if (filter.maxPrice && room.price > filter.maxPrice) return false;
+            if (filter.maxPrice && room.basePrice > filter.maxPrice) return false;
             if (filter.types && filter.types.length && !filter.types.includes(room.type)) return false;
             if (filter.amenities && filter.amenities.length && !filter.amenities.some(a => room.amenities.includes(a))) return false;
-            if (filter.rating && room.rating < filter.rating) return false;
-            if (filter.available && room.status !== 'available') return false;
+            // Removed arbitrary rating requirement since it's not in the DB currently
+            if (filter.available && room.totalUnits === 0) return false;
             return true;
         });
+
+        if (filtered.length === 0) {
+            roomsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No rooms found matching your criteria.</p>';
+            return;
+        }
 
         filtered.forEach(room => {
             const card = document.createElement('div');
             card.className = 'room-card';
+            const isAvailable = room.totalUnits > 0;
+
             card.innerHTML = `
                 <div class="room-card-image">
-                    <img src="https://via.placeholder.com/300x250" alt="${room.name}">
-                    <span class="room-card-badge">${room.status === 'available' ? 'Available' : 'Coming Soon'}</span>
+                    <img src="${room.image || 'https://via.placeholder.com/300x250'}" alt="${room.name}">
+                    <span class="room-card-badge">${isAvailable ? 'Available' : 'Coming Soon'}</span>
                 </div>
                 <div class="room-card-body">
                     <h3>${room.name}</h3>
                     <div class="room-card-meta">
-                        <span><i class="fas fa-star"></i> ${room.rating}</span>
-                        <span><i class="fas fa-door-open"></i> ${room.type}</span>
+                        <span><i class="fas fa-bed"></i> ${room.type}</span>
+                        <span><i class="fas fa-users"></i> Up to ${room.maxGuests || 2}</span>
                     </div>
                     <div class="room-card-price">
-                        ${formatCurrency(room.price, getCurrency())}<small>/night</small>
+                        ${formatCurrency(room.basePrice, getCurrency())}<small>/night</small>
                     </div>
                     <div class="room-card-actions">
                         <a href="room-details.html?id=${room.id}" class="btn btn-primary" style="flex: 1;">View Details</a>
-                        <button class="wishlist-btn" onclick="toggleWishlist(this, ${room.id})">
+                        <button class="wishlist-btn" onclick="toggleWishlist(this, '${room.id}')">
                             <i class="far fa-heart"></i>
                         </button>
                     </div>
@@ -241,13 +247,15 @@ if (roomsGrid) {
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
             document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-            priceRange.value = 500;
-            priceDisplay.textContent = '$500';
+            if (priceRange) priceRange.value = 500;
+            if (priceDisplay) priceDisplay.textContent = '$500';
             renderRooms();
         });
     }
 
-    renderRooms();
+    // Initial load
+    roomsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Loading rooms...</p>';
+    loadAllRooms();
 }
 
 // ====== ROOM COMPARISON ======
@@ -324,24 +332,91 @@ function toggleWishlist(btn, roomId) {
 
 const bookingForm = document.getElementById('bookingForm');
 if (bookingForm) {
-    bookingForm.addEventListener('submit', (e) => {
+    bookingForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         // Get form data
         const firstName = document.getElementById('firstName').value;
         const lastName = document.getElementById('lastName').value;
         const email = document.getElementById('email').value;
+        const phone = document.getElementById('phone')?.value || null;
 
-        // Show confirmation modal
-        const modal = document.getElementById('confirmationModal');
-        if (modal) {
-            const confirmNumber = `LXS-${new Date().getFullYear()}-${Math.floor(Math.random() * 100000)}`;
-            document.getElementById('confirmationNumber').textContent = confirmNumber;
-            document.getElementById('confirmationEmail').textContent = email;
-            modal.classList.add('show');
+        const checkIn = document.getElementById('checkInDate')?.value || new Date().toISOString().split('T')[0];
+        const checkOutDateObj = new Date();
+        checkOutDateObj.setDate(checkOutDateObj.getDate() + 1);
+        const checkOut = document.getElementById('checkOutDate')?.value || checkOutDateObj.toISOString().split('T')[0];
+
+        // Retrieve room details from URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomId = urlParams.get('id');
+
+        if (!roomId) {
+            showToast('Please select a room first');
+            return;
         }
 
-        showToast('Booking confirmed! Check your email.');
+        try {
+            // First get room details to know price and type
+            const roomRes = await fetch(`${API_BASE_URL}/rooms/${roomId}`);
+            if (!roomRes.ok) throw new Error('Failed to get room details');
+            const roomData = await roomRes.json();
+
+            // Prepare booking request matching backend DTO
+            const bookingPayload = {
+                checkInDate: new Date(checkIn).toISOString(),
+                checkOutDate: new Date(checkOut).toISOString(),
+                guestFirstName: firstName,
+                guestLastName: lastName,
+                guestEmail: email,
+                guestPhone: phone,
+                items: [
+                    {
+                        roomTypeId: roomData.id,
+                        quantity: 1,
+                        pricePerNight: Number(roomData.basePrice)
+                    }
+                ]
+            };
+
+            const response = await fetch(`${API_BASE_URL}/bookings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bookingPayload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Booking failed');
+            }
+
+            const result = await response.json();
+
+            // Show confirmation modal
+            const modal = document.getElementById('confirmationModal');
+            if (modal) {
+                document.getElementById('confirmationNumber').textContent = result.bookingNumber;
+                document.getElementById('confirmationEmail').textContent = email;
+                modal.classList.add('show');
+            }
+
+            // Create a pending payment
+            const paymentPayload = {
+                bookingId: result.id,
+                amount: Number(result.totalAmount),
+                method: document.querySelector('.payment-option.selected input')?.value || 'CARD'
+            };
+
+            await fetch(`${API_BASE_URL}/payments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(paymentPayload)
+            });
+
+            showToast('Booking confirmed! Check your email.');
+        } catch (err) {
+            console.error(err);
+            showToast(err.message || 'An error occurred during booking');
+        }
     });
 
     // Payment method selection
@@ -390,10 +465,10 @@ function nextStep(step) {
             return;
         }
     }
-    
+
     document.getElementById(`step${step}`).classList.add('hidden');
     document.getElementById(`step${step + 1}`).classList.remove('hidden');
-    
+
     // Update progress
     document.querySelectorAll('.step').forEach((el, i) => {
         el.classList.toggle('active', i + 1 <= step + 1);
@@ -450,10 +525,10 @@ document.querySelectorAll('.faq-question').forEach(btn => {
     btn.addEventListener('click', () => {
         const answer = btn.nextElementSibling;
         const isOpen = answer.style.display !== 'none';
-        
+
         document.querySelectorAll('.faq-answer').forEach(a => a.style.display = 'none');
         document.querySelectorAll('.faq-question').forEach(b => b.classList.remove('active'));
-        
+
         if (!isOpen) {
             answer.style.display = 'block';
             btn.classList.add('active');
@@ -589,7 +664,7 @@ if (document.getElementById('detailsRoomName')) {
     function calculatePrice() {
         const checkIn = new Date(document.getElementById('inlineCheckIn').value);
         const checkOut = new Date(document.getElementById('inlineCheckOut').value);
-        
+
         if (checkIn && checkOut && checkOut > checkIn) {
             const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
             const price = parseFloat(document.getElementById('roomPrice').textContent.replace('$', ''));
