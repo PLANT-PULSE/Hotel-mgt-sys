@@ -43,6 +43,7 @@ enum PaymentMethod {
   FLUTTERWAVE
   HOTEL
   CASH
+  STRIPE
 }
 
 enum RoomStatus {
@@ -138,12 +139,14 @@ model RoomType {
   amenities   String[] @default([])
   description String?
   image       String?
+  images      String[] @default([]) // Multiple images for gallery
   totalUnits  Int      @default(1) @map("total_units") // Inventory count
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   rooms   Room[]
   bookingItems BookingItem[]
+  reservations Reservation[]
 
   @@index([type])
   @@map("room_types")
@@ -275,6 +278,8 @@ model Payment {
   method          PaymentMethod
   status          PaymentStatus @default(PENDING)
   transactionId   String?       @map("transaction_id")
+  stripePaymentIntentId String?   @map("stripe_payment_intent_id") // Stripe Payment Intent ID
+  stripeClientSecret    String?   @map("stripe_client_secret") // Stripe Client Secret for frontend
   metadata        Json?
   paidAt          DateTime?     @map("paid_at")
   createdAt       DateTime      @default(now()) @map("created_at")
@@ -284,6 +289,7 @@ model Payment {
 
   @@index([bookingId])
   @@index([transactionId])
+  @@index([stripePaymentIntentId])
   @@index([status])
   @@map("payments")
 }
@@ -305,6 +311,30 @@ model Notification {
   @@index([bookingId])
   @@index([type])
   @@map("notifications")
+}
+
+// ==================== TEMPORARY RESERVATIONS ====================
+
+model Reservation {
+  id              String   @id @default(uuid())
+  bookingId       String?  @map("booking_id") // Linked booking if reserved
+  roomTypeId      String   @map("room_type_id")
+  sessionId       String   @map("session_id") // Browser session ID
+  checkInDate     DateTime @map("check_in_date")
+  checkOutDate    DateTime @map("check_out_date")
+  quantity        Int      @default(1)
+  status          String   @default("ACTIVE") // ACTIVE, COMPLETED, EXPIRED, CANCELLED
+  expiresAt       DateTime @map("expires_at") // 10-minute hold
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  roomType RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([roomTypeId])
+  @@index([checkInDate, checkOutDate])
+  @@index([expiresAt])
+  @@map("reservations")
 }
 
 // ==================== AUDIT LOG (Optional) ====================

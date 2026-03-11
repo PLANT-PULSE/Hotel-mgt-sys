@@ -212,4 +212,301 @@ export class BookingsService {
       include: { items: { include: { roomType: true } } },
     });
   }
+
+  /**
+   * Check for booking conflicts within a date range
+   * Returns true if conflict found, false if available
+   */
+  async checkConflicts(
+    roomTypeId: string,
+    checkInDate: Date,
+    checkOutDate: Date,
+    excludeBookingId?: string,
+  ): Promise<boolean> {
+    const conflictingBookings = await this.prisma.booking.findMany({
+      where: {
+        AND: [
+          { items: { some: { roomTypeId } } },
+          { id: { not: excludeBookingId } },
+          { status: { in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN] } },
+          {
+            AND: [
+              { checkInDate: { lt: checkOutDate } },
+              { checkOutDate: { gt: checkInDate } },
+            ],
+          },
+        ],
+      },
+      select: { id: true },
+    });
+
+    return conflictingBookings.length > 0;
+  }
+
+  /**
+   * Check availability for multiple rooms
+   */
+  async checkAvailability(
+    items: { roomTypeId: string; quantity: number }[],
+    checkInDate: Date,
+    checkOutDate: Date,
+  ): Promise<{ available: boolean; unavailableRoomTypes: string[] }> {
+    const unavailableRoomTypes: string[] = [];
+
+    for (const item of items) {
+      const hasConflict = await this.checkConflicts(
+        item.roomTypeId,
+        checkInDate,
+        checkOutDate,
+      );
+
+      if (hasConflict) {
+        unavailableRoomTypes.push(item.roomTypeId);
+      }
+    }
+
+    return {
+      available: unavailableRoomTypes.length === 0,
+      unavailableRoomTypes,
+    };
+  }
+
+  /**
+   * Create temporary reservation hold (10 minutes)
+   */
+  async createReservationHold(
+    roomTypeId: string,
+    checkInDate: Date,
+    checkOutDate: Date,
+    sessionId: string,
+    quantity: number = 1,
+  ): Promise<{ id: string; expiresAt: Date }> {
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    const reservation = await this.prisma.reservation.create({
+      data: {
+        roomTypeId,
+        checkInDate,
+        checkOutDate,
+        sessionId,
+        quantity,
+        expiresAt,
+        status: 'ACTIVE',
+      },
+    });
+
+    return { id: reservation.id, expiresAt: reservation.expiresAt };
+  }
+
+  /**
+   * Cancel reservation hold
+   */
+  async cancelReservationHold(reservationId: string): Promise<void> {
+    await this.prisma.reservation.update({
+      where: { id: reservationId },
+      data: { status: 'CANCELLED' },
+    });
+  }
+
+  /**
+   * Advanced search and filtering for admin bookings management
+   */
+  async searchBookings(filters: {
+    searchTerm?: string; // booking number or guest name
+    status?: BookingStatus;
+    dateFrom?: Date;
+    dateTo?: Date;
+    minAmount?: number;
+    maxAmount?: number;
+    page?: number;
+    limit?: number;
+    sortBy?: 'date' | 'amount' | 'status';
+    sortOrder?: 'asc' | 'desc';
+  }) {
+    const page = filters.page ?? 1;
+    const limit = Math.min(filters.limit ?? 20, 100);
+    const skip = (page - 1) * limit;
+    const sortOrder = filters.sortOrder ?? 'desc';
+
+    const where: Record<string, unknown> = {};
+
+    // Search by booking number or guest name
+    if (filters.searchTerm) {
+      where.OR = [
+        { bookingNumber: { contains: filters.searchTerm.toUpperCase() } },
+        { guestFirstName: { contains: filters.searchTerm } },
+        { guestLastName: { contains: filters.searchTerm } },
+        { guestEmail: { contains: filters.searchTerm } },
+      ];
+    }
+
+    // Filter by status
+    if (filters.status) {
+      where.status = filters.status;
+    }
+
+    // Filter by date range
+    if (filters.dateFrom || filters.dateTo) {
+      where.checkInDate = {};
+      if (filters.dateFrom) {
+        (where.checkInDate as Record<string, Date>).gte = filters.dateFrom;
+      }
+      if (filters.dateTo) {
+        (where.checkInDate as Record<string, Date>).lte = filters.dateTo;
+      }
+    }
+
+    // Filter by amount range
+    if (filters.minAmount !== undefined || filters.maxAmount !== undefined) {
+      where.totalAmount = {};
+      if (filters.minAmount !== undefined) {
+        (where.totalAmount as Record<string, number>).gte = filters.minAmount;
+      }
+      if (filters.maxAmount !== undefined) {
+        (where.totalAmount as Record<string, number>).lte = filters.maxAmount;
+      }
+    }
+
+    // Determine sort field
+    let orderBy: Record<string, string> = { createdAt: sortOrder };
+    if (filters.sortBy === 'amount') {
+      orderBy = { totalAmount: sortOrder };
+    } else if (filters.sortBy === 'status') {
+      orderBy = { status: sortOrder };
+    } else if (filters.sortBy === 'date') {
+      orderBy = { checkInDate: sortOrder };
+    }
+
+    const [bookings, total] = await Promise.all([
+      this.prisma.booking.findMany({
+        where,
+        include: {
+          items: { include: { roomType: true } },
+          guest: true,
+          payments: true,
+        },
+        orderBy,
+        skip,
+        take: limit,
+      }),
+      this.prisma.booking.count({ where }),
+    ]);
+
+    return {
+      data: bookings,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /**
+   * Get bookings by date range for calendar/timeline view
+   */
+  async getBookingsByDateRange(checkInFrom: Date, checkInTo: Date) {
+    return this.prisma.booking.findMany({
+      where: {
+        checkInDate: { gte: checkInFrom, lte: checkInTo },
+        status: { not: BookingStatus.CANCELLED },
+      },
+      include: {
+        items: { include: { roomType: true } },
+        guest: true,
+      },
+      orderBy: { checkInDate: 'asc' },
+    });
+  }
+
+  /**
+   * Get revenue metrics for a date range
+   */
+  async getRevenueMetrics(dateFrom: Date, dateTo: Date, groupBy?: 'day' | 'week' | 'month') {
+    const bookings = await this.prisma.booking.findMany({
+      where: {
+        checkInDate: { gte: dateFrom, lte: dateTo },
+        status: { in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN, BookingStatus.CHECKED_OUT] },
+      },
+      include: { payments: true },
+    });
+
+    const metrics: Record<string, { revenue: number; bookings: number; avgValue: number }> = {};
+
+    bookings.forEach((booking) => {
+      let key: string;
+
+      if (groupBy === 'day') {
+        key = booking.checkInDate.toISOString().split('T')[0];
+      } else if (groupBy === 'week') {
+        const date = new Date(booking.checkInDate);
+        const weekStart = new Date(date);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+        key = weekStart.toISOString().split('T')[0];
+      } else {
+        // month
+        key = booking.checkInDate.toISOString().substring(0, 7);
+      }
+
+      if (!metrics[key]) {
+        metrics[key] = { revenue: 0, bookings: 0, avgValue: 0 };
+      }
+
+      const completedPayments = booking.payments.filter((p) => p.status === 'COMPLETED');
+      const revenue = completedPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+
+      metrics[key].revenue += revenue;
+      metrics[key].bookings += 1;
+      metrics[key].avgValue = metrics[key].revenue / metrics[key].bookings;
+    });
+
+    return Object.entries(metrics).map(([period, data]) => ({
+      period,
+      ...data,
+    }));
+  }
+
+  /**
+   * Get occupancy metrics for rooms in a date range
+   */
+  async getOccupancyMetrics(dateFrom: Date, dateTo: Date) {
+    const roomTypes = await this.prisma.roomType.findMany();
+    const bookings = await this.prisma.booking.findMany({
+      where: {
+        AND: [
+          { checkInDate: { lt: dateTo } },
+          { checkOutDate: { gt: dateFrom } },
+          { status: { in: [BookingStatus.CONFIRMED, BookingStatus.CHECKED_IN, BookingStatus.CHECKED_OUT] } },
+        ],
+      },
+      include: { items: true },
+    });
+
+    const days = Math.ceil((dateTo.getTime() - dateFrom.getTime()) / (1000 * 60 * 60 * 24));
+
+    const occupancy = roomTypes.map((rt) => {
+      const occupiedNights = bookings
+        .filter((b) => b.items.some((i) => i.roomTypeId === rt.id))
+        .reduce((sum, b) => {
+          const start = Math.max(b.checkInDate.getTime(), dateFrom.getTime());
+          const end = Math.min(b.checkOutDate.getTime(), dateTo.getTime());
+          const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+          return sum + nights;
+        }, 0);
+
+      const totalCapacity = rt.totalUnits * days;
+      const occupancyRate = totalCapacity > 0 ? (occupiedNights / totalCapacity) * 100 : 0;
+
+      return {
+        roomTypeId: rt.id,
+        roomTypeName: rt.name,
+        occupiedNights,
+        totalCapacity,
+        occupancyRate: Math.round(occupancyRate * 10) / 10,
+      };
+    });
+
+    return occupancy;
+  }
 }

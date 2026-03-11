@@ -46,4 +46,41 @@ export class DashboardController {
       days ? parseInt(days) : 30,
     );
   }
+
+  @Get('overview')
+  @ApiOperation({ summary: 'Get comprehensive dashboard overview' })
+  async getOverview() {
+    return this.dashboardService.getDashboardOverview();
+  }
+
+  @Get('room-performance')
+  @ApiOperation({ summary: 'Get performance metrics by room type' })
+  @ApiQuery({ name: 'months', required: false })
+  async getRoomPerformance(@Query('months') months?: string) {
+    return this.dashboardService.getRoomTypePerformance(
+      months ? parseInt(months) : 6,
+    );
+  }
+
+  @Get('guest-analytics')
+  @ApiOperation({ summary: 'Get guest analytics and loyalty metrics' })
+  async getGuestAnalytics() {
+    return this.dashboardService.getGuestAnalytics();
+  }
+
+  @Get('daily-summary')
+  @ApiOperation({ summary: 'Get daily check-in/checkout summary' })
+  async getDailySummary() {
+    const [checkins, checkouts, pendingPayments] = await Promise.all([
+      this.dashboardService.getTodayCheckins(),
+      this.dashboardService.getTodayCheckouts(),
+      this.dashboardService.getPendingPayments(),
+    ]);
+
+    return {
+      checkins,
+      checkouts,
+      pendingPayments,
+    };
+  }
 }

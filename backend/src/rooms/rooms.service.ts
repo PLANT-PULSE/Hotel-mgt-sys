@@ -62,10 +62,12 @@ export class RoomsService {
 
   async updateRoomType(id: string, dto: UpdateRoomTypeDto) {
     await this.getRoomTypeById(id);
-    return this.prisma.roomType.update({
+    const updated = await this.prisma.roomType.update({
       where: { id },
       data: dto,
     });
+    // NOTE: WebSocket broadcast will be handled by controller to avoid circular dependency
+    return updated;
   }
 
   async deleteRoomType(id: string) {

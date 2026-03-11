@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -13,6 +14,9 @@ async function bootstrap() {
   });
 
   app.useLogger(app.get(LoggerService));
+
+  // Initialize WebSocket adapter
+  app.useWebSocketAdapter(new IoAdapter(app));
 
   app.use(helmet());
   app.enableCors({

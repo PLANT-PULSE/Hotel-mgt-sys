@@ -13,6 +13,7 @@ import { GuestsModule } from './guests/guests.module';
 import { StaffModule } from './staff/staff.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { WebSocketModule } from './websocket/websocket.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     StaffModule,
     DashboardModule,
     NotificationsModule,
+    WebSocketModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
