@@ -1,0 +1,114 @@
+1. Activities the Admin Dashboard Must Supervise
+
+A hotel booking system admin dashboard must control operations, rooms, bookings, and guests.
+
+Booking Management
+
+Admin must be able to:
+
+View all bookings
+
+See calendar occupancy
+
+Approve or reject bookings
+
+Modify booking dates
+
+Cancel bookings
+
+Prevent double bookings
+
+Move guests to another room
+
+Block dates manually
+
+See booking status
+
+Pending
+
+Confirmed
+
+Cancelled
+
+Expired
+
+Room Management
+
+Admin should manage:
+
+Add new rooms
+
+Edit room details
+
+Delete rooms
+
+Mark room as maintenance
+
+Set room price
+
+Set room type
+
+Upload room images
+
+Set max occupancy
+
+Calendar / Occupancy View
+
+Admin should see:
+
+12-month booking calendar
+
+Which rooms are booked
+
+Which dates are blocked
+
+Which rooms are available
+
+Occupancy rate
+
+Example:
+
+Room 101   ███████
+Room 102       █████
+Room 103   ███
+Guest Management
+
+Admin should see:
+
+Guest name
+
+Guest contact
+
+Booking history
+
+Payment status
+
+Special requests
+
+Revenue / Analytics
+
+Admin dashboard should show:
+
+Total bookings
+
+Total revenue
+
+Daily bookings
+
+Monthly bookings
+
+Occupancy percentage
+
+Most booked room
+
+System Controls
+
+Admin must also:
+
+Block dates
+
+Close bookings temporarily
+
+Manage user accounts
+
+Export booking data (CSV/PDF)
