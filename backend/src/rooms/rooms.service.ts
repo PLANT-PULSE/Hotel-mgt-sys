@@ -4,10 +4,14 @@ import { CreateRoomTypeDto } from './dto/create-room-type.dto';
 import { UpdateRoomTypeDto } from './dto/update-room-type.dto';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { RoomStatus } from '@prisma/client';
+import { BlobStorageService } from '../storage/blob-storage.service';
 
 @Injectable()
 export class RoomsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private blobStorageService?: BlobStorageService,
+  ) {}
 
   async getRoomTypes(filters?: { type?: string; minPrice?: number; maxPrice?: number }) {
     const where: Record<string, unknown> = {};
@@ -22,6 +26,9 @@ export class RoomsService {
       where,
       include: {
         rooms: { where: { status: RoomStatus.AVAILABLE } },
+        images: {
+          orderBy: [{ isPrimary: 'desc' }, { displayOrder: 'asc' }],
+        },
         _count: { select: { rooms: true } },
       },
     });
@@ -81,7 +88,15 @@ export class RoomsService {
 
     return this.prisma.room.findMany({
       where,
-      include: { roomType: true },
+      include: { 
+        roomType: {
+          include: {
+            images: {
+              orderBy: { displayOrder: 'asc' },
+            },
+          },
+        },
+      },
       orderBy: [{ floor: 'asc' }, { number: 'asc' }],
     });
   }
@@ -111,5 +126,75 @@ export class RoomsService {
     if (!room) throw new NotFoundException('Room not found');
     await this.prisma.room.delete({ where: { id } });
     return { message: 'Room deleted' };
+  }
+
+  async addRoomImages(roomTypeId: string, images: { url: string; isPrimary: boolean; displayOrder: number }[]) {
+    // Get existing image count
+    const existingCount = await this.prisma.roomImage.count({ where: { roomTypeId } });
+    
+    // If there are already images, we need to manage primary status
+    if (existingCount > 0) {
+      // If any new image is primary, unset existing primary
+      const hasNewPrimary = images.some(img => img.isPrimary);
+      if (hasNewPrimary) {
+        await this.prisma.roomImage.updateMany({
+          where: { roomTypeId, isPrimary: true },
+          data: { isPrimary: false },
+        });
+      }
+    }
+    
+    // Create new images
+    const createdImages = await this.prisma.roomImage.createMany({
+      data: images.map(img => ({
+        roomTypeId,
+        url: img.url,
+        isPrimary: img.isPrimary,
+        displayOrder: img.displayOrder + existingCount, // Offset by existing count
+      })),
+    });
+    
+    return {
+      message: `Added ${createdImages.count} images`,
+      roomTypeId,
+    };
+  }
+
+  async deleteRoomImage(roomTypeId: string, imageId: string) {
+    const image = await this.prisma.roomImage.findFirst({
+      where: { id: imageId, roomTypeId },
+    });
+    
+    if (!image) {
+      throw new NotFoundException('Image not found');
+    }
+    
+    // Delete from blob storage if URL is from blob
+    if (image.url && !image.url.startsWith('/')) {
+      try {
+        await this.blobStorageService?.deleteImage(image.url);
+      } catch (e) {
+        console.error('Failed to delete blob image:', e);
+      }
+    }
+    
+    await this.prisma.roomImage.delete({ where: { id: imageId } });
+    
+    // If deleted image was primary, set another image as primary
+    if (image.isPrimary) {
+      const remainingImages = await this.prisma.roomImage.findFirst({
+        where: { roomTypeId },
+        orderBy: { displayOrder: 'asc' },
+      });
+      
+      if (remainingImages) {
+        await this.prisma.roomImage.update({
+          where: { id: remainingImages.id },
+          data: { isPrimary: true },
+        });
+      }
+    }
+    
+    return { message: 'Image deleted' };
   }
 }

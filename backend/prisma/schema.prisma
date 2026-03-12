@@ -50,6 +50,7 @@ enum RoomStatus {
   OCCUPIED
   CLEANING
   MAINTENANCE
+  RESERVED
 }
 
 model User {
@@ -69,7 +70,6 @@ model User {
 
   // Relations
   refreshTokens   RefreshToken[]
-  bookings       Booking[]       @relation("GuestBookings")
   createdBookings Booking[]      @relation("CreatedByBookings")
   guestProfile   Guest?
   staffProfile   Staff?
@@ -106,7 +106,7 @@ model Guest {
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bookings Booking[]
+  bookings Booking[] @relation("GuestBookings")
 
   @@map("guests")
 }
@@ -137,13 +137,15 @@ model RoomType {
   beds        Int
   amenities   String[] @default([])
   description String?
-  image       String?
+  image       String?  // Primary image (legacy field)
   totalUnits  Int      @default(1) @map("total_units") // Inventory count
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  rooms   Room[]
+  rooms        Room[]
   bookingItems BookingItem[]
+  images       RoomImage[]
+  reservationLocks ReservationLock[]
 
   @@index([type])
   @@map("room_types")
@@ -158,11 +160,45 @@ model Room {
   createdAt    DateTime   @default(now()) @map("created_at")
   updatedAt    DateTime   @updatedAt @map("updated_at")
 
-  roomType RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
+  roomType    RoomType     @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
+  blockedDates BlockedDate[]
 
   @@index([status])
   @@index([roomTypeId])
   @@map("rooms")
+}
+
+// ==================== BLOCKED DATES ====================
+
+model BlockedDate {
+  id        String   @id @default(uuid())
+  roomId    String   @map("room_id")
+  startDate DateTime @map("start_date")
+  endDate   DateTime @map("end_date")
+  reason    String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@map("blocked_dates")
+}
+
+// ==================== ROOM IMAGES ====================
+
+model RoomImage {
+  id          String   @id @default(uuid())
+  roomTypeId  String   @map("room_type_id")
+  url         String
+  altText     String?  @map("alt_text")
+  isPrimary   Boolean  @default(false) @map("is_primary")
+  displayOrder Int    @default(0) @map("display_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  roomType RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+
+  @@index([roomTypeId])
+  @@map("room_images")
 }
 
 // ==================== PROMO CODES & ADD-ONS ====================
@@ -220,7 +256,7 @@ model Booking {
   createdAt       DateTime      @default(now()) @map("created_at")
   updatedAt       DateTime      @updatedAt @map("updated_at")
 
-  guest        Guest?      @relation(fields: [guestId], references: [id], onDelete: SetNull)
+  guest        Guest?      @relation("GuestBookings", fields: [guestId], references: [id], onDelete: SetNull)
   createdBy    User?       @relation("CreatedByBookings", fields: [createdById], references: [id], onDelete: SetNull)
   items        BookingItem[]
   addOns       BookingAddOn[]
@@ -267,6 +303,29 @@ model BookingAddOn {
 
 // ==================== PAYMENTS ====================
 
+// ==================== RESERVATION LOCKS (Double Booking Prevention) ====================
+
+model ReservationLock {
+  id              String   @id @default(uuid())
+  roomTypeId      String   @map("room_type_id")
+  checkInDate     DateTime @map("check_in_date")
+  checkOutDate    DateTime @map("check_out_date")
+  quantity        Int      @default(1) // Number of rooms locked
+  sessionToken    String   @unique @map("session_token") // Unique token for the lock holder
+  expiresAt       DateTime @map("expires_at") // Lock expiration (10 minutes)
+  bookingId       String?  @map("booking_id") // Associated booking if confirmed
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  roomType RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([roomTypeId, checkInDate, checkOutDate])
+  @@index([roomTypeId])
+  @@index([expiresAt])
+  @@index([sessionToken])
+  @@index([bookingId])
+  @@map("reservation_locks")
+}
+
 model Payment {
   id              String        @id @default(uuid())
   bookingId       String        @map("booking_id")
@@ -275,6 +334,13 @@ model Payment {
   method          PaymentMethod
   status          PaymentStatus @default(PENDING)
   transactionId   String?       @map("transaction_id")
+  
+  // Stripe-specific fields
+  stripePaymentIntentId String?  @map("stripe_payment_intent_id")
+  stripeCustomerId      String?  @map("stripe_customer_id")
+  stripePaymentMethodId String?  @map("stripe_payment_method_id")
+  clientSecret         String?  @map("client_secret")
+  
   metadata        Json?
   paidAt          DateTime?     @map("paid_at")
   createdAt       DateTime      @default(now()) @map("created_at")
@@ -285,6 +351,7 @@ model Payment {
   @@index([bookingId])
   @@index([transactionId])
   @@index([status])
+  @@index([stripePaymentIntentId])
   @@map("payments")
 }
 
