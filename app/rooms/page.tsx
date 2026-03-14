@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BedDouble, Users, DollarSign, Star } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
 interface RoomType {
   id: string;
@@ -60,7 +61,8 @@ export default function RoomsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4">
+      <Navbar />
+      <div className="container mx-auto px-4 mt-16">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Our Rooms</h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">

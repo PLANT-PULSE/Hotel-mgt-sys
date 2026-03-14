@@ -82,6 +82,8 @@ export default function RoomsPage() {
   const [newRoomTypePrice, setNewRoomTypePrice] = useState('');
   const [newRoomTypeOccupancy, setNewRoomTypeOccupancy] = useState('');
   const [newRoomTypeBed, setNewRoomTypeBed] = useState('');
+  const [newRoomTypeImages, setNewRoomTypeImages] = useState<File[]>([]);
+  const [newRoomTypeImagePreviews, setNewRoomTypeImagePreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -212,32 +214,73 @@ export default function RoomsPage() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/rooms/types', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newRoomTypeName,
-          type: 'standard',
-          basePrice: parseFloat(newRoomTypePrice),
-          maxGuests: parseInt(newRoomTypeOccupancy),
-          beds: parseInt(newRoomTypeBed) || 1,
-          size: '25m²',
-          amenities: [],
-        }),
-      });
+      const roomTypeData = {
+        name: newRoomTypeName,
+        type: 'standard',
+        basePrice: parseFloat(newRoomTypePrice),
+        maxGuests: parseInt(newRoomTypeOccupancy),
+        beds: parseInt(newRoomTypeBed) || 1,
+        size: '25m²',
+        amenities: [],
+      };
 
-      if (response.ok) {
-        setNewRoomTypeName('');
-        setNewRoomTypePrice('');
-        setNewRoomTypeOccupancy('');
-        setNewRoomTypeBed('');
-        setIsAddTypeOpen(false);
-        fetchRoomTypes();
+      // If there are images, use multipart form data
+      if (newRoomTypeImages.length > 0) {
+        const formData = new FormData();
+        formData.append('data', JSON.stringify(roomTypeData));
+        
+        for (const file of newRoomTypeImages) {
+          formData.append('images', file);
+        }
+
+        const response = await fetch('/api/rooms/types', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          resetRoomTypeForm();
+          setIsAddTypeOpen(false);
+          fetchRoomTypes();
+        }
+      } else {
+        // No images, use JSON
+        const response = await fetch('/api/rooms/types', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(roomTypeData),
+        });
+
+        if (response.ok) {
+          resetRoomTypeForm();
+          setIsAddTypeOpen(false);
+          fetchRoomTypes();
+        }
       }
     } catch (error) {
       console.error('Failed to create room type:', error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const resetRoomTypeForm = () => {
+    setNewRoomTypeName('');
+    setNewRoomTypePrice('');
+    setNewRoomTypeOccupancy('');
+    setNewRoomTypeBed('');
+    setNewRoomTypeImages([]);
+    setNewRoomTypeImagePreviews([]);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files).slice(0, 3);
+      setNewRoomTypeImages(files);
+      
+      // Create preview URLs
+      const previews = files.map(file => URL.createObjectURL(file));
+      setNewRoomTypeImagePreviews(previews);
     }
   };
 
@@ -300,7 +343,10 @@ export default function RoomsPage() {
           <p className="text-gray-500">Manage rooms, room types, and inventory</p>
         </div>
         <div className="flex gap-2">
-          <Dialog open={isAddTypeOpen} onOpenChange={setIsAddTypeOpen}>
+          <Dialog open={isAddTypeOpen} onOpenChange={(open) => {
+            setIsAddTypeOpen(open);
+            if (!open) resetRoomTypeForm();
+          }}>
             <DialogTrigger asChild>
               <Button variant="outline">
                 <Plus className="mr-2 h-4 w-4" />
@@ -349,6 +395,52 @@ export default function RoomsPage() {
                     onChange={(e) => setNewRoomTypeBed(e.target.value)}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label>Room Images (max 3)</Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="room-type-images"
+                    />
+                    <label
+                      htmlFor="room-type-images"
+                      className="flex flex-col items-center justify-center cursor-pointer"
+                    >
+                      <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                      <span className="text-sm text-gray-500">Click to upload images</span>
+                      <span className="text-xs text-gray-400">PNG, JPG up to 5MB each</span>
+                    </label>
+                  </div>
+                  {newRoomTypeImagePreviews.length > 0 && (
+                    <div className="flex gap-2 mt-2">
+                      {newRoomTypeImagePreviews.map((preview, idx) => (
+                        <div key={idx} className="relative">
+                          <img
+                            src={preview}
+                            alt={`Preview ${idx + 1}`}
+                            className="w-16 h-16 object-cover rounded-md"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newImages = newRoomTypeImages.filter((_, i) => i !== idx);
+                              const newPreviews = newRoomTypeImagePreviews.filter((_, i) => i !== idx);
+                              setNewRoomTypeImages(newImages);
+                              setNewRoomTypeImagePreviews(newPreviews);
+                            }}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <Button 
                   className="w-full" 
                   onClick={createRoomType}
@@ -359,7 +451,14 @@ export default function RoomsPage() {
               </div>
             </DialogContent>
           </Dialog>
-          <Dialog open={isAddRoomOpen} onOpenChange={setIsAddRoomOpen}>
+          <Dialog open={isAddRoomOpen} onOpenChange={(open) => {
+            setIsAddRoomOpen(open);
+            if (!open) {
+              setNewRoomNumber('');
+              setNewRoomFloor('');
+              setNewRoomTypeId('');
+            }
+          }}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
@@ -513,7 +612,8 @@ export default function RoomsPage() {
       {/* Rooms Table */}
       <Card className="bg-white shadow-sm">
         <CardContent className="p-0">
-          <Table>
+          <div className="overflow-x-auto">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Images</TableHead>
@@ -633,6 +733,7 @@ export default function RoomsPage() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
       

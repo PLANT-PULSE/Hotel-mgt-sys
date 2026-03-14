@@ -245,7 +245,8 @@ export default function GuestsPage() {
       {/* Guests Table */}
       <Card className="bg-white shadow-sm">
         <CardContent className="p-0">
-          <Table>
+          <div className="overflow-x-auto">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Guest</TableHead>
@@ -350,6 +351,7 @@ export default function GuestsPage() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 

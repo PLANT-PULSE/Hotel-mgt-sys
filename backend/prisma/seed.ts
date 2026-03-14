@@ -116,6 +116,19 @@ async function main() {
     const existing = await prisma.roomType.findFirst({ where: { name: data.name } });
     const rt = existing || await prisma.roomType.create({ data });
     roomTypes.push(rt);
+    
+    // Create RoomImage records for the room type (if none exist)
+    const existingImages = await prisma.roomImage.count({ where: { roomTypeId: rt.id } });
+    if (existingImages === 0) {
+      await prisma.roomImage.create({
+        data: {
+          roomTypeId: rt.id,
+          url: data.image,
+          isPrimary: true,
+          displayOrder: 0,
+        },
+      });
+    }
   }
 
   // Create physical rooms for each type (skip if already seeded)

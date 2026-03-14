@@ -1,10 +1,12 @@
 import Link from 'next/link'
+import Navbar from '@/components/Navbar'
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+      <Navbar />
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center">
+      <section className="relative h-screen flex items-center justify-center pt-16">
         <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 to-slate-900/40"></div>
         <div className="relative z-10 text-center px-4">
           <h1 className="text-6xl md:text-8xl font-bold text-white mb-6">

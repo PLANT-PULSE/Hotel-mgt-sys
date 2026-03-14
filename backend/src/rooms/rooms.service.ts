@@ -35,7 +35,8 @@ export class RoomsService {
 
     return roomTypes.map((rt) => ({
       ...rt,
-      roomsLeft: rt.rooms.filter((r) => r.status === RoomStatus.AVAILABLE).length,
+      roomsLeft: rt.rooms.length,
+      images: rt.images.length > 0 ? rt.images : (rt.image ? [{ url: rt.image, isPrimary: true }] : []),
       status: 'available',
     }));
   }
@@ -43,11 +44,15 @@ export class RoomsService {
   async getRoomTypeById(id: string) {
     const rt = await this.prisma.roomType.findUnique({
       where: { id },
-      include: { rooms: true },
+      include: { rooms: true, images: true },
     });
     if (!rt) throw new NotFoundException('Room type not found');
     const availableCount = rt.rooms.filter((r) => r.status === RoomStatus.AVAILABLE).length;
-    return { ...rt, roomsLeft: availableCount };
+    return { 
+      ...rt, 
+      roomsLeft: availableCount,
+      images: rt.images.length > 0 ? rt.images : (rt.image ? [{ url: rt.image, isPrimary: true }] : []),
+    };
   }
 
   async createRoomType(dto: CreateRoomTypeDto) {

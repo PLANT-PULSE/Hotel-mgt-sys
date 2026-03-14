@@ -273,7 +273,8 @@ export default function BookingsPage() {
       {/* Bookings Table */}
       <Card className="bg-white shadow-sm">
         <CardContent className="p-0">
-          <Table>
+          <div className="overflow-x-auto">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Booking ID</TableHead>
@@ -387,6 +388,7 @@ export default function BookingsPage() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
