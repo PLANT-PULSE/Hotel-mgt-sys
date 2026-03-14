@@ -114,18 +114,20 @@ export default function AdminLayout({
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Mobile header */}
-        <header className="sticky top-0 z-30 bg-white border-b px-4 py-3 lg:hidden">
-          <div className="flex items-center gap-3">
+        <header className="sticky top-0 z-30 bg-white border-b shadow-sm">
+          <div className="flex items-center justify-between px-4 py-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-lg hover:bg-gray-100"
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              aria-label="Open menu"
             >
-              <Menu className="h-6 w-6" />
+              <Menu className="h-6 w-6 text-gray-700" />
             </button>
             <div className="flex items-center gap-2">
-              <Hotel className="h-6 w-6 text-primary" />
-              <span className="font-bold">LuxStay</span>
+              <Hotel className="h-6 w-6 text-amber-600" />
+              <span className="font-bold text-gray-900">LuxStay</span>
             </div>
+            <div className="w-10" />
           </div>
         </header>
 

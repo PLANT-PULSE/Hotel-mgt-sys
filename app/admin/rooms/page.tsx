@@ -336,13 +336,13 @@ export default function RoomsPage() {
   });
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 bg-gray-50 min-h-screen">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Room Management</h1>
-          <p className="text-gray-500">Manage rooms, room types, and inventory</p>
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-900">Room Management</h1>
+          <p className="text-gray-500 text-sm sm:text-base">Manage rooms, room types, and inventory</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Dialog open={isAddTypeOpen} onOpenChange={(open) => {
             setIsAddTypeOpen(open);
             if (!open) resetRoomTypeForm();

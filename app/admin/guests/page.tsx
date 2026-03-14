@@ -157,15 +157,16 @@ export default function GuestsPage() {
   });
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 bg-gray-50 min-h-screen">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Guest Management</h1>
-          <p className="text-gray-500">Manage guests and their booking history</p>
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-900">Guest Management</h1>
+          <p className="text-gray-500 text-sm sm:text-base">Manage guests and their booking history</p>
         </div>
-        <Button>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Add Guest
+        <Button className="text-xs sm:text-sm">
+          <UserPlus className="mr-1 sm:mr-2 h-3 sm:h-4 w-3 sm:w-4" />
+          <span className="hidden sm:inline">Add Guest</span>
+          <span className="sm:hidden">Add</span>
         </Button>
       </div>
 

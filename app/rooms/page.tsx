@@ -60,17 +60,17 @@ export default function RoomsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-gray-50 py-8 sm:py-12">
       <Navbar />
-      <div className="container mx-auto px-4 mt-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Our Rooms</h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+      <div className="container mx-auto px-4 mt-14 sm:mt-16">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">Our Rooms</h1>
+          <p className="text-sm sm:text-lg text-gray-600 max-w-2xl mx-auto">
             Discover our comfortable and luxurious rooms designed to make your stay memorable.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {roomTypes.map((room) => (
             <Card key={room.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
               {/* Room Image Carousel */}

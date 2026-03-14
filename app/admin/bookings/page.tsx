@@ -207,20 +207,21 @@ export default function BookingsPage() {
   const totalPages = Math.ceil(meta.total / meta.limit);
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 space-y-6 bg-gray-50 min-h-screen">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Bookings</h1>
-          <p className="text-gray-500">Manage all reservations and bookings</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Bookings</h1>
+          <p className="text-gray-500 text-sm sm:text-base">Manage all reservations and bookings</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Export
+          <Button variant="outline" className="text-xs sm:text-sm">
+            <Download className="mr-1 sm:mr-2 h-3 sm:h-4 w-3 sm:w-4" />
+            <span className="hidden sm:inline">Export</span>
           </Button>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            New Booking
+          <Button className="text-xs sm:text-sm">
+            <Plus className="mr-1 sm:mr-2 h-3 sm:h-4 w-3 sm:w-4" />
+            <span className="hidden sm:inline">New Booking</span>
+            <span className="sm:hidden">Add</span>
           </Button>
         </div>
       </div>

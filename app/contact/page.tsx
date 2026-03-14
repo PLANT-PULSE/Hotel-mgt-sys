@@ -25,21 +25,21 @@ export default function ContactPage() {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="pt-24 pb-16 px-4">
+      <section className="pt-20 sm:pt-24 pb-10 sm:pb-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-6">
             Contact Us
           </h1>
-          <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+          <p className="text-base sm:text-xl text-slate-300 max-w-2xl mx-auto">
             Have questions? We'd love to hear from you. Get in touch with our team.
           </p>
         </div>
       </section>
 
       {/* Contact Section */}
-      <section className="py-16 px-4 bg-slate-800">
+      <section className="py-10 sm:py-16 px-4 bg-slate-800">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12">
+          <div className="grid sm:grid-cols-2 gap-8 sm:gap-12">
             {/* Contact Info */}
             <div>
               <h2 className="text-2xl font-bold text-white mb-6">Get In Touch</h2>

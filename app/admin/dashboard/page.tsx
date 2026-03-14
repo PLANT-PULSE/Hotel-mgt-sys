@@ -119,91 +119,92 @@ export default function AdminDashboard() {
   const maxRevenue = Math.max(...revenue.map(r => r.revenue), 1);
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 space-y-6 bg-gray-50 min-h-screen">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500">Welcome back! Here's your hotel overview.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-500 text-sm sm:text-base">Welcome back! Here's your hotel overview.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
-            <CalendarDays className="mr-2 h-4 w-4" />
-            {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+          <Button variant="outline" className="text-xs sm:text-sm">
+            <CalendarDays className="mr-1 sm:mr-2 h-3 sm:h-4 w-3 sm:w-4" />
+            <span className="hidden sm:inline">{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+            <span className="sm:hidden">{new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
           </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-white shadow-sm">
-          <CardContent className="pt-6">
+          <CardContent className="pt-4 sm:pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Monthly Revenue</p>
-                <p className="text-2xl font-bold">{formatCurrency(stats?.monthlyRevenue || 0)}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-500">Monthly Revenue</p>
+                <p className="text-xl sm:text-2xl font-bold">{formatCurrency(stats?.monthlyRevenue || 0)}</p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-green-600" />
+              <div className="h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-green-100 flex items-center justify-center">
+                <DollarSign className="h-5 sm:h-6 w-5 sm:w-6 text-green-600" />
               </div>
             </div>
-            <div className="mt-4 flex items-center text-sm">
-              <ArrowUpRight className="h-4 w-4 text-green-500 mr-1" />
+            <div className="mt-3 sm:mt-4 flex items-center text-xs sm:text-sm">
+              <ArrowUpRight className="h-3 sm:h-4 w-3 sm:w-4 text-green-500 mr-1" />
               <span className="text-green-500 font-medium">+12.5%</span>
-              <span className="text-gray-500 ml-1">from last month</span>
+              <span className="text-gray-500 ml-1 hidden sm:inline">from last month</span>
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-white shadow-sm">
-          <CardContent className="pt-6">
+          <CardContent className="pt-4 sm:pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Total Bookings</p>
-                <p className="text-2xl font-bold">{stats?.totalBookings || 0}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-500">Total Bookings</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats?.totalBookings || 0}</p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                <CalendarDays className="h-6 w-6 text-blue-600" />
+              <div className="h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                <CalendarDays className="h-5 sm:h-6 w-5 sm:w-6 text-blue-600" />
               </div>
             </div>
-            <div className="mt-4 flex items-center text-sm">
-              <TrendingUp className="h-4 w-4 text-blue-500 mr-1" />
+            <div className="mt-3 sm:mt-4 flex items-center text-xs sm:text-sm">
+              <TrendingUp className="h-3 sm:h-4 w-3 sm:w-4 text-blue-500 mr-1" />
               <span className="text-blue-500 font-medium">Active bookings</span>
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-white shadow-sm">
-          <CardContent className="pt-6">
+          <CardContent className="pt-4 sm:pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Occupancy Rate</p>
-                <p className="text-2xl font-bold">{stats?.occupancyRate || 0}%</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-500">Occupancy Rate</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats?.occupancyRate || 0}%</p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
-                <BedDouble className="h-6 w-6 text-purple-600" />
+              <div className="h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-purple-100 flex items-center justify-center">
+                <BedDouble className="h-5 sm:h-6 w-5 sm:w-6 text-purple-600" />
               </div>
             </div>
-            <div className="mt-4 flex items-center text-sm">
+            <div className="mt-3 sm:mt-4 text-xs sm:text-sm">
               <span className="text-gray-500">
-                {stats?.roomStatus?.occupied || 0} of {stats?.totalRooms || 0} rooms occupied
+                {stats?.roomStatus?.occupied || 0} of {stats?.totalRooms || 0} rooms
               </span>
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-white shadow-sm">
-          <CardContent className="pt-6">
+          <CardContent className="pt-4 sm:pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Total Guests</p>
-                <p className="text-2xl font-bold">{stats?.totalCustomers || 0}</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-500">Total Guests</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats?.totalCustomers || 0}</p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center">
-                <Users className="h-6 w-6 text-orange-600" />
+              <div className="h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-orange-100 flex items-center justify-center">
+                <Users className="h-5 sm:h-6 w-5 sm:w-6 text-orange-600" />
               </div>
             </div>
-            <div className="mt-4 flex items-center text-sm">
-              <Activity className="h-4 w-4 text-orange-500 mr-1" />
+            <div className="mt-3 sm:mt-4 flex items-center text-xs sm:text-sm">
+              <Activity className="h-3 sm:h-4 w-3 sm:w-4 text-orange-500 mr-1" />
               <span className="text-orange-500 font-medium">Registered guests</span>
             </div>
           </CardContent>
@@ -216,34 +217,34 @@ export default function AdminDashboard() {
           <CardTitle className="text-lg">Room Status Overview</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-4 gap-4">
-            <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="flex items-center justify-between p-3 sm:p-4 bg-green-50 rounded-lg">
               <div>
-                <p className="text-sm text-green-600">Available</p>
-                <p className="text-2xl font-bold text-green-700">{stats?.roomStatus?.available || 0}</p>
+                <p className="text-xs sm:text-sm text-green-600">Available</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-700">{stats?.roomStatus?.available || 0}</p>
               </div>
-              <BedDouble className="h-8 w-8 text-green-500" />
+              <BedDouble className="h-6 w-6 sm:h-8 sm:w-8 text-green-500" />
             </div>
-            <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 sm:p-4 bg-blue-50 rounded-lg">
               <div>
-                <p className="text-sm text-blue-600">Occupied</p>
-                <p className="text-2xl font-bold text-blue-700">{stats?.roomStatus?.occupied || 0}</p>
+                <p className="text-xs sm:text-sm text-blue-600">Occupied</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-700">{stats?.roomStatus?.occupied || 0}</p>
               </div>
-              <Users className="h-8 w-8 text-blue-500" />
+              <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
             </div>
-            <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 sm:p-4 bg-yellow-50 rounded-lg">
               <div>
-                <p className="text-sm text-yellow-600">Cleaning</p>
-                <p className="text-2xl font-bold text-yellow-700">{stats?.roomStatus?.cleaning || 0}</p>
+                <p className="text-xs sm:text-sm text-yellow-600">Cleaning</p>
+                <p className="text-xl sm:text-2xl font-bold text-yellow-700">{stats?.roomStatus?.cleaning || 0}</p>
               </div>
-              <Clock className="h-8 w-8 text-yellow-500" />
+              <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500" />
             </div>
-            <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 sm:p-4 bg-red-50 rounded-lg">
               <div>
-                <p className="text-sm text-red-600">Maintenance</p>
-                <p className="text-2xl font-bold text-red-700">{stats?.roomStatus?.maintenance || 0}</p>
+                <p className="text-xs sm:text-sm text-red-600">Maintenance</p>
+                <p className="text-xl sm:text-2xl font-bold text-red-700">{stats?.roomStatus?.maintenance || 0}</p>
               </div>
-              <Activity className="h-8 w-8 text-red-500" />
+              <Activity className="h-6 w-6 sm:h-8 sm:w-8 text-red-500" />
             </div>
           </div>
         </CardContent>

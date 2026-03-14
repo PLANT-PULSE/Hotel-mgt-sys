@@ -169,27 +169,27 @@ export default function CalendarPage() {
   const days = getDaysInMonth(currentDate);
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
-      <div className="flex items-center justify-between">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 bg-gray-50 min-h-screen">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Calendar & Occupancy</h1>
-          <p className="text-gray-500">View room bookings and occupancy rates</p>
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-900">Calendar & Occupancy</h1>
+          <p className="text-gray-500 text-sm sm:text-base">View room bookings and occupancy rates</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" className="min-w-[150px]">
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+          <Button variant="outline" className="min-w-[100px] sm:min-w-[150px] text-xs sm:text-sm">
+            {monthNames[currentDate.getMonth()].slice(0, 3)} {currentDate.getFullYear()}
           </Button>
-          <Button variant="outline" onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}>
+          <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}>
             <ChevronRight className="h-4 w-4" />
           </Button>
           <Dialog open={isBlockDatesOpen} onOpenChange={setIsBlockDatesOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline">
-                <Ban className="mr-2 h-4 w-4" />
-                Block Dates
+              <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+                <Ban className="mr-1 h-3 sm:h-4 w-3 sm:w-4" />
+                <span className="hidden sm:inline">Block Dates</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -230,16 +230,16 @@ export default function CalendarPage() {
       </div>
 
       {/* Occupancy Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {occupancyData.slice(0, 4).map((data, index) => (
           <Card key={index} className="bg-white shadow-sm">
-            <CardContent className="pt-6">
-              <p className="text-sm text-gray-500">{data.month}</p>
-              <div className="mt-2 flex items-end justify-between">
-                <p className="text-3xl font-bold">{data.occupancyRate}%</p>
-                <p className="text-sm text-gray-500">{data.bookedRooms}/{data.totalRooms} rooms</p>
+            <CardContent className="pt-4 sm:pt-6">
+              <p className="text-xs sm:text-sm text-gray-500">{data.month}</p>
+              <div className="mt-1 sm:mt-2 flex items-end justify-between">
+                <p className="text-2xl sm:text-3xl font-bold">{data.occupancyRate}%</p>
+                <p className="text-xs sm:text-sm text-gray-500">{data.bookedRooms}/{data.totalRooms}</p>
               </div>
-              <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="mt-2 h-1.5 sm:h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-primary rounded-full"
                   style={{ width: `${data.occupancyRate}%` }}
@@ -250,8 +250,8 @@ export default function CalendarPage() {
         ))}
       </div>
 
-      {/* Calendar Grid */}
-      <Card className="bg-white shadow-sm">
+      {/* Calendar Grid - Desktop only */}
+      <Card className="bg-white shadow-sm hidden md:block">
         <CardHeader>
           <CardTitle className="text-lg">Room Bookings Calendar</CardTitle>
         </CardHeader>
@@ -307,19 +307,61 @@ export default function CalendarPage() {
           </div>
 
           {/* Legend */}
-          <div className="mt-6 flex items-center gap-6">
+          <div className="mt-6 flex items-center gap-4 sm:gap-6">
             <div className="flex items-center gap-2">
               <div className="h-4 w-4 bg-blue-100 border rounded"></div>
-              <span className="text-sm text-gray-600">Booked</span>
+              <span className="text-xs sm:text-sm text-gray-600">Booked</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-4 w-4 bg-white border rounded"></div>
-              <span className="text-sm text-gray-600">Available</span>
+              <span className="text-xs sm:text-sm text-gray-600">Available</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-4 w-4 bg-red-50 border rounded"></div>
-              <span className="text-sm text-gray-600">Maintenance</span>
+              <span className="text-xs sm:text-sm text-gray-600">Maintenance</span>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Mobile-friendly room list view */}
+      <Card className="bg-white shadow-sm md:hidden">
+        <CardHeader>
+          <CardTitle className="text-lg">Room Bookings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {rooms.map(room => (
+              <div key={room.id} className="border rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">Room {room.roomNumber}</span>
+                    <Badge variant="outline" className="text-xs">{room.roomType}</Badge>
+                  </div>
+                  <Badge className={
+                    room.status === 'AVAILABLE' ? 'bg-green-500' :
+                    room.status === 'OCCUPIED' ? 'bg-blue-500' :
+                    room.status === 'MAINTENANCE' ? 'bg-red-500' : 'bg-yellow-500'
+                  }>
+                    {room.status}
+                  </Badge>
+                </div>
+                {room.bookings.length > 0 ? (
+                  <div className="space-y-2">
+                    {room.bookings.map(booking => (
+                      <div key={booking.id} className="text-xs sm:text-sm bg-blue-50 p-2 rounded">
+                        <span className="font-medium">{booking.guestName}</span>
+                        <span className="text-gray-500 ml-2">
+                          {new Date(booking.checkIn).toLocaleDateString()} - {new Date(booking.checkOut).toLocaleDateString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs sm:text-sm text-gray-500">No bookings</p>
+                )}
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
