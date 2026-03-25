@@ -190,7 +190,7 @@ export class DashboardService {
 
     return rooms.map(room => ({
       id: room.id,
-      roomNumber: room.roomNumber,
+      number: (room as any).number,
       roomType: room.roomType.name,
       status: room.status,
       bookings: room.bookings.map(b => ({

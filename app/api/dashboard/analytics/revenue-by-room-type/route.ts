@@ -1,17 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { NextRequest } from 'next/server';
+import { proxyJson } from '@/lib/backend';
 
 export async function GET(request: NextRequest) {
-  try {
-    const response = await fetch(`${API_URL}/dashboard/analytics/revenue-by-room-type`, {
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store',
-    });
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error('Revenue by room type error:', error);
-    return NextResponse.json([]);
-  }
+  return proxyJson(request, '/dashboard/analytics/revenue-by-room-type', { method: 'GET' });
 }

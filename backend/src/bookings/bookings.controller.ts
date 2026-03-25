@@ -20,17 +20,43 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RequestUser } from '../auth/strategies/jwt.strategy';
 import { UserRole } from '@prisma/client';
 import { BookingStatus } from '@prisma/client';
+import { ReservationLockService } from './reservation-lock.service';
+import { CreateReservationLockDto } from './dto/create-reservation-lock.dto';
 
 @ApiTags('bookings')
 @Controller('bookings')
 export class BookingsController {
-  constructor(private bookingsService: BookingsService) {}
+  constructor(
+    private bookingsService: BookingsService,
+    private reservationLocks: ReservationLockService,
+  ) {}
 
   @Post()
   @Public()
   @ApiOperation({ summary: 'Create booking (guest checkout)' })
   async create(@Body() dto: CreateBookingDto, @CurrentUser() user?: RequestUser) {
     return this.bookingsService.create(dto, user);
+  }
+
+  @Post('lock')
+  @Public()
+  @ApiOperation({ summary: 'Create reservation lock (prevents double booking)' })
+  async lock(@Body() dto: CreateReservationLockDto) {
+    const { sessionToken, expiresAt } = await this.reservationLocks.createLock(
+      dto.roomTypeId,
+      new Date(dto.checkInDate),
+      new Date(dto.checkOutDate),
+      dto.quantity,
+    );
+    return { lockId: sessionToken, expiresAt };
+  }
+
+  @Post('lock/release')
+  @Public()
+  @ApiOperation({ summary: 'Release reservation lock' })
+  async releaseLock(@Body() body: { lockId: string }) {
+    await this.reservationLocks.releaseLock(body.lockId);
+    return { released: true };
   }
 
   @Get()

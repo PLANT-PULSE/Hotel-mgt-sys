@@ -67,4 +67,11 @@ export class NotificationsService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  async listLatest(limit: number = 100) {
+    return this.prisma.notification.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: Math.min(Math.max(limit, 1), 500),
+    });
+  }
 }

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { backendBaseUrl, backendFetchWithAuth } from '@/lib/backend';
 
 export async function POST(
   request: NextRequest,
@@ -31,8 +30,10 @@ export async function POST(
       backendFormData.append('images', blob, file.name);
     }
 
-    const response = await fetch(`${API_URL}/rooms/${id}/images`, {
+    const accessToken = request.cookies.get('accessToken')?.value;
+    const response = await fetch(`${backendBaseUrl()}/rooms/${id}/images`, {
       method: 'POST',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       body: backendFormData,
     });
 
@@ -53,13 +54,22 @@ export async function DELETE(
 ) {
   try {
     const { id, imageId } = await params;
-    
-    const response = await fetch(`${API_URL}/rooms/${id}/images/${imageId}`, {
-      method: 'DELETE',
-    });
+    const { res, setCookies } = await backendFetchWithAuth(
+      request,
+      `/rooms/${id}/images/${imageId}`,
+      { method: 'DELETE' },
+    );
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const text = await res.text();
+    const out = new NextResponse(text, {
+      status: res.status,
+      headers: { 'Content-Type': res.headers.get('Content-Type') || 'application/json' },
+    });
+    if (setCookies) {
+      out.cookies.set('accessToken', setCookies.accessToken, { httpOnly: true, sameSite: 'lax', path: '/' });
+      out.cookies.set('refreshToken', setCookies.refreshToken, { httpOnly: true, sameSite: 'lax', path: '/' });
+    }
+    return out;
   } catch (error) {
     console.error('Delete error:', error);
     return NextResponse.json(

@@ -3,10 +3,16 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { BookingStatus } from '@prisma/client';
 import { RequestUser } from '../auth/strategies/jwt.strategy';
+import { ReservationLockService } from './reservation-lock.service';
+import { EventsGateway } from '../events/events.gateway';
 
 @Injectable()
 export class BookingsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private reservationLocks: ReservationLockService,
+    private events: EventsGateway,
+  ) {}
 
   private generateBookingNumber(): string {
     const year = new Date().getFullYear();
@@ -63,6 +69,39 @@ export class BookingsService {
       throw new BadRequestException('Check-out must be after check-in');
     }
 
+    const lock = await this.reservationLocks.getLock(dto.lockId);
+    if (!lock) {
+      throw new BadRequestException('Invalid or expired reservation lock');
+    }
+
+    const requestedRoomTypeIds = Array.from(new Set(dto.items.map((i) => i.roomTypeId)));
+    if (requestedRoomTypeIds.length !== 1) {
+      throw new BadRequestException('Reservation lock supports exactly one room type per booking');
+    }
+    const requestedRoomTypeId = requestedRoomTypeIds[0];
+    const requestedQty = dto.items.reduce((sum, i) => sum + i.quantity, 0);
+    if (requestedRoomTypeId !== lock.roomTypeId) {
+      throw new BadRequestException('Reservation lock does not match requested room type');
+    }
+    if (requestedQty !== lock.quantity) {
+      throw new BadRequestException('Reservation lock quantity does not match requested quantity');
+    }
+    if (lock.checkInDate.getTime() !== checkIn.getTime() || lock.checkOutDate.getTime() !== checkOut.getTime()) {
+      throw new BadRequestException('Reservation lock dates do not match requested dates');
+    }
+
+    const availability = await this.reservationLocks.checkAvailability(
+      lock.roomTypeId,
+      lock.checkInDate,
+      lock.checkOutDate,
+      lock.sessionToken,
+    );
+    if (availability.availableQuantity < requestedQty) {
+      throw new BadRequestException(
+        `Not enough rooms available. Only ${availability.availableQuantity} rooms left for these dates.`,
+      );
+    }
+
     const { total } = await this.calculateTotal(
       dto.items,
       checkIn,
@@ -111,6 +150,11 @@ export class BookingsService {
       include: {
         items: { include: { roomType: true } },
       },
+    });
+
+    await this.reservationLocks.confirmBookingFromLock(dto.lockId, booking.id);
+    this.events.broadcastBookingCreated(booking.id, {
+      bookingNumber: booking.bookingNumber,
     });
 
     if (dto.addOns?.length) {

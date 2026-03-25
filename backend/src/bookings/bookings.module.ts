@@ -5,11 +5,12 @@ import { ReservationLockService } from './reservation-lock.service';
 import { PromoCodesController } from './promo-codes.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { EventsModule } from '../events/events.module';
+import { ReservationLockCleanupService } from './reservation-lock-cleanup.service';
 
 @Module({
   imports: [PrismaModule, EventsModule],
   controllers: [BookingsController, PromoCodesController],
-  providers: [BookingsService, ReservationLockService],
+  providers: [BookingsService, ReservationLockService, ReservationLockCleanupService],
   exports: [BookingsService, ReservationLockService],
 })
 export class BookingsModule {}

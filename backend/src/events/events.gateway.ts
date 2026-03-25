@@ -96,6 +96,18 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /**
+   * Broadcast new booking created
+   */
+  broadcastBookingCreated(bookingId: string, data: any) {
+    this.server.emit('booking:created', {
+      bookingId,
+      ...data,
+      timestamp: new Date().toISOString(),
+    });
+    this.logger.log(`Broadcast booking created: ${bookingId}`);
+  }
+
+  /**
    * Broadcast booking confirmation
    */
   broadcastBookingConfirmed(bookingId: string, data: any) {

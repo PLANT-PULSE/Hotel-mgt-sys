@@ -57,7 +57,7 @@ interface RoomType {
 
 interface Room {
   id: string;
-  roomNumber: string;
+  number: string;
   floor: number;
   status: string;
   roomType: RoomType;
@@ -101,51 +101,7 @@ export default function RoomsPage() {
       setRooms(data);
     } catch (error) {
       console.error('Failed to fetch rooms:', error);
-      // Mock data
-      setRooms([
-        {
-          id: '1',
-          roomNumber: '101',
-          floor: 1,
-          status: 'AVAILABLE',
-          roomType: { id: '1', name: 'Deluxe Suite', basePrice: 150, maxOccupancy: 2, bedType: 'King', amenities: [], images: [] },
-        },
-        {
-          id: '2',
-          roomNumber: '102',
-          floor: 1,
-          status: 'OCCUPIED',
-          roomType: { id: '2', name: 'Standard Room', basePrice: 80, maxOccupancy: 2, bedType: 'Queen', amenities: [], images: [] },
-        },
-        {
-          id: '3',
-          roomNumber: '103',
-          floor: 1,
-          status: 'CLEANING',
-          roomType: { id: '1', name: 'Deluxe Suite', basePrice: 150, maxOccupancy: 2, bedType: 'King', amenities: [], images: [] },
-        },
-        {
-          id: '4',
-          roomNumber: '201',
-          floor: 2,
-          status: 'AVAILABLE',
-          roomType: { id: '3', name: 'Executive Suite', basePrice: 250, maxOccupancy: 4, bedType: 'King', amenities: [], images: [] },
-        },
-        {
-          id: '5',
-          roomNumber: '202',
-          floor: 2,
-          status: 'MAINTENANCE',
-          roomType: { id: '2', name: 'Standard Room', basePrice: 80, maxOccupancy: 2, bedType: 'Queen', amenities: [], images: [] },
-        },
-        {
-          id: '6',
-          roomNumber: '301',
-          floor: 3,
-          status: 'OCCUPIED',
-          roomType: { id: '4', name: 'Premium Room', basePrice: 120, maxOccupancy: 2, bedType: 'King', amenities: [], images: [] },
-        },
-      ]);
+      setRooms([]);
     } finally {
       setLoading(false);
     }
@@ -158,12 +114,7 @@ export default function RoomsPage() {
       setRoomTypes(Array.isArray(data) ? data : data.data || []);
     } catch (error) {
       console.error('Failed to fetch room types:', error);
-      setRoomTypes([
-        { id: '1', name: 'Deluxe Suite', basePrice: 150, maxOccupancy: 2, bedType: 'King', amenities: [], images: [] },
-        { id: '2', name: 'Standard Room', basePrice: 80, maxOccupancy: 2, bedType: 'Queen', amenities: [], images: [] },
-        { id: '3', name: 'Executive Suite', basePrice: 250, maxOccupancy: 4, bedType: 'King', amenities: [], images: [] },
-        { id: '4', name: 'Premium Room', basePrice: 120, maxOccupancy: 2, bedType: 'King', amenities: [], images: [] },
-      ]);
+      setRoomTypes([]);
     }
   };
 

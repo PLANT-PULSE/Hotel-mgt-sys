@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { backendBaseUrl, proxyJson, backendFetchWithAuth } from '@/lib/backend';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -8,22 +7,13 @@ export async function GET(request: NextRequest) {
   const minPrice = searchParams.get('minPrice');
   const maxPrice = searchParams.get('maxPrice');
 
-  try {
-    const params = new URLSearchParams();
-    if (type) params.set('type', type);
-    if (minPrice) params.set('minPrice', minPrice);
-    if (maxPrice) params.set('maxPrice', maxPrice);
+  const params = new URLSearchParams();
+  if (type) params.set('type', type);
+  if (minPrice) params.set('minPrice', minPrice);
+  if (maxPrice) params.set('maxPrice', maxPrice);
 
-    const response = await fetch(`${API_URL}/rooms?${params}`, {
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store',
-    });
-    const data = await response.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    // Return empty array if backend is not available - no mock data
-    return NextResponse.json([]);
-  }
+  const qs = params.toString();
+  return proxyJson(request, `/rooms${qs ? `?${qs}` : ''}`, { method: 'GET' });
 }
 
 export async function POST(request: NextRequest) {
@@ -41,9 +31,8 @@ export async function POST(request: NextRequest) {
       const imagesToUpload = files.slice(0, 3);
       
       // First create the room type
-      const response = await fetch(`${API_URL}/rooms`, {
+      const { res: response, setCookies } = await backendFetchWithAuth(request, '/rooms', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
 
@@ -53,6 +42,11 @@ export async function POST(request: NextRequest) {
       }
 
       const newRoomType = await response.json();
+      const out = NextResponse.json(newRoomType);
+      if (setCookies) {
+        out.cookies.set('accessToken', setCookies.accessToken, { httpOnly: true, sameSite: 'lax', path: '/' });
+        out.cookies.set('refreshToken', setCookies.refreshToken, { httpOnly: true, sameSite: 'lax', path: '/' });
+      }
       
       // If there are images, upload them
       if (imagesToUpload.length > 0) {
@@ -65,25 +59,19 @@ export async function POST(request: NextRequest) {
           backendFormData.append('images', blob, file.name);
         }
 
-        await fetch(`${API_URL}/rooms/${newRoomType.id}/images`, {
+        const accessToken = request.cookies.get('accessToken')?.value;
+        await fetch(`${backendBaseUrl()}/rooms/${newRoomType.id}/images`, {
           method: 'POST',
+          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
           body: backendFormData,
         });
       }
       
-      return NextResponse.json(newRoomType);
+      return out;
     } else {
       // Regular JSON request
       const body = await request.json();
-      
-      const response = await fetch(`${API_URL}/rooms`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      const data = await response.json();
-      return NextResponse.json(data, { status: response.status });
+      return proxyJson(request, '/rooms', { method: 'POST', body: JSON.stringify(body) });
     }
   } catch (error) {
     console.error('Create room type error:', error);

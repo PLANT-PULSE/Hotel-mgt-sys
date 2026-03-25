@@ -28,6 +28,12 @@ export class BookingItemDto {
 }
 
 export class CreateBookingDto {
+  @ApiProperty({
+    description: 'Reservation lock id returned from POST /bookings/lock',
+  })
+  @IsString()
+  lockId: string;
+
   @ApiProperty()
   @IsDateString()
   checkInDate: string;

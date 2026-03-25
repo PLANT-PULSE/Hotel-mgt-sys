@@ -1,13 +1,17 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
+import { EventsGateway } from '../events/events.gateway';
 
 @Injectable()
 export class ReservationLockService {
   // Lock duration in minutes
   private static readonly LOCK_DURATION_MINUTES = 10;
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private events: EventsGateway,
+  ) {}
 
   /**
    * Create a temporary reservation lock to prevent double bookings
@@ -43,6 +47,13 @@ export class ReservationLockService {
         sessionToken,
         expiresAt,
       },
+    });
+
+    this.events.broadcastReservationLock(roomTypeId, {
+      checkIn: checkInDate.toISOString(),
+      checkOut: checkOutDate.toISOString(),
+      available: true,
+      lockedQuantity: availability.lockedQuantity + quantity,
     });
 
     return { sessionToken, expiresAt };
@@ -117,6 +128,7 @@ export class ReservationLockService {
       data: { bookingId },
     });
 
+    this.events.broadcastBookingConfirmed(bookingId, { sessionToken });
     return true;
   }
 
@@ -124,11 +136,64 @@ export class ReservationLockService {
    * Release a reservation lock (user cancelled or timed out)
    */
   async releaseLock(sessionToken: string): Promise<void> {
-    await this.prisma.reservationLock.delete({
+    const existing = await this.prisma.reservationLock.findUnique({
       where: { sessionToken },
-    }).catch(() => {
-      // Ignore if lock doesn't exist
     });
+
+    await this.prisma.reservationLock
+      .delete({
+        where: { sessionToken },
+      })
+      .catch(() => {
+        // Ignore if lock doesn't exist
+      });
+
+    if (existing) {
+      this.events.broadcastReservationLock(existing.roomTypeId, {
+        checkIn: existing.checkInDate.toISOString(),
+        checkOut: existing.checkOutDate.toISOString(),
+        available: true,
+      });
+    }
+  }
+
+  private async getMaxBlockedUnitsInRange(
+    roomTypeId: string,
+    checkInDate: Date,
+    checkOutDate: Date,
+  ): Promise<number> {
+    // BlockedDate is per-room. For room-type inventory, treat blocked rooms as reducing
+    // available units on dates where they overlap. We compute the maximum blocked rooms
+    // on any day in the requested range (worst-case availability).
+    const rooms = await this.prisma.room.findMany({
+      where: { roomTypeId },
+      select: { id: true },
+    });
+    if (rooms.length === 0) return 0;
+
+    const roomIds = rooms.map((r) => r.id);
+    const blocks = await this.prisma.blockedDate.findMany({
+      where: {
+        roomId: { in: roomIds },
+        startDate: { lt: checkOutDate },
+        endDate: { gt: checkInDate },
+      },
+      select: { roomId: true, startDate: true, endDate: true },
+    });
+    if (blocks.length === 0) return 0;
+
+    // Iterate day-by-day; range is usually short (booking UI).
+    let maxBlocked = 0;
+    const d = new Date(checkInDate);
+    while (d < checkOutDate) {
+      const blockedRooms = new Set<string>();
+      for (const b of blocks) {
+        if (b.startDate <= d && b.endDate > d) blockedRooms.add(b.roomId);
+      }
+      maxBlocked = Math.max(maxBlocked, blockedRooms.size);
+      d.setDate(d.getDate() + 1);
+    }
+    return maxBlocked;
   }
 
   /**
@@ -138,22 +203,36 @@ export class ReservationLockService {
     roomTypeId: string,
     checkInDate: Date,
     checkOutDate: Date,
-  ): Promise<{ available: boolean; availableQuantity: number; lockedQuantity: number }> {
+    excludeSessionToken?: string,
+  ): Promise<{
+    available: boolean;
+    availableQuantity: number;
+    lockedQuantity: number;
+    blockedQuantity: number;
+    bookedQuantity: number;
+  }> {
     // Get total units for this room type
     const roomType = await this.prisma.roomType.findUnique({
       where: { id: roomTypeId },
     });
 
     if (!roomType) {
-      return { available: false, availableQuantity: 0, lockedQuantity: 0 };
+      return {
+        available: false,
+        availableQuantity: 0,
+        lockedQuantity: 0,
+        blockedQuantity: 0,
+        bookedQuantity: 0,
+      };
     }
 
     const totalUnits = roomType.totalUnits;
 
-    // Get confirmed bookings for these dates
+    // Consider bookings that still consume inventory.
+    // PENDING is included to avoid over-allocating during payment/confirmation.
     const confirmedBookings = await this.prisma.booking.findMany({
       where: {
-        status: { in: ['CONFIRMED', 'CHECKED_IN'] },
+        status: { in: ['PENDING', 'CONFIRMED', 'CHECKED_IN'] },
         items: {
           some: { roomTypeId },
         },
@@ -188,6 +267,7 @@ export class ReservationLockService {
       where: {
         roomTypeId,
         expiresAt: { gt: new Date() },
+        ...(excludeSessionToken ? { sessionToken: { not: excludeSessionToken } } : {}),
         OR: [
           {
             checkInDate: { lte: checkInDate },
@@ -206,13 +286,23 @@ export class ReservationLockService {
     });
 
     const lockedQuantity = activeLocks.reduce((sum, lock) => sum + lock.quantity, 0);
+    const blockedQuantity = await this.getMaxBlockedUnitsInRange(
+      roomTypeId,
+      checkInDate,
+      checkOutDate,
+    );
 
-    const availableQuantity = Math.max(0, totalUnits - bookedQuantity - lockedQuantity);
+    const availableQuantity = Math.max(
+      0,
+      totalUnits - bookedQuantity - lockedQuantity - blockedQuantity,
+    );
 
     return {
       available: availableQuantity > 0,
       availableQuantity,
       lockedQuantity,
+      blockedQuantity,
+      bookedQuantity,
     };
   }
 
@@ -242,7 +332,7 @@ export class ReservationLockService {
       // Get bookings for this specific date
       const bookingsOnDate = await this.prisma.booking.findMany({
         where: {
-          status: { in: ['CONFIRMED', 'CHECKED_IN'] },
+          status: { in: ['PENDING', 'CONFIRMED', 'CHECKED_IN'] },
           items: { some: { roomTypeId } },
           checkInDate: { lte: currentDate },
           checkOutDate: { gt: currentDate },
@@ -268,7 +358,12 @@ export class ReservationLockService {
       });
 
       const lockedOnDate = locksOnDate.reduce((sum, lock) => sum + lock.quantity, 0);
-      const availableOnDate = Math.max(0, totalUnits - bookedOnDate - lockedOnDate);
+      const blockedOnDate = await this.getMaxBlockedUnitsInRange(
+        roomTypeId,
+        currentDate,
+        new Date(currentDate.getTime() + 24 * 60 * 60 * 1000),
+      );
+      const availableOnDate = Math.max(0, totalUnits - bookedOnDate - lockedOnDate - blockedOnDate);
 
       dates.push({
         date: dateStr,
