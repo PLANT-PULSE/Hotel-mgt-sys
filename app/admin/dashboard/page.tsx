@@ -280,7 +280,9 @@ export default function AdminDashboard() {
         <Card className="bg-white shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-lg">Recent Bookings</CardTitle>
-            <Button variant="ghost" size="sm">View All</Button>
+            <Button variant="ghost" size="sm" asChild>
+              <a href="/admin/bookings">View All</a>
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">

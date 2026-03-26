@@ -82,6 +82,7 @@ export default function RoomsPage() {
   const [newRoomTypePrice, setNewRoomTypePrice] = useState('');
   const [newRoomTypeOccupancy, setNewRoomTypeOccupancy] = useState('');
   const [newRoomTypeBed, setNewRoomTypeBed] = useState('');
+  const [newRoomTypeDescription, setNewRoomTypeDescription] = useState('');
   const [newRoomTypeImages, setNewRoomTypeImages] = useState<File[]>([]);
   const [newRoomTypeImagePreviews, setNewRoomTypeImagePreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -173,6 +174,7 @@ export default function RoomsPage() {
         beds: parseInt(newRoomTypeBed) || 1,
         size: '25m²',
         amenities: [],
+        description: newRoomTypeDescription,
       };
 
       // If there are images, use multipart form data
@@ -220,6 +222,7 @@ export default function RoomsPage() {
     setNewRoomTypePrice('');
     setNewRoomTypeOccupancy('');
     setNewRoomTypeBed('');
+    setNewRoomTypeDescription('');
     setNewRoomTypeImages([]);
     setNewRoomTypeImagePreviews([]);
   };
@@ -344,6 +347,16 @@ export default function RoomsPage() {
                     type="number"
                     value={newRoomTypeBed}
                     onChange={(e) => setNewRoomTypeBed(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Description</Label>
+                  <textarea 
+                    className="w-full p-2 border rounded-md"
+                    placeholder="Describe the room features and layout..."
+                    rows={3}
+                    value={newRoomTypeDescription}
+                    onChange={(e) => setNewRoomTypeDescription(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -638,14 +651,7 @@ export default function RoomsPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit Room
-                          </DropdownMenuItem>
+                          {/* Removed View Details and Edit Room since they are placeholders and cause confusion. The primary actions are Status updates, Image Uploads, and Deletion. */}
                           <DropdownMenuItem onClick={() => {
                             setSelectedRoomTypeId(room.roomType.id);
                             fileInputRef.current?.click();

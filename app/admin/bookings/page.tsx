@@ -218,10 +218,12 @@ export default function BookingsPage() {
             <Download className="mr-1 sm:mr-2 h-3 sm:h-4 w-3 sm:w-4" />
             <span className="hidden sm:inline">Export</span>
           </Button>
-          <Button className="text-xs sm:text-sm">
-            <Plus className="mr-1 sm:mr-2 h-3 sm:h-4 w-3 sm:w-4" />
-            <span className="hidden sm:inline">New Booking</span>
-            <span className="sm:hidden">Add</span>
+          <Button className="text-xs sm:text-sm" asChild>
+            <a href="/booking.html">
+              <Plus className="mr-1 sm:mr-2 h-3 sm:h-4 w-3 sm:w-4" />
+              <span className="hidden sm:inline">New Booking</span>
+              <span className="sm:hidden">Add</span>
+            </a>
           </Button>
         </div>
       </div>

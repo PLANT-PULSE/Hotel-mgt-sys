@@ -44,9 +44,10 @@ export class BlobStorageService {
     }
 
     if (!this.blobToken) {
-      // Return placeholder URL if blob not configured
-      const placeholderUrl = `/placeholder.jpg`;
-      return { url: placeholderUrl, pathname: filename };
+      // Return base64 URL if blob not configured
+      const base64Data = file.toString('base64');
+      const dataUrl = `data:${contentType};base64,${base64Data}`;
+      return { url: dataUrl, pathname: filename };
     }
 
     // Generate unique filename
@@ -85,8 +86,10 @@ export class BlobStorageService {
       return { url: result.url, pathname: result.pathname };
     } catch (error) {
       console.error('Blob upload error:', error);
-      // Return placeholder on error
-      return { url: '/placeholder.jpg', pathname: path };
+      // Return base64 URL on error
+      const base64Data = file.toString('base64');
+      const dataUrl = `data:${contentType};base64,${base64Data}`;
+      return { url: dataUrl, pathname: path };
     }
   }
 

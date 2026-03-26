@@ -36,8 +36,9 @@ let BlobStorageService = class BlobStorageService {
             throw new common_1.BadRequestException('File size too large. Maximum 5MB allowed');
         }
         if (!this.blobToken) {
-            const placeholderUrl = `/placeholder.jpg`;
-            return { url: placeholderUrl, pathname: filename };
+            const base64Data = file.toString('base64');
+            const dataUrl = `data:${contentType};base64,${base64Data}`;
+            return { url: dataUrl, pathname: filename };
         }
         const timestamp = Date.now();
         const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
@@ -69,7 +70,9 @@ let BlobStorageService = class BlobStorageService {
         }
         catch (error) {
             console.error('Blob upload error:', error);
-            return { url: '/placeholder.jpg', pathname: path };
+            const base64Data = file.toString('base64');
+            const dataUrl = `data:${contentType};base64,${base64Data}`;
+            return { url: dataUrl, pathname: path };
         }
     }
     async uploadFromBase64(base64Data, filename) {

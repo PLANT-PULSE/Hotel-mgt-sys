@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BedDouble, Users, DollarSign, Star } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import PublicCalendar from '@/components/PublicCalendar';
 
 interface RoomType {
   id: string;
@@ -129,6 +130,12 @@ export default function RoomsPage() {
                     <Users className="h-4 w-4" />
                     <span>{room.maxGuests} Guests</span>
                   </div>
+                </div>
+
+                {/* Interactive Availability Calendar */}
+                <div className="mt-6 border-t pt-4">
+                  <h3 className="text-sm font-semibold text-gray-800 mb-2">Availability Calendar</h3>
+                  <PublicCalendar roomTypeId={room.id} />
                 </div>
               </CardContent>
 
