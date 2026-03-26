@@ -10,9 +10,11 @@ const http_exception_filter_1 = require("./common/filters/http-exception.filter"
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     const logger = new common_1.Logger('Bootstrap');
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     app.use((0, helmet_1.default)());
     app.enableCors({
-        origin: true,
+        origin: frontendUrl,
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         credentials: true,
     });
     app.setGlobalPrefix('api/v1');

@@ -10,9 +10,12 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
 
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
   app.use(helmet());
   app.enableCors({
-    origin: true, // Allow all origins for easier local testing
+    origin: frontendUrl,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
