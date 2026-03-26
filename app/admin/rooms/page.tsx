@@ -121,40 +121,71 @@ export default function RoomsPage() {
 
   const updateRoomStatus = async (roomId: string, newStatus: string) => {
     try {
-      await fetch(`/api/rooms/inventory/${roomId}/status`, {
+      const response = await fetch(`/api/rooms/inventory/${roomId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
+      if (!response.ok) throw new Error('Status update rejected by server');
       fetchRooms();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update room status:', error);
+      alert(error.message || 'Failed to update room status');
     }
   };
 
   const deleteRoom = async (roomId: string) => {
     if (!confirm('Are you sure you want to delete this room?')) return;
     try {
-      await fetch(`/api/rooms/inventory/${roomId}`, { method: 'DELETE' });
+      const response = await fetch(`/api/rooms/inventory/${roomId}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Delete rejected by server');
       fetchRooms();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete room:', error);
+      alert(error.message || 'Failed to delete room');
     }
   };
 
-  const uploadImagesToRoom = async (roomTypeId: string, formData: FormData) => {
+  const uploadImagesToRoom = async (roomTypeId: string, files: FileList | File[]) => {
     try {
-      const response = await fetch(`/api/rooms/types/${roomTypeId}/images`, {
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < Math.min(files.length, 3); i++) {
+        const formData = new FormData();
+        formData.append('file', files[i]);
+        
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!uploadRes.ok) {
+          const errData = await uploadRes.json().catch(() => ({}));
+          throw new Error(`Upload Failed for file ${i + 1}: ${errData.error || uploadRes.statusText}`);
+        }
+        
+        const { url } = await uploadRes.json();
+        uploadedUrls.push(url);
+      }
+
+      if (uploadedUrls.length === 0) return;
+
+      const urlResponse = await fetch(`/api/rooms/types/${roomTypeId}/images/urls`, {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ urls: uploadedUrls })
       });
 
-      if (response.ok) {
-        fetchRooms();
-        fetchRoomTypes();
+      if (!urlResponse.ok) {
+        const errData = await urlResponse.json().catch(() => ({}));
+        throw new Error(`Database Linking Failed: ${errData.error || urlResponse.statusText}`);
       }
-    } catch (error) {
+
+      fetchRooms();
+      fetchRoomTypes();
+      alert('Images successfully uploaded and saved to Room Type!');
+    } catch (error: any) {
       console.error('Failed to upload images:', error);
+      alert(error.message || 'Failed to upload images');
     }
   };
 
@@ -166,6 +197,29 @@ export default function RoomsPage() {
 
     setIsSubmitting(true);
     try {
+      // 1. Sequentially upload exact images physically to Vercel via Next.js Backend payload
+      const uploadedUrls: string[] = [];
+      if (newRoomTypeImages.length > 0) {
+        for (let i = 0; i < newRoomTypeImages.length; i++) {
+          const formData = new FormData();
+          formData.append('file', newRoomTypeImages[i]);
+          
+          const uploadRes = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (!uploadRes.ok) {
+            const errData = await uploadRes.json().catch(() => ({}));
+            throw new Error(`Upload Failed for image ${i + 1}: ${errData.error || uploadRes.statusText}`);
+          }
+          
+          const { url } = await uploadRes.json();
+          uploadedUrls.push(url);
+        }
+      }
+
+      // 2. Submit pure, exact data JSON to NestJS database core
       const roomTypeData = {
         name: newRoomTypeName,
         type: 'standard',
@@ -177,41 +231,40 @@ export default function RoomsPage() {
         description: newRoomTypeDescription,
       };
 
-      // If there are images, use multipart form data
-      if (newRoomTypeImages.length > 0) {
-        const formData = new FormData();
-        formData.append('data', JSON.stringify(roomTypeData));
-        
-        for (const file of newRoomTypeImages) {
-          formData.append('images', file);
-        }
+      const response = await fetch('/api/rooms/types', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(roomTypeData),
+      });
 
-        const response = await fetch('/api/rooms/types', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (response.ok) {
-          resetRoomTypeForm();
-          setIsAddTypeOpen(false);
-          fetchRoomTypes();
-        }
-      } else {
-        // No images, use JSON
-        const response = await fetch('/api/rooms/types', {
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(`Database Create Failed: ${errData.error || response.statusText}`);
+      }
+      
+      const createdData = await response.json();
+      const newTypeId = createdData?.id || createdData?.data?.id;
+      
+      // 3. Chain up nested URL additions directly against the core backend
+      if (uploadedUrls.length > 0 && newTypeId) {
+        const urlResponse = await fetch(`/api/rooms/types/${newTypeId}/images/urls`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(roomTypeData),
+          body: JSON.stringify({ urls: uploadedUrls })
         });
-
-        if (response.ok) {
-          resetRoomTypeForm();
-          setIsAddTypeOpen(false);
-          fetchRoomTypes();
+        if (!urlResponse.ok) {
+          const errData = await urlResponse.json().catch(() => ({}));
+          throw new Error(`Image Linking Failed: ${errData.error || urlResponse.statusText}`);
         }
       }
-    } catch (error) {
+
+      resetRoomTypeForm();
+      setIsAddTypeOpen(false);
+      fetchRoomTypes();
+      alert('Room Type successfully created and configured!');
+    } catch (error: any) {
       console.error('Failed to create room type:', error);
+      alert(error.message || 'An unexpected error occurred during Creation.');
     } finally {
       setIsSubmitting(false);
     }
@@ -256,15 +309,20 @@ export default function RoomsPage() {
         }),
       });
 
-      if (response.ok) {
-        setNewRoomNumber('');
-        setNewRoomFloor('');
-        setNewRoomTypeId('');
-        setIsAddRoomOpen(false);
-        fetchRooms();
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(`Database Create Failed: ${errData.error || response.statusText}`);
       }
-    } catch (error) {
+
+      setNewRoomNumber('');
+      setNewRoomFloor('');
+      setNewRoomTypeId('');
+      setIsAddRoomOpen(false);
+      fetchRooms();
+      alert('Room successfully added to inventory!');
+    } catch (error: any) {
       console.error('Failed to create room:', error);
+      alert(error.message || 'Failed to create room inventory');
     } finally {
       setIsSubmitting(false);
     }
@@ -284,7 +342,7 @@ export default function RoomsPage() {
   const filteredRooms = rooms.filter(room => {
     const searchLower = searchTerm.toLowerCase();
     return (
-      room.roomNumber.toLowerCase().includes(searchLower) ||
+      room.number.toLowerCase().includes(searchLower) ||
       room.roomType.name.toLowerCase().includes(searchLower)
     );
   });
@@ -627,7 +685,7 @@ export default function RoomsPage() {
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">
-                      Room {room.roomNumber}
+                      Room {room.number}
                     </TableCell>
                     <TableCell>{room.roomType.name}</TableCell>
                     <TableCell>Floor {room.floor}</TableCell>
@@ -703,11 +761,7 @@ export default function RoomsPage() {
         className="hidden"
         onChange={async (e) => {
           if (e.target.files && e.target.files.length > 0 && selectedRoomTypeId) {
-            const formData = new FormData();
-            for (let i = 0; i < Math.min(e.target.files.length, 3); i++) {
-              formData.append('images', e.target.files[i]);
-            }
-            await uploadImagesToRoom(selectedRoomTypeId, formData);
+            await uploadImagesToRoom(selectedRoomTypeId, e.target.files);
             setSelectedRoomTypeId(null);
             e.target.value = '';
           }

@@ -156,14 +156,19 @@ export default function BookingsPage() {
 
   const updateBookingStatus = async (bookingId: string, newStatus: string) => {
     try {
-      await fetch(`/api/bookings/${bookingId}/status`, {
+      const response = await fetch(`/api/bookings/${bookingId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(`Failed to update Status: ${errData.error || response.statusText}`);
+      }
       fetchBookings();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update booking status:', error);
+      alert(error.message || 'Failed to update booking status');
     }
   };
 

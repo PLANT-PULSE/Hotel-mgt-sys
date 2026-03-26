@@ -169,6 +169,29 @@ export class RoomsController {
     return this.roomsService.addRoomImages(id, uploadedImages);
   }
 
+  @Post(':id/images/urls')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Save externally uploaded image URLs for room type' })
+  async saveRoomImages(
+    @Param('id') id: string,
+    @Body('urls') urls: string[],
+  ) {
+    if (!urls || urls.length === 0) {
+      return { error: 'No image URLs provided' };
+    }
+
+    const imagesToUpload = urls.slice(0, 3);
+    const uploadedImages = imagesToUpload.map((url, i) => ({
+      url,
+      isPrimary: i === 0, // First image is primary
+      displayOrder: i,
+    }));
+
+    return this.roomsService.addRoomImages(id, uploadedImages);
+  }
+
   @Delete(':id/images/:imageId')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
