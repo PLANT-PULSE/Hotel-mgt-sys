@@ -173,34 +173,55 @@ export class DashboardService {
     const start = startDate || new Date(now.getFullYear(), now.getMonth(), 1);
     const end = endDate || new Date(now.getFullYear(), now.getMonth() + 3, 0, 23, 59, 59);
 
+    // Get rooms with their room types
     const rooms = await this.prisma.room.findMany({
       where: roomId ? { id: roomId } : undefined,
       include: {
-        roomType: true,
-        bookings: {
-          where: {
-            status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] },
-            checkInDate: { lte: end },
-            checkOutDate: { gte: start },
+        roomType: {
+          include: {
+            // Get booking items that link to bookings
+            bookingItems: {
+              where: {
+                booking: {
+                  status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] },
+                  checkInDate: { lte: end },
+                  checkOutDate: { gte: start },
+                },
+              },
+              include: {
+                booking: {
+                  select: {
+                    id: true,
+                    bookingNumber: true,
+                    guestFirstName: true,
+                    guestLastName: true,
+                    checkInDate: true,
+                    checkOutDate: true,
+                    status: true,
+                  },
+                },
+              },
+            },
           },
-          orderBy: { checkInDate: 'asc' },
         },
       },
     });
 
     return rooms.map(room => ({
       id: room.id,
-      number: (room as any).number,
+      number: room.number,
       roomType: room.roomType.name,
       status: room.status,
-      bookings: room.bookings.map(b => ({
-        id: b.id,
-        bookingNumber: b.bookingNumber,
-        guestName: `${b.guestFirstName} ${b.guestLastName}`,
-        checkIn: b.checkInDate,
-        checkOut: b.checkOutDate,
-        status: b.status,
-      })),
+      bookings: room.roomType.bookingItems
+        .filter(item => item.booking)
+        .map(item => ({
+          id: item.booking.id,
+          bookingNumber: item.booking.bookingNumber,
+          guestName: `${item.booking.guestFirstName} ${item.booking.guestLastName}`,
+          checkIn: item.booking.checkInDate,
+          checkOut: item.booking.checkOutDate,
+          status: item.booking.status,
+        })),
     }));
   }
 

@@ -18,7 +18,7 @@ export class StripeService {
       throw new Error('STRIPE_SECRET_KEY is not configured');
     }
     this.stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2023-10-16',
+      apiVersion: '2026-02-25.clover' as any,
     });
     this.webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET') || '';
   }
