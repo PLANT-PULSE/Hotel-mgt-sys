@@ -7,12 +7,9 @@ const swagger_1 = require("@nestjs/swagger");
 const helmet_1 = require("helmet");
 const app_module_1 = require("./app.module");
 const http_exception_filter_1 = require("./common/filters/http-exception.filter");
-const logger_service_1 = require("./common/logger/logger.service");
 async function bootstrap() {
-    const app = await core_1.NestFactory.create(app_module_1.AppModule, {
-        bufferLogs: true,
-    });
-    app.useLogger(app.get(logger_service_1.LoggerService));
+    const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    const logger = new common_1.Logger('Bootstrap');
     app.use((0, helmet_1.default)());
     app.enableCors({
         origin: true,
@@ -43,9 +40,11 @@ async function bootstrap() {
     const document = swagger_1.SwaggerModule.createDocument(app, config);
     swagger_1.SwaggerModule.setup('api/docs', app, document);
     const port = process.env.PORT || 4000;
-    await app.listen(port);
-    console.log(`🚀 Application running on: http://localhost:${port}`);
-    console.log(`📚 Swagger docs: http://localhost:${port}/api/docs`);
+    const host = process.env.HOST || '0.0.0.0';
+    await app.listen(port, host);
+    logger.log(`🚀 Application running on: http://localhost:${port}`);
+    logger.log(`📚 Swagger docs: http://localhost:${port}/api/docs`);
+    logger.log(`🌐 Network access: http://${process.env.HOST || 'your-machine-ip'}:${port}`);
 }
 bootstrap();
 //# sourceMappingURL=main.js.map

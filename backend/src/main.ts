@@ -1,18 +1,14 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-import { LoggerService } from './common/logger/logger.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    bufferLogs: true,
-  });
-
-  app.useLogger(app.get(LoggerService));
+  const app = await NestFactory.create(AppModule);
+  const logger = new Logger('Bootstrap');
 
   app.use(helmet());
   app.enableCors({
@@ -52,10 +48,12 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = process.env.PORT || 4000;
-  await app.listen(port);
+  const host = process.env.HOST || '0.0.0.0';
+  await app.listen(port, host);
 
-  console.log(`🚀 Application running on: http://localhost:${port}`);
-  console.log(`📚 Swagger docs: http://localhost:${port}/api/docs`);
+  logger.log(`🚀 Application running on: http://localhost:${port}`);
+  logger.log(`📚 Swagger docs: http://localhost:${port}/api/docs`);
+  logger.log(`🌐 Network access: http://${process.env.HOST || 'your-machine-ip'}:${port}`);
 }
 
 bootstrap();
