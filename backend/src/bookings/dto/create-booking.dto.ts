@@ -73,4 +73,9 @@ export class CreateBookingDto {
   @IsOptional()
   @IsArray()
   addOns?: { addOnId: string; quantity: number }[];
+
+  @ApiPropertyOptional({ description: 'Reservation lock token from checkout hold' })
+  @IsOptional()
+  @IsString()
+  sessionToken?: string;
 }

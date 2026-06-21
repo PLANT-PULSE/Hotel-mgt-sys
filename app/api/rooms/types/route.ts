@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { backendFetch, mapRoomTypeForAdmin } from '@/lib/backend-api';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -14,14 +13,25 @@ export async function GET(request: NextRequest) {
     if (minPrice) params.set('minPrice', minPrice);
     if (maxPrice) params.set('maxPrice', maxPrice);
 
-    const response = await fetch(`${API_URL}/rooms?${params}`, {
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store',
-    });
+    const response = await backendFetch(`/rooms?${params}`);
     const data = await response.json();
-    return NextResponse.json(data);
+    const roomTypes = Array.isArray(data) ? data : [];
+
+    return NextResponse.json(
+      roomTypes.map((roomType) => ({
+        ...roomType,
+        basePrice: Number(roomType.basePrice),
+        maxOccupancy: roomType.maxGuests,
+        bedType: `${roomType.beds} bed${Number(roomType.beds) > 1 ? 's' : ''}`,
+        images:
+          roomType.images?.length > 0
+            ? roomType.images
+            : roomType.image
+              ? [{ url: roomType.image, isPrimary: true }]
+              : [],
+      })),
+    );
   } catch (error) {
-    // Return empty array if backend is not available - no mock data
     return NextResponse.json([]);
   }
 }
@@ -41,11 +51,10 @@ export async function POST(request: NextRequest) {
       const imagesToUpload = files.slice(0, 3);
       
       // First create the room type
-      const response = await fetch(`${API_URL}/rooms`, {
+      const response = await backendFetch('/rooms', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
-      });
+      }, true);
 
       if (!response.ok) {
         const error = await response.json();
@@ -65,10 +74,10 @@ export async function POST(request: NextRequest) {
           backendFormData.append('images', blob, file.name);
         }
 
-        await fetch(`${API_URL}/rooms/${newRoomType.id}/images`, {
+        await backendFetch(`/rooms/${newRoomType.id}/images`, {
           method: 'POST',
           body: backendFormData,
-        });
+        }, true);
       }
       
       return NextResponse.json(newRoomType);
@@ -76,11 +85,10 @@ export async function POST(request: NextRequest) {
       // Regular JSON request
       const body = await request.json();
       
-      const response = await fetch(`${API_URL}/rooms`, {
+      const response = await backendFetch('/rooms', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
-      });
+      }, true);
 
       const data = await response.json();
       return NextResponse.json(data, { status: response.status });

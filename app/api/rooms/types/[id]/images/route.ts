@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { backendFetch } from '@/lib/backend-api';
 
 export async function POST(
   request: NextRequest,
@@ -23,7 +22,7 @@ export async function POST(
 
     // Convert File objects to buffers and create form data for the backend
     const backendFormData = new FormData();
-    
+
     for (const file of imagesToUpload) {
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
@@ -31,10 +30,10 @@ export async function POST(
       backendFormData.append('images', blob, file.name);
     }
 
-    const response = await fetch(`${API_URL}/rooms/${id}/images`, {
+    const response = await backendFetch(`/rooms/${id}/images`, {
       method: 'POST',
       body: backendFormData,
-    });
+    }, true);
 
     const data = await response.json();
     return NextResponse.json(data);
@@ -53,10 +52,10 @@ export async function DELETE(
 ) {
   try {
     const { id, imageId } = await params;
-    
-    const response = await fetch(`${API_URL}/rooms/${id}/images/${imageId}`, {
+
+    const response = await backendFetch(`/rooms/${id}/images/${imageId}`, {
       method: 'DELETE',
-    });
+    }, true);
 
     const data = await response.json();
     return NextResponse.json(data);

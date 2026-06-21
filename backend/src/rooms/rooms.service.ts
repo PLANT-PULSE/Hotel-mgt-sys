@@ -107,7 +107,7 @@ export class RoomsService {
   }
 
   async createRoom(dto: CreateRoomDto) {
-    return this.prisma.room.create({
+    const room = await this.prisma.room.create({
       data: {
         roomTypeId: dto.roomTypeId,
         number: dto.number,
@@ -115,6 +115,13 @@ export class RoomsService {
       },
       include: { roomType: true },
     });
+
+    await this.prisma.roomType.update({
+      where: { id: dto.roomTypeId },
+      data: { totalUnits: { increment: 1 } },
+    });
+
+    return room;
   }
 
   async updateRoomStatus(id: string, status: RoomStatus) {
@@ -130,6 +137,10 @@ export class RoomsService {
     const room = await this.prisma.room.findUnique({ where: { id } });
     if (!room) throw new NotFoundException('Room not found');
     await this.prisma.room.delete({ where: { id } });
+    await this.prisma.roomType.update({
+      where: { id: room.roomTypeId },
+      data: { totalUnits: { decrement: 1 } },
+    });
     return { message: 'Room deleted' };
   }
 

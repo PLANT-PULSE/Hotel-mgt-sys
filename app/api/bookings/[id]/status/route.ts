@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { backendFetch } from '@/lib/backend-api';
 
 export async function PATCH(
   request: NextRequest,
@@ -9,12 +8,11 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    
-    const response = await fetch(`${API_URL}/bookings/${id}/status`, {
+
+    const response = await backendFetch(`/bookings/${id}/status`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-    });
+    }, true);
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });

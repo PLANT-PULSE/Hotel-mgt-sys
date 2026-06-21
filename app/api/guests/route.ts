@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { backendFetch } from '@/lib/backend-api';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -8,12 +7,7 @@ export async function GET(request: NextRequest) {
   const limit = searchParams.get('limit') || '20';
 
   try {
-    const response = await fetch(`${API_URL}/guests?page=${page}&limit=${limit}`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store',
-    });
+    const response = await backendFetch(`/guests?page=${page}&limit=${limit}`, {}, true);
 
     if (!response.ok) {
       throw new Error('Failed to fetch guests');

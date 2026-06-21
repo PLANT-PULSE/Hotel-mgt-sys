@@ -29,6 +29,7 @@ import {
 import { 
   Label 
 } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   Search, 
   Filter, 
@@ -82,6 +83,10 @@ export default function RoomsPage() {
   const [newRoomTypePrice, setNewRoomTypePrice] = useState('');
   const [newRoomTypeOccupancy, setNewRoomTypeOccupancy] = useState('');
   const [newRoomTypeBed, setNewRoomTypeBed] = useState('');
+  const [newRoomTypeSize, setNewRoomTypeSize] = useState('');
+  const [newRoomTypeDescription, setNewRoomTypeDescription] = useState('');
+  const [newRoomTypeAmenities, setNewRoomTypeAmenities] = useState('');
+  const [newRoomTypeCategory, setNewRoomTypeCategory] = useState('double');
   const [newRoomTypeImages, setNewRoomTypeImages] = useState<File[]>([]);
   const [newRoomTypeImagePreviews, setNewRoomTypeImagePreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -98,54 +103,10 @@ export default function RoomsPage() {
 
       const response = await fetch(`/api/rooms/inventory?${params}`);
       const data = await response.json();
-      setRooms(data);
+      setRooms(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Failed to fetch rooms:', error);
-      // Mock data
-      setRooms([
-        {
-          id: '1',
-          roomNumber: '101',
-          floor: 1,
-          status: 'AVAILABLE',
-          roomType: { id: '1', name: 'Deluxe Suite', basePrice: 150, maxOccupancy: 2, bedType: 'King', amenities: [], images: [] },
-        },
-        {
-          id: '2',
-          roomNumber: '102',
-          floor: 1,
-          status: 'OCCUPIED',
-          roomType: { id: '2', name: 'Standard Room', basePrice: 80, maxOccupancy: 2, bedType: 'Queen', amenities: [], images: [] },
-        },
-        {
-          id: '3',
-          roomNumber: '103',
-          floor: 1,
-          status: 'CLEANING',
-          roomType: { id: '1', name: 'Deluxe Suite', basePrice: 150, maxOccupancy: 2, bedType: 'King', amenities: [], images: [] },
-        },
-        {
-          id: '4',
-          roomNumber: '201',
-          floor: 2,
-          status: 'AVAILABLE',
-          roomType: { id: '3', name: 'Executive Suite', basePrice: 250, maxOccupancy: 4, bedType: 'King', amenities: [], images: [] },
-        },
-        {
-          id: '5',
-          roomNumber: '202',
-          floor: 2,
-          status: 'MAINTENANCE',
-          roomType: { id: '2', name: 'Standard Room', basePrice: 80, maxOccupancy: 2, bedType: 'Queen', amenities: [], images: [] },
-        },
-        {
-          id: '6',
-          roomNumber: '301',
-          floor: 3,
-          status: 'OCCUPIED',
-          roomType: { id: '4', name: 'Premium Room', basePrice: 120, maxOccupancy: 2, bedType: 'King', amenities: [], images: [] },
-        },
-      ]);
+      setRooms([]);
     } finally {
       setLoading(false);
     }
@@ -158,12 +119,7 @@ export default function RoomsPage() {
       setRoomTypes(Array.isArray(data) ? data : data.data || []);
     } catch (error) {
       console.error('Failed to fetch room types:', error);
-      setRoomTypes([
-        { id: '1', name: 'Deluxe Suite', basePrice: 150, maxOccupancy: 2, bedType: 'King', amenities: [], images: [] },
-        { id: '2', name: 'Standard Room', basePrice: 80, maxOccupancy: 2, bedType: 'Queen', amenities: [], images: [] },
-        { id: '3', name: 'Executive Suite', basePrice: 250, maxOccupancy: 4, bedType: 'King', amenities: [], images: [] },
-        { id: '4', name: 'Premium Room', basePrice: 120, maxOccupancy: 2, bedType: 'King', amenities: [], images: [] },
-      ]);
+      setRoomTypes([]);
     }
   };
 
@@ -214,14 +170,20 @@ export default function RoomsPage() {
 
     setIsSubmitting(true);
     try {
+      const amenities = newRoomTypeAmenities
+        .split(',')
+        .map((a) => a.trim())
+        .filter(Boolean);
+
       const roomTypeData = {
         name: newRoomTypeName,
-        type: 'standard',
+        type: newRoomTypeCategory,
         basePrice: parseFloat(newRoomTypePrice),
         maxGuests: parseInt(newRoomTypeOccupancy),
         beds: parseInt(newRoomTypeBed) || 1,
-        size: '25m²',
-        amenities: [],
+        size: newRoomTypeSize || '25m²',
+        description: newRoomTypeDescription || undefined,
+        amenities,
       };
 
       // If there are images, use multipart form data
@@ -269,6 +231,10 @@ export default function RoomsPage() {
     setNewRoomTypePrice('');
     setNewRoomTypeOccupancy('');
     setNewRoomTypeBed('');
+    setNewRoomTypeSize('');
+    setNewRoomTypeDescription('');
+    setNewRoomTypeAmenities('');
+    setNewRoomTypeCategory('double');
     setNewRoomTypeImages([]);
     setNewRoomTypeImagePreviews([]);
   };
@@ -386,13 +352,53 @@ export default function RoomsPage() {
                     />
                   </div>
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Number of Beds</Label>
+                    <Input 
+                      placeholder="e.g., 1" 
+                      type="number"
+                      value={newRoomTypeBed}
+                      onChange={(e) => setNewRoomTypeBed(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Room Size</Label>
+                    <Input 
+                      placeholder="e.g., 45m²" 
+                      value={newRoomTypeSize}
+                      onChange={(e) => setNewRoomTypeSize(e.target.value)}
+                    />
+                  </div>
+                </div>
                 <div className="space-y-2">
-                  <Label>Number of Beds</Label>
-                  <Input 
-                    placeholder="e.g., 1" 
-                    type="number"
-                    value={newRoomTypeBed}
-                    onChange={(e) => setNewRoomTypeBed(e.target.value)}
+                  <Label>Category</Label>
+                  <select
+                    className="w-full p-2 border rounded-md"
+                    value={newRoomTypeCategory}
+                    onChange={(e) => setNewRoomTypeCategory(e.target.value)}
+                  >
+                    <option value="suite">Suite</option>
+                    <option value="double">Double</option>
+                    <option value="single">Single</option>
+                    <option value="penthouse">Penthouse</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Description</Label>
+                  <Textarea
+                    placeholder="Describe the room for guests..."
+                    value={newRoomTypeDescription}
+                    onChange={(e) => setNewRoomTypeDescription(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Amenities</Label>
+                  <Input
+                    placeholder="wifi, pool, spa, minibar (comma-separated)"
+                    value={newRoomTypeAmenities}
+                    onChange={(e) => setNewRoomTypeAmenities(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">

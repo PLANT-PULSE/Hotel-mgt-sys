@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { backendFetch } from '@/lib/backend-api';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -14,12 +13,7 @@ export async function GET(request: NextRequest) {
     params.set('limit', limit);
     if (status) params.set('status', status);
 
-    const response = await fetch(`${API_URL}/bookings?${params}`, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store',
-    });
+    const response = await backendFetch(`/bookings?${params}`, {}, true);
 
     if (!response.ok) {
       throw new Error('Failed to fetch bookings');
@@ -30,5 +24,24 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Bookings API error:', error);
     return NextResponse.json({ data: [], meta: { page: 1, limit: 20, total: 0 } });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const response = await backendFetch('/bookings', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }, false);
+
+    const data = await response.json();
+    return NextResponse.json(data, { status: response.status });
+  } catch (error) {
+    console.error('Create booking error:', error);
+    return NextResponse.json(
+      { error: 'Failed to create booking' },
+      { status: 500 },
+    );
   }
 }

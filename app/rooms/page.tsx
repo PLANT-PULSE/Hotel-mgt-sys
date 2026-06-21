@@ -1,11 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { BedDouble, Users, DollarSign, Star } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { BedDouble, Users, Star } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 
 interface RoomType {
@@ -25,10 +33,52 @@ interface RoomType {
 export default function RoomsPage() {
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bookingRoom, setBookingRoom] = useState<RoomType | null>(null);
+  const [checkIn, setCheckIn] = useState('');
+  const [checkOut, setCheckOut] = useState('');
+  const [guestFirstName, setGuestFirstName] = useState('');
+  const [guestLastName, setGuestLastName] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
+  const [specialRequests, setSpecialRequests] = useState('');
+  const [availabilityMsg, setAvailabilityMsg] = useState('');
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
+  const [bookingError, setBookingError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchRoomTypes();
   }, []);
+
+  useEffect(() => {
+    if (!bookingRoom || !checkIn || !checkOut) {
+      setAvailabilityMsg('');
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const params = new URLSearchParams({
+          roomTypeId: bookingRoom.id,
+          checkInDate: checkIn,
+          checkOutDate: checkOut,
+        });
+        const res = await fetch(`/api/bookings/availability?${params}`);
+        const data = await res.json();
+
+        if (data.availableQuantity > 0) {
+          setAvailabilityMsg(`${data.availableQuantity} room(s) available for these dates`);
+        } else {
+          setAvailabilityMsg('No rooms available for these dates');
+        }
+      } catch {
+        setAvailabilityMsg('Could not check availability');
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [bookingRoom, checkIn, checkOut]);
 
   const fetchRoomTypes = async () => {
     try {
@@ -44,8 +94,108 @@ export default function RoomsPage() {
   };
 
   const getPrimaryImage = (images: RoomType['images']) => {
-    const primary = images.find(img => img.isPrimary);
+    const primary = images.find((img) => img.isPrimary);
     return primary?.url || images[0]?.url || 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800';
+  };
+
+  const resetBookingForm = () => {
+    setCheckIn('');
+    setCheckOut('');
+    setGuestFirstName('');
+    setGuestLastName('');
+    setGuestEmail('');
+    setGuestPhone('');
+    setSpecialRequests('');
+    setAvailabilityMsg('');
+    setSessionToken(null);
+    setBookingSuccess(null);
+    setBookingError(null);
+  };
+
+  const openBooking = (room: RoomType) => {
+    resetBookingForm();
+    setBookingRoom(room);
+  };
+
+  const closeBooking = async () => {
+    if (sessionToken) {
+      await fetch(`/api/bookings/reservation-lock/${sessionToken}`, { method: 'DELETE' });
+    }
+    setBookingRoom(null);
+    resetBookingForm();
+  };
+
+  const handleBook = async () => {
+    if (!bookingRoom) return;
+
+    if (!checkIn || !checkOut || !guestFirstName || !guestLastName || !guestEmail) {
+      setBookingError('Please fill in all required fields');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setBookingError(null);
+
+    try {
+      let lockToken = sessionToken;
+
+      if (!lockToken) {
+        const lockRes = await fetch('/api/bookings/reservation-lock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            roomTypeId: bookingRoom.id,
+            checkInDate: checkIn,
+            checkOutDate: checkOut,
+            quantity: 1,
+          }),
+        });
+
+        if (!lockRes.ok) {
+          const err = await lockRes.json();
+          throw new Error(err.message || 'Rooms are no longer available for these dates');
+        }
+
+        const lockData = await lockRes.json();
+        lockToken = lockData.sessionToken;
+        setSessionToken(lockToken);
+      }
+
+      const bookingRes = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          checkInDate: checkIn,
+          checkOutDate: checkOut,
+          guestFirstName,
+          guestLastName,
+          guestEmail,
+          guestPhone: guestPhone || undefined,
+          specialRequests: specialRequests || undefined,
+          sessionToken: lockToken,
+          items: [
+            {
+              roomTypeId: bookingRoom.id,
+              quantity: 1,
+              pricePerNight: bookingRoom.basePrice,
+            },
+          ],
+        }),
+      });
+
+      const bookingData = await bookingRes.json();
+
+      if (!bookingRes.ok) {
+        throw new Error(bookingData.message || bookingData.error || 'Booking failed');
+      }
+
+      setBookingSuccess(bookingData.bookingNumber);
+      await fetchRoomTypes();
+    } catch (error) {
+      setBookingError(error instanceof Error ? error.message : 'Booking failed');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -73,7 +223,6 @@ export default function RoomsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {roomTypes.map((room) => (
             <Card key={room.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
-              {/* Room Image Carousel */}
               <div className="relative h-56 overflow-hidden">
                 <img
                   src={getPrimaryImage(room.images)}
@@ -99,13 +248,16 @@ export default function RoomsPage() {
                     <span className="text-sm text-gray-600">4.8</span>
                   </div>
                 </div>
-                <p className="text-sm text-gray-500">{room.size} • {room.beds} Bed{room.beds > 1 ? 's' : ''} • Up to {room.maxGuests} Guests</p>
+                <p className="text-sm text-gray-500">
+                  {room.size} • {room.beds} Bed{room.beds > 1 ? 's' : ''} • Up to {room.maxGuests} Guests
+                </p>
               </CardHeader>
 
               <CardContent>
-                <p className="text-gray-600 text-sm mb-4">{room.description}</p>
-                
-                {/* Amenities */}
+                <p className="text-gray-600 text-sm mb-4">
+                  {room.description || 'A comfortable stay awaits you.'}
+                </p>
+
                 <div className="flex flex-wrap gap-2 mb-4">
                   {room.amenities.slice(0, 4).map((amenity, idx) => (
                     <Badge key={idx} variant="outline" className="text-xs">
@@ -119,7 +271,6 @@ export default function RoomsPage() {
                   )}
                 </div>
 
-                {/* Room Info */}
                 <div className="flex items-center gap-4 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
                     <BedDouble className="h-4 w-4" />
@@ -137,7 +288,7 @@ export default function RoomsPage() {
                   <span className="text-2xl font-bold text-blue-600">${room.basePrice}</span>
                   <span className="text-gray-500">/night</span>
                 </div>
-                <Button disabled={room.roomsLeft === 0}>
+                <Button disabled={room.roomsLeft === 0} onClick={() => openBooking(room)}>
                   {room.roomsLeft > 0 ? 'Book Now' : 'Sold Out'}
                 </Button>
               </CardFooter>
@@ -151,6 +302,79 @@ export default function RoomsPage() {
           </div>
         )}
       </div>
+
+      <Dialog open={!!bookingRoom} onOpenChange={(open) => !open && closeBooking()}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Book {bookingRoom?.name}</DialogTitle>
+          </DialogHeader>
+
+          {bookingSuccess ? (
+            <div className="space-y-4 py-4">
+              <p className="text-green-600 font-medium">Booking confirmed!</p>
+              <p className="text-sm text-gray-600">
+                Your booking number is <strong>{bookingSuccess}</strong>. We have sent a confirmation to your email.
+              </p>
+              <Button className="w-full" onClick={() => closeBooking()}>Close</Button>
+            </div>
+          ) : (
+            <div className="space-y-4 py-2">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Check-in *</Label>
+                  <Input type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Check-out *</Label>
+                  <Input type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
+                </div>
+              </div>
+
+              {availabilityMsg && (
+                <p className={`text-sm ${availabilityMsg.includes('No rooms') ? 'text-red-600' : 'text-green-600'}`}>
+                  {availabilityMsg}
+                </p>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>First Name *</Label>
+                  <Input value={guestFirstName} onChange={(e) => setGuestFirstName(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Last Name *</Label>
+                  <Input value={guestLastName} onChange={(e) => setGuestLastName(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Email *</Label>
+                <Input type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Phone</Label>
+                <Input value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Special Requests</Label>
+                <Textarea
+                  rows={2}
+                  value={specialRequests}
+                  onChange={(e) => setSpecialRequests(e.target.value)}
+                />
+              </div>
+
+              {bookingError && <p className="text-sm text-red-600">{bookingError}</p>}
+
+              <Button className="w-full" onClick={handleBook} disabled={isSubmitting}>
+                {isSubmitting ? 'Processing...' : `Confirm Booking — $${bookingRoom?.basePrice}/night`}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

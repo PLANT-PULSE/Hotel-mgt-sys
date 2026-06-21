@@ -6,7 +6,7 @@ import { PaymentStatus } from '@prisma/client';
 
 @Injectable()
 export class StripeService {
-  private stripe: Stripe;
+  private stripe: Stripe | null = null;
   private webhookSecret: string;
 
   constructor(
@@ -14,13 +14,19 @@ export class StripeService {
     private configService: ConfigService,
   ) {
     const stripeSecretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
-    if (!stripeSecretKey) {
-      throw new Error('STRIPE_SECRET_KEY is not configured');
+    if (stripeSecretKey) {
+      this.stripe = new Stripe(stripeSecretKey, {
+        apiVersion: '2026-02-25.clover',
+      });
     }
-    this.stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2023-10-16',
-    });
     this.webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET') || '';
+  }
+
+  private getStripeClient(): Stripe {
+    if (!this.stripe) {
+      throw new BadRequestException('Stripe is not configured');
+    }
+    return this.stripe;
   }
 
   /**
@@ -49,7 +55,7 @@ export class StripeService {
     }
 
     // Create Stripe Payment Intent
-    const paymentIntent = await this.stripe.paymentIntents.create({
+    const paymentIntent = await this.getStripeClient().paymentIntents.create({
       amount: Math.round(paymentAmount * 100), // Convert to cents
       currency: currency.toLowerCase(),
       metadata: {
@@ -163,7 +169,7 @@ export class StripeService {
    */
   async getPaymentIntentStatus(paymentIntentId: string) {
     try {
-      const paymentIntent = await this.stripe.paymentIntents.retrieve(paymentIntentId);
+      const paymentIntent = await this.getStripeClient().paymentIntents.retrieve(paymentIntentId);
       return {
         status: paymentIntent.status,
         amount: paymentIntent.amount / 100,
@@ -182,7 +188,7 @@ export class StripeService {
 
     try {
       if (this.webhookSecret) {
-        event = this.stripe.webhooks.constructEvent(
+        event = this.getStripeClient().webhooks.constructEvent(
           payload,
           signature,
           this.webhookSecret,
@@ -218,7 +224,7 @@ export class StripeService {
    */
   async createOrGetCustomer(email: string, name: string) {
     // Search for existing customer
-    const customers = await this.stripe.customers.list({
+    const customers = await this.getStripeClient().customers.list({
       email,
       limit: 1,
     });
@@ -228,7 +234,7 @@ export class StripeService {
     }
 
     // Create new customer
-    return this.stripe.customers.create({
+    return this.getStripeClient().customers.create({
       email,
       name,
     });

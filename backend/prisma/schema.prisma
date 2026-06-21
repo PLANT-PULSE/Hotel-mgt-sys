@@ -318,7 +318,6 @@ model ReservationLock {
 
   roomType RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
 
-  @@unique([roomTypeId, checkInDate, checkOutDate])
   @@index([roomTypeId])
   @@index([expiresAt])
   @@index([sessionToken])

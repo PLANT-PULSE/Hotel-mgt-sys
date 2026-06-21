@@ -1,39 +1,57 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { BookingStatus, Prisma, RoomStatus } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
+
+type DbClient = PrismaService | Prisma.TransactionClient;
+
+const ACTIVE_BOOKING_STATUSES: BookingStatus[] = [
+  BookingStatus.PENDING,
+  BookingStatus.CONFIRMED,
+  BookingStatus.CHECKED_IN,
+];
 
 @Injectable()
 export class ReservationLockService {
-  // Lock duration in minutes
   private static readonly LOCK_DURATION_MINUTES = 10;
 
   constructor(private prisma: PrismaService) {}
 
-  /**
-   * Create a temporary reservation lock to prevent double bookings
-   * This is called when a user starts the booking process
-   */
+  private client(tx?: Prisma.TransactionClient): DbClient {
+    return tx ?? this.prisma;
+  }
+
+  private overlapFilter(checkInDate: Date, checkOutDate: Date) {
+    return {
+      checkInDate: { lt: checkOutDate },
+      checkOutDate: { gt: checkInDate },
+    };
+  }
+
   async createLock(
     roomTypeId: string,
     checkInDate: Date,
     checkOutDate: Date,
-    quantity: number = 1,
+    quantity = 1,
   ): Promise<{ sessionToken: string; expiresAt: Date }> {
-    // Check if rooms are available for the requested dates
+    if (checkOutDate <= checkInDate) {
+      throw new BadRequestException('Check-out must be after check-in');
+    }
+
     const availability = await this.checkAvailability(roomTypeId, checkInDate, checkOutDate);
-    
+
     if (!availability.available || availability.availableQuantity < quantity) {
       throw new BadRequestException(
-        `Not enough rooms available. Only ${availability.availableQuantity} rooms left for these dates.`,
+        `Not enough rooms available. Only ${availability.availableQuantity} room(s) left for these dates.`,
       );
     }
 
-    // Generate unique session token
     const sessionToken = uuidv4();
     const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + ReservationLockService.LOCK_DURATION_MINUTES);
+    expiresAt.setMinutes(
+      expiresAt.getMinutes() + ReservationLockService.LOCK_DURATION_MINUTES,
+    );
 
-    // Create the lock
     await this.prisma.reservationLock.create({
       data: {
         roomTypeId,
@@ -48,9 +66,6 @@ export class ReservationLockService {
     return { sessionToken, expiresAt };
   }
 
-  /**
-   * Validate a reservation lock (check if it's still valid)
-   */
   async validateLock(sessionToken: string): Promise<boolean> {
     const lock = await this.prisma.reservationLock.findUnique({
       where: { sessionToken },
@@ -60,9 +75,7 @@ export class ReservationLockService {
       return false;
     }
 
-    // Check if lock has expired
     if (new Date() > lock.expiresAt) {
-      // Clean up expired lock
       await this.prisma.reservationLock.delete({
         where: { sessionToken },
       });
@@ -72,9 +85,6 @@ export class ReservationLockService {
     return true;
   }
 
-  /**
-   * Get lock details
-   */
   async getLock(sessionToken: string) {
     const lock = await this.prisma.reservationLock.findUnique({
       where: { sessionToken },
@@ -85,7 +95,6 @@ export class ReservationLockService {
       return null;
     }
 
-    // Check if expired
     if (new Date() > lock.expiresAt) {
       await this.prisma.reservationLock.delete({
         where: { sessionToken },
@@ -96,13 +105,7 @@ export class ReservationLockService {
     return lock;
   }
 
-  /**
-   * Convert lock to booking (confirm the reservation)
-   */
-  async confirmBookingFromLock(
-    sessionToken: string,
-    bookingId: string,
-  ): Promise<boolean> {
+  async confirmBookingFromLock(sessionToken: string, bookingId: string): Promise<boolean> {
     const lock = await this.prisma.reservationLock.findUnique({
       where: { sessionToken },
     });
@@ -111,7 +114,6 @@ export class ReservationLockService {
       return false;
     }
 
-    // Update lock with booking ID
     await this.prisma.reservationLock.update({
       where: { sessionToken },
       data: { bookingId },
@@ -120,27 +122,22 @@ export class ReservationLockService {
     return true;
   }
 
-  /**
-   * Release a reservation lock (user cancelled or timed out)
-   */
   async releaseLock(sessionToken: string): Promise<void> {
     await this.prisma.reservationLock.delete({
       where: { sessionToken },
-    }).catch(() => {
-      // Ignore if lock doesn't exist
-    });
+    }).catch(() => undefined);
   }
 
-  /**
-   * Check availability for given dates and room type
-   */
   async checkAvailability(
     roomTypeId: string,
     checkInDate: Date,
     checkOutDate: Date,
+    tx?: Prisma.TransactionClient,
+    excludeSessionToken?: string,
   ): Promise<{ available: boolean; availableQuantity: number; lockedQuantity: number }> {
-    // Get total units for this room type
-    const roomType = await this.prisma.roomType.findUnique({
+    const db = this.client(tx);
+
+    const roomType = await db.roomType.findUnique({
       where: { id: roomTypeId },
     });
 
@@ -148,66 +145,42 @@ export class ReservationLockService {
       return { available: false, availableQuantity: 0, lockedQuantity: 0 };
     }
 
-    const totalUnits = roomType.totalUnits;
-
-    // Get confirmed bookings for these dates
-    const confirmedBookings = await this.prisma.booking.findMany({
+    const totalCapacity = await db.room.count({
       where: {
-        status: { in: ['CONFIRMED', 'CHECKED_IN'] },
-        items: {
-          some: { roomTypeId },
-        },
-        OR: [
-          {
-            checkInDate: { lte: checkInDate },
-            checkOutDate: { gt: checkInDate },
-          },
-          {
-            checkInDate: { lt: checkOutDate },
-            checkOutDate: { gte: checkOutDate },
-          },
-          {
-            checkInDate: { gte: checkInDate },
-            checkOutDate: { lte: checkOutDate },
-          },
-        ],
+        roomTypeId,
+        status: { not: RoomStatus.MAINTENANCE },
+      },
+    });
+
+    const capacity = totalCapacity > 0 ? totalCapacity : roomType.totalUnits;
+
+    const overlappingBookings = await db.booking.findMany({
+      where: {
+        status: { in: ACTIVE_BOOKING_STATUSES },
+        items: { some: { roomTypeId } },
+        ...this.overlapFilter(checkInDate, checkOutDate),
       },
       include: { items: { where: { roomTypeId } } },
     });
 
-    // Calculate booked quantity
     let bookedQuantity = 0;
-    for (const booking of confirmedBookings) {
+    for (const booking of overlappingBookings) {
       for (const item of booking.items) {
         bookedQuantity += item.quantity;
       }
     }
 
-    // Get active locks for these dates
-    const activeLocks = await this.prisma.reservationLock.findMany({
+    const activeLocks = await db.reservationLock.findMany({
       where: {
         roomTypeId,
         expiresAt: { gt: new Date() },
-        OR: [
-          {
-            checkInDate: { lte: checkInDate },
-            checkOutDate: { gt: checkInDate },
-          },
-          {
-            checkInDate: { lt: checkOutDate },
-            checkOutDate: { gte: checkOutDate },
-          },
-          {
-            checkInDate: { gte: checkInDate },
-            checkOutDate: { lte: checkOutDate },
-          },
-        ],
+        ...(excludeSessionToken ? { sessionToken: { not: excludeSessionToken } } : {}),
+        ...this.overlapFilter(checkInDate, checkOutDate),
       },
     });
 
     const lockedQuantity = activeLocks.reduce((sum, lock) => sum + lock.quantity, 0);
-
-    const availableQuantity = Math.max(0, totalUnits - bookedQuantity - lockedQuantity);
+    const availableQuantity = Math.max(0, capacity - bookedQuantity - lockedQuantity);
 
     return {
       available: availableQuantity > 0,
@@ -216,9 +189,30 @@ export class ReservationLockService {
     };
   }
 
-  /**
-   * Get available dates for a room type (for calendar display)
-   */
+  async assertItemsAvailable(
+    items: { roomTypeId: string; quantity: number }[],
+    checkInDate: Date,
+    checkOutDate: Date,
+    tx?: Prisma.TransactionClient,
+    excludeSessionToken?: string,
+  ): Promise<void> {
+    for (const item of items) {
+      const availability = await this.checkAvailability(
+        item.roomTypeId,
+        checkInDate,
+        checkOutDate,
+        tx,
+        excludeSessionToken,
+      );
+
+      if (availability.availableQuantity < item.quantity) {
+        throw new BadRequestException(
+          `Not enough rooms available for the selected dates. Only ${availability.availableQuantity} room(s) left.`,
+        );
+      }
+    }
+  }
+
   async getAvailableDates(
     roomTypeId: string,
     startDate: Date,
@@ -233,46 +227,21 @@ export class ReservationLockService {
       return dates;
     }
 
-    const totalUnits = roomType.totalUnits;
     const currentDate = new Date(startDate);
 
     while (currentDate <= endDate) {
-      const dateStr = currentDate.toISOString().split('T')[0];
+      const nextDay = new Date(currentDate);
+      nextDay.setDate(nextDay.getDate() + 1);
 
-      // Get bookings for this specific date
-      const bookingsOnDate = await this.prisma.booking.findMany({
-        where: {
-          status: { in: ['CONFIRMED', 'CHECKED_IN'] },
-          items: { some: { roomTypeId } },
-          checkInDate: { lte: currentDate },
-          checkOutDate: { gt: currentDate },
-        },
-        include: { items: { where: { roomTypeId } } },
-      });
-
-      let bookedOnDate = 0;
-      for (const booking of bookingsOnDate) {
-        for (const item of booking.items) {
-          bookedOnDate += item.quantity;
-        }
-      }
-
-      // Get locks for this date
-      const locksOnDate = await this.prisma.reservationLock.findMany({
-        where: {
-          roomTypeId,
-          expiresAt: { gt: new Date() },
-          checkInDate: { lte: currentDate },
-          checkOutDate: { gt: currentDate },
-        },
-      });
-
-      const lockedOnDate = locksOnDate.reduce((sum, lock) => sum + lock.quantity, 0);
-      const availableOnDate = Math.max(0, totalUnits - bookedOnDate - lockedOnDate);
+      const availability = await this.checkAvailability(
+        roomTypeId,
+        currentDate,
+        nextDay,
+      );
 
       dates.push({
-        date: dateStr,
-        available: availableOnDate,
+        date: currentDate.toISOString().split('T')[0],
+        available: availability.availableQuantity,
       });
 
       currentDate.setDate(currentDate.getDate() + 1);
@@ -281,9 +250,6 @@ export class ReservationLockService {
     return dates;
   }
 
-  /**
-   * Clean up expired locks (should be called periodically)
-   */
   async cleanupExpiredLocks(): Promise<number> {
     const result = await this.prisma.reservationLock.deleteMany({
       where: {

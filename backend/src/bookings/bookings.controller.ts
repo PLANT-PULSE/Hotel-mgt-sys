@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Body,
   Param,
   Query,
@@ -10,7 +11,9 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { BookingsService } from './bookings.service';
+import { ReservationLockService } from './reservation-lock.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
+import { CreateReservationLockDto } from './dto/create-reservation-lock.dto';
 import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -24,7 +27,48 @@ import { BookingStatus } from '@prisma/client';
 @ApiTags('bookings')
 @Controller('bookings')
 export class BookingsController {
-  constructor(private bookingsService: BookingsService) {}
+  constructor(
+    private bookingsService: BookingsService,
+    private reservationLockService: ReservationLockService,
+  ) {}
+
+  @Get('availability')
+  @Public()
+  @ApiOperation({ summary: 'Check room availability for dates' })
+  @ApiQuery({ name: 'roomTypeId', required: true })
+  @ApiQuery({ name: 'checkInDate', required: true })
+  @ApiQuery({ name: 'checkOutDate', required: true })
+  async checkAvailability(
+    @Query('roomTypeId') roomTypeId: string,
+    @Query('checkInDate') checkInDate: string,
+    @Query('checkOutDate') checkOutDate: string,
+  ) {
+    return this.reservationLockService.checkAvailability(
+      roomTypeId,
+      new Date(checkInDate),
+      new Date(checkOutDate),
+    );
+  }
+
+  @Post('reservation-lock')
+  @Public()
+  @ApiOperation({ summary: 'Hold rooms temporarily to prevent double booking during checkout' })
+  async createReservationLock(@Body() dto: CreateReservationLockDto) {
+    return this.reservationLockService.createLock(
+      dto.roomTypeId,
+      new Date(dto.checkInDate),
+      new Date(dto.checkOutDate),
+      dto.quantity ?? 1,
+    );
+  }
+
+  @Delete('reservation-lock/:token')
+  @Public()
+  @ApiOperation({ summary: 'Release a reservation hold' })
+  async releaseReservationLock(@Param('token') token: string) {
+    await this.reservationLockService.releaseLock(token);
+    return { message: 'Lock released' };
+  }
 
   @Post()
   @Public()

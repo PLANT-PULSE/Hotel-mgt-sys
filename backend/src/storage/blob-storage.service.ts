@@ -73,7 +73,7 @@ export class BlobStorageService {
           'Content-Type': contentType,
           'x-blob-path': path,
         },
-        body: file,
+        body: new Uint8Array(file),
       });
 
       if (!response.ok) {

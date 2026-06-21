@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { backendFetch } from '@/lib/backend-api';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
-    const response = await fetch(`${API_URL}/rooms/inventory`, {
+
+    const response = await backendFetch('/rooms/inventory', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-    });
+    }, true);
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
@@ -18,7 +16,7 @@ export async function POST(request: NextRequest) {
     console.error('Create room error:', error);
     return NextResponse.json(
       { error: 'Failed to create room' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { backendFetch } from '@/lib/backend-api';
 
 export async function GET(
   request: NextRequest,
@@ -8,11 +7,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    
-    const response = await fetch(`${API_URL}/rooms/${id}`, {
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store',
-    });
+
+    const response = await backendFetch(`/rooms/${id}`);
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
@@ -31,12 +27,11 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    
-    const response = await fetch(`${API_URL}/rooms/${id}`, {
+
+    const response = await backendFetch(`/rooms/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-    });
+    }, true);
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
@@ -55,10 +50,10 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    
-    const response = await fetch(`${API_URL}/rooms/${id}`, {
+
+    const response = await backendFetch(`/rooms/${id}`, {
       method: 'DELETE',
-    });
+    }, true);
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });

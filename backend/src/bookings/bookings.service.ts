@@ -1,12 +1,16 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import { BookingStatus } from '@prisma/client';
+import { BookingStatus, Prisma } from '@prisma/client';
 import { RequestUser } from '../auth/strategies/jwt.strategy';
+import { ReservationLockService } from './reservation-lock.service';
 
 @Injectable()
 export class BookingsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private reservationLockService: ReservationLockService,
+  ) {}
 
   private generateBookingNumber(): string {
     const year = new Date().getFullYear();
@@ -63,6 +67,15 @@ export class BookingsService {
       throw new BadRequestException('Check-out must be after check-in');
     }
 
+    if (dto.sessionToken) {
+      const lockValid = await this.reservationLockService.validateLock(dto.sessionToken);
+      if (!lockValid) {
+        throw new BadRequestException(
+          'Your reservation hold has expired. Please check availability and try again.',
+        );
+      }
+    }
+
     const { total } = await this.calculateTotal(
       dto.items,
       checkIn,
@@ -79,56 +92,75 @@ export class BookingsService {
       guestId = guest?.id ?? null;
     }
 
-    const booking = await this.prisma.booking.create({
-      data: {
-        bookingNumber: this.generateBookingNumber(),
-        guestId,
-        createdById: user?.role && user.role !== 'GUEST' ? user.id : null,
-        checkInDate: checkIn,
-        checkOutDate: checkOut,
-        guestEmail: dto.guestEmail,
-        guestFirstName: dto.guestFirstName,
-        guestLastName: dto.guestLastName,
-        guestPhone: dto.guestPhone,
-        specialRequests: dto.specialRequests,
-        totalAmount: total,
-        status: BookingStatus.PENDING,
-        items: {
-          create: dto.items.map((item) => {
-            const nights = Math.ceil(
-              (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24),
-            );
-            const itemTotal = item.pricePerNight * item.quantity * nights;
-            return {
-              roomTypeId: item.roomTypeId,
-              quantity: item.quantity,
-              pricePerNight: item.pricePerNight,
-              totalPrice: itemTotal,
-            };
-          }),
-        },
-      },
-      include: {
-        items: { include: { roomType: true } },
-      },
-    });
+    const booking = await this.prisma.$transaction(
+      async (tx) => {
+        await this.reservationLockService.assertItemsAvailable(
+          dto.items,
+          checkIn,
+          checkOut,
+          tx,
+          dto.sessionToken,
+        );
 
-    if (dto.addOns?.length) {
-      for (const ao of dto.addOns) {
-        const addOn = await this.prisma.addOn.findUnique({
-          where: { id: ao.addOnId },
-        });
-        if (addOn) {
-          await this.prisma.bookingAddOn.create({
-            data: {
-              bookingId: booking.id,
-              addOnId: ao.addOnId,
-              quantity: ao.quantity,
-              price: Number(addOn.price) * ao.quantity,
+        const created = await tx.booking.create({
+          data: {
+            bookingNumber: this.generateBookingNumber(),
+            guestId,
+            createdById: user?.role && user.role !== 'GUEST' ? user.id : null,
+            checkInDate: checkIn,
+            checkOutDate: checkOut,
+            guestEmail: dto.guestEmail,
+            guestFirstName: dto.guestFirstName,
+            guestLastName: dto.guestLastName,
+            guestPhone: dto.guestPhone,
+            specialRequests: dto.specialRequests,
+            totalAmount: total,
+            status: BookingStatus.PENDING,
+            items: {
+              create: dto.items.map((item) => {
+                const nights = Math.ceil(
+                  (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24),
+                );
+                const itemTotal = item.pricePerNight * item.quantity * nights;
+                return {
+                  roomTypeId: item.roomTypeId,
+                  quantity: item.quantity,
+                  pricePerNight: item.pricePerNight,
+                  totalPrice: itemTotal,
+                };
+              }),
             },
-          });
+          },
+          include: {
+            items: { include: { roomType: true } },
+          },
+        });
+
+        if (dto.addOns?.length) {
+          for (const ao of dto.addOns) {
+            const addOn = await tx.addOn.findUnique({
+              where: { id: ao.addOnId },
+            });
+            if (addOn) {
+              await tx.bookingAddOn.create({
+                data: {
+                  bookingId: created.id,
+                  addOnId: ao.addOnId,
+                  quantity: ao.quantity,
+                  price: Number(addOn.price) * ao.quantity,
+                },
+              });
+            }
+          }
         }
-      }
+
+        return created;
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    );
+
+    if (dto.sessionToken) {
+      await this.reservationLockService.confirmBookingFromLock(dto.sessionToken, booking.id);
     }
 
     return this.prisma.booking.findUnique({

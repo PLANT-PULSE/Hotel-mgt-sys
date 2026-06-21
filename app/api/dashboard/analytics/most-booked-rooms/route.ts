@@ -1,13 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { backendFetch } from '@/lib/backend-api';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const response = await fetch(`${API_URL}/dashboard/analytics/most-booked-rooms`, {
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store',
-    });
+    const response = await backendFetch('/dashboard/analytics/most-booked-rooms', {}, true);
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {

@@ -175,25 +175,41 @@ export class DashboardService {
 
     const rooms = await this.prisma.room.findMany({
       where: roomId ? { id: roomId } : undefined,
-      include: {
-        roomType: true,
-        bookings: {
+      include: { roomType: true },
+    });
+
+    const roomTypeIds = [...new Set(rooms.map((room) => room.roomTypeId))];
+
+    const bookings = roomTypeIds.length
+      ? await this.prisma.booking.findMany({
           where: {
             status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] },
             checkInDate: { lte: end },
             checkOutDate: { gte: start },
+            items: { some: { roomTypeId: { in: roomTypeIds } } },
           },
+          include: { items: { select: { roomTypeId: true } } },
           orderBy: { checkInDate: 'asc' },
-        },
-      },
-    });
+        })
+      : [];
 
-    return rooms.map(room => ({
+    const bookingsByRoomType = new Map<string, typeof bookings>();
+    for (const booking of bookings) {
+      for (const item of booking.items) {
+        const existing = bookingsByRoomType.get(item.roomTypeId) ?? [];
+        if (!existing.some((b) => b.id === booking.id)) {
+          existing.push(booking);
+        }
+        bookingsByRoomType.set(item.roomTypeId, existing);
+      }
+    }
+
+    return rooms.map((room) => ({
       id: room.id,
-      roomNumber: room.roomNumber,
+      roomNumber: room.number,
       roomType: room.roomType.name,
       status: room.status,
-      bookings: room.bookings.map(b => ({
+      bookings: (bookingsByRoomType.get(room.roomTypeId) ?? []).map((b) => ({
         id: b.id,
         bookingNumber: b.bookingNumber,
         guestName: `${b.guestFirstName} ${b.guestLastName}`,
