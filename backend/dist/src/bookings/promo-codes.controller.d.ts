@@ -8,7 +8,9 @@ export declare class PromoCodesController {
         createdAt: Date;
         updatedAt: Date;
         description: string | null;
+        businessId: string;
         code: string;
+        discountType: import(".prisma/client").$Enums.DiscountType;
         discount: import("@prisma/client/runtime/library").Decimal;
         validFrom: Date;
         validTo: Date;

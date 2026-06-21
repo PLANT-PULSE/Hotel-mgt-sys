@@ -18,15 +18,20 @@ const swagger_1 = require("@nestjs/swagger");
 const payments_service_1 = require("./payments.service");
 const stripe_service_1 = require("./stripe.service");
 const create_payment_dto_1 = require("./dto/create-payment.dto");
+const guest_checkout_dto_1 = require("./dto/guest-checkout.dto");
 const create_stripe_payment_dto_1 = require("./dto/create-stripe-payment.dto");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_decorator_1 = require("../auth/decorators/roles.decorator");
+const public_decorator_1 = require("../auth/decorators/public.decorator");
 const client_1 = require("@prisma/client");
 let PaymentsController = class PaymentsController {
     constructor(paymentsService, stripeService) {
         this.paymentsService = paymentsService;
         this.stripeService = stripeService;
+    }
+    async guestCheckout(dto) {
+        return this.paymentsService.guestCheckout(dto);
     }
     async create(dto) {
         return this.paymentsService.create(dto);
@@ -58,6 +63,15 @@ let PaymentsController = class PaymentsController {
     }
 };
 exports.PaymentsController = PaymentsController;
+__decorate([
+    (0, common_1.Post)('checkout'),
+    (0, public_decorator_1.Public)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Guest checkout payment (card, mobile money, etc.)' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [guest_checkout_dto_1.GuestCheckoutDto]),
+    __metadata("design:returntype", Promise)
+], PaymentsController.prototype, "guestCheckout", null);
 __decorate([
     (0, common_1.Post)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

@@ -63,7 +63,7 @@ let StripeService = class StripeService {
             data: {
                 bookingId: booking.id,
                 amount: paymentAmount,
-                currency: currency.toUpperCase(),
+                currency: currency.toUpperCase() || client_1.SupportedCurrency.GHS,
                 method: 'CARD',
                 status: client_1.PaymentStatus.PENDING,
                 stripePaymentIntentId: paymentIntent.id,

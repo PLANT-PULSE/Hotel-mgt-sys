@@ -76,13 +76,21 @@ let BookingsService = class BookingsService {
             });
             guestId = guest?.id ?? null;
         }
+        const firstRoomType = await this.prisma.roomType.findUnique({
+            where: { id: dto.items[0].roomTypeId },
+            select: { businessId: true },
+        });
+        if (!firstRoomType) {
+            throw new common_1.BadRequestException('Invalid room type');
+        }
         const booking = await this.prisma.$transaction(async (tx) => {
             await this.reservationLockService.assertItemsAvailable(dto.items, checkIn, checkOut, tx, dto.sessionToken);
             const created = await tx.booking.create({
                 data: {
+                    businessId: firstRoomType.businessId,
                     bookingNumber: this.generateBookingNumber(),
                     guestId,
-                    createdById: user?.role && user.role !== 'GUEST' ? user.id : null,
+                    createdById: user?.role && user.role !== client_1.UserRole.CUSTOMER && user.role !== client_1.UserRole.GUEST ? user.id : null,
                     checkInDate: checkIn,
                     checkOutDate: checkOut,
                     guestEmail: dto.guestEmail,

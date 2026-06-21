@@ -12,8 +12,8 @@ async function getAdminToken(): Promise<string> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      email: process.env.ADMIN_EMAIL || 'admin@luxehotel.com',
-      password: process.env.ADMIN_PASSWORD || 'Password123!',
+      email: process.env.SUPER_ADMIN_EMAIL || process.env.ADMIN_EMAIL || 'superadmin@platform.com',
+      password: process.env.SUPER_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD || 'Password123!',
     }),
     cache: 'no-store',
   });

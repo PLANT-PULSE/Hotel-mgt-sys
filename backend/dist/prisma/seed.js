@@ -13,15 +13,28 @@ const HOTEL_IMAGES = {
 };
 async function main() {
     const hashedPassword = await bcrypt.hash('Password123!', 10);
-    const admin = await prisma.user.upsert({
+    const superAdmin = await prisma.user.upsert({
+        where: { email: 'superadmin@platform.com' },
+        update: { role: client_1.UserRole.SUPER_ADMIN },
+        create: {
+            email: 'superadmin@platform.com',
+            passwordHash: hashedPassword,
+            firstName: 'Super',
+            lastName: 'Admin',
+            role: client_1.UserRole.SUPER_ADMIN,
+            emailVerified: true,
+        },
+    });
+    const owner = await prisma.user.upsert({
         where: { email: 'admin@luxehotel.com' },
-        update: {},
+        update: { role: client_1.UserRole.BUSINESS_OWNER },
         create: {
             email: 'admin@luxehotel.com',
             passwordHash: hashedPassword,
             firstName: 'System',
             lastName: 'Admin',
-            role: client_1.UserRole.ADMIN,
+            role: client_1.UserRole.BUSINESS_OWNER,
+            emailVerified: true,
         },
     });
     const manager = await prisma.user.upsert({
@@ -48,30 +61,79 @@ async function main() {
     });
     const guestUser = await prisma.user.upsert({
         where: { email: 'guest@example.com' },
-        update: {},
+        update: { role: client_1.UserRole.CUSTOMER },
         create: {
             email: 'guest@example.com',
             passwordHash: hashedPassword,
             firstName: 'John',
             lastName: 'Doe',
-            phone: '+1234567890',
-            role: client_1.UserRole.GUEST,
+            phone: '+233201234567',
+            role: client_1.UserRole.CUSTOMER,
         },
     });
     const guest = await prisma.guest.upsert({
         where: { userId: guestUser.id },
         update: {},
-        create: {
-            userId: guestUser.id,
-            loyaltyPoints: 2450,
-            loyaltyTier: 'SILVER',
-        },
+        create: { userId: guestUser.id, loyaltyPoints: 2450, loyaltyTier: 'SILVER' },
     });
-    await prisma.staff.upsert({
-        where: { userId: manager.id },
+    const business = await prisma.business.upsert({
+        where: { slug: 'luxestay' },
         update: {},
         create: {
+            name: 'LuxeStay Hotel',
+            slug: 'luxestay',
+            type: client_1.BusinessType.HOTEL,
+            status: client_1.BusinessStatus.ACTIVE,
+            description: 'Premium luxury hotel experience in the heart of the city.',
+            logo: '/placeholder-logo.png',
+            city: 'Accra',
+            country: 'Ghana',
+            email: 'info@luxestay.com',
+            phone: '+233302123456',
+            ownerId: owner.id,
+            subdomain: 'luxestay',
+            primaryColor: '#1a1a2e',
+            secondaryColor: '#e94560',
+        },
+    });
+    await prisma.businessMember.upsert({
+        where: { businessId_userId: { businessId: business.id, userId: owner.id } },
+        update: {},
+        create: { businessId: business.id, userId: owner.id, role: client_1.UserRole.BUSINESS_OWNER },
+    });
+    for (const [userId, role] of [
+        [manager.id, client_1.UserRole.MANAGER],
+        [receptionist.id, client_1.UserRole.RECEPTIONIST],
+    ]) {
+        await prisma.businessMember.upsert({
+            where: { businessId_userId: { businessId: business.id, userId } },
+            update: {},
+            create: { businessId: business.id, userId, role },
+        });
+    }
+    const subExists = await prisma.subscription.findFirst({ where: { businessId: business.id } });
+    if (!subExists) {
+        const now = new Date();
+        const periodEnd = new Date(now);
+        periodEnd.setMonth(periodEnd.getMonth() + 1);
+        await prisma.subscription.create({
+            data: {
+                businessId: business.id,
+                plan: client_1.SubscriptionPlan.PREMIUM,
+                status: client_1.SubscriptionStatus.ACTIVE,
+                billingCycle: client_1.BillingCycle.MONTHLY,
+                amount: 299,
+                currentPeriodStart: now,
+                currentPeriodEnd: periodEnd,
+            },
+        });
+    }
+    await prisma.staff.upsert({
+        where: { userId: manager.id },
+        update: { businessId: business.id },
+        create: {
             userId: manager.id,
+            businessId: business.id,
             department: 'Operations',
             employeeId: 'EMP-001',
             hireDate: new Date('2022-01-15'),
@@ -79,9 +141,10 @@ async function main() {
     });
     await prisma.staff.upsert({
         where: { userId: receptionist.id },
-        update: {},
+        update: { businessId: business.id },
         create: {
             userId: receptionist.id,
+            businessId: business.id,
             department: 'Front Desk',
             employeeId: 'EMP-002',
             hireDate: new Date('2023-03-01'),
@@ -97,18 +160,18 @@ async function main() {
     ];
     const roomTypes = [];
     for (const data of roomTypeData) {
-        const existing = await prisma.roomType.findFirst({ where: { name: data.name } });
-        const rt = existing || await prisma.roomType.create({ data });
+        const existing = await prisma.roomType.findFirst({
+            where: { name: data.name, businessId: business.id },
+        });
+        const rt = existing ||
+            (await prisma.roomType.create({
+                data: { ...data, businessId: business.id },
+            }));
         roomTypes.push(rt);
         const existingImages = await prisma.roomImage.count({ where: { roomTypeId: rt.id } });
         if (existingImages === 0) {
             await prisma.roomImage.create({
-                data: {
-                    roomTypeId: rt.id,
-                    url: data.image,
-                    isPrimary: true,
-                    displayOrder: 0,
-                },
+                data: { roomTypeId: rt.id, url: data.image, isPrimary: true, displayOrder: 0 },
             });
         }
     }
@@ -117,8 +180,7 @@ async function main() {
         const roomNumbers = ['101', '102', '103', '201', '202', '203', '204', '205', '301', '302', '303', '401', '402', '501', '502', '601', '701'];
         let idx = 0;
         for (const rt of roomTypes) {
-            const count = rt.totalUnits;
-            for (let i = 0; i < count && idx < roomNumbers.length; i++) {
+            for (let i = 0; i < rt.totalUnits && idx < roomNumbers.length; i++) {
                 await prisma.room.create({
                     data: {
                         roomTypeId: rt.id,
@@ -132,21 +194,20 @@ async function main() {
         }
     }
     const promoCodes = [
-        { code: 'SAVE10', discount: 0.1, description: '10% Off' },
-        { code: 'SAVE20', discount: 0.2, description: '20% Off' },
-        { code: 'LUXURY50', discount: 0.5, description: '50% Off' },
-        { code: 'WELCOME', discount: 0.15, description: '15% Welcome Discount' },
-        { code: 'CORP01', discount: 0.25, description: '25% Corporate Discount' },
-        { code: 'GROUP5', discount: 0.15, description: '15% Group Discount' },
+        { code: 'SAVE10', discount: 10, description: '10% Off' },
+        { code: 'SAVE20', discount: 20, description: '20% Off' },
+        { code: 'WELCOME', discount: 15, description: '15% Welcome Discount' },
     ];
     const now = new Date();
     const validTo = new Date(now.getFullYear() + 1, 11, 31);
     for (const p of promoCodes) {
         await prisma.promoCode.upsert({
-            where: { code: p.code },
+            where: { businessId_code: { businessId: business.id, code: p.code } },
             update: {},
             create: {
+                businessId: business.id,
                 code: p.code,
+                discountType: client_1.DiscountType.PERCENTAGE,
                 discount: p.discount,
                 description: p.description,
                 validFrom: now,
@@ -158,15 +219,14 @@ async function main() {
     const addOns = [
         { key: 'breakfast', name: 'Daily Breakfast', price: 25 },
         { key: 'airportPickup', name: 'Airport Pickup', price: 45 },
-        { key: 'spaCredit', name: '$50 Spa Credit', price: 50 },
+        { key: 'spaCredit', name: 'Spa Credit', price: 50 },
         { key: 'lateCheckout', name: 'Late Checkout (2PM)', price: 35 },
-        { key: 'extraBed', name: 'Extra Bed', price: 40 },
     ];
     for (const a of addOns) {
         await prisma.addOn.upsert({
-            where: { key: a.key },
+            where: { businessId_key: { businessId: business.id, key: a.key } },
             update: {},
-            create: a,
+            create: { ...a, businessId: business.id },
         });
     }
     const bookingCount = await prisma.booking.count();
@@ -177,12 +237,14 @@ async function main() {
         checkOut.setDate(checkOut.getDate() + 3);
         const booking = await prisma.booking.create({
             data: {
-                bookingNumber: `LXS-${new Date().getFullYear()}-${String(100001).padStart(5, '0')}`,
+                businessId: business.id,
+                bookingNumber: `LXS-${new Date().getFullYear()}-100001`,
                 guestId: guest.id,
                 checkInDate: checkIn,
                 checkOutDate: checkOut,
                 status: client_1.BookingStatus.CONFIRMED,
                 totalAmount: 897,
+                paidAmount: 897,
                 guestEmail: guestUser.email,
                 guestFirstName: guestUser.firstName,
                 guestLastName: guestUser.lastName,
@@ -211,10 +273,12 @@ async function main() {
     }
     console.log('Seed completed successfully!');
     console.log('Demo credentials:');
-    console.log('  Admin: admin@luxehotel.com / Password123!');
+    console.log('  Super Admin: superadmin@platform.com / Password123!');
+    console.log('  Business Owner: admin@luxehotel.com / Password123!');
     console.log('  Manager: manager@luxehotel.com / Password123!');
     console.log('  Reception: reception@luxehotel.com / Password123!');
-    console.log('  Guest: guest@example.com / Password123!');
+    console.log('  Customer: guest@example.com / Password123!');
+    console.log(`  Business slug: ${business.slug}`);
 }
 main()
     .catch((e) => {

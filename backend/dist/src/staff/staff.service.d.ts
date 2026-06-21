@@ -15,8 +15,9 @@ export declare class StaffService {
             createdAt: Date;
             updatedAt: Date;
             userId: string;
-            employeeId: string;
+            businessId: string;
             department: string;
+            employeeId: string;
             hireDate: Date;
         })[];
         meta: {
@@ -37,6 +38,11 @@ export declare class StaffService {
             isActive: boolean;
             emailVerified: boolean;
             lastLoginAt: Date | null;
+            failedLoginAttempts: number;
+            lockedUntil: Date | null;
+            preferredLanguage: import(".prisma/client").$Enums.SupportedLanguage;
+            preferredCurrency: import(".prisma/client").$Enums.SupportedCurrency;
+            avatar: string | null;
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
@@ -46,8 +52,9 @@ export declare class StaffService {
         createdAt: Date;
         updatedAt: Date;
         userId: string;
-        employeeId: string;
+        businessId: string;
         department: string;
+        employeeId: string;
         hireDate: Date;
     }>;
 }

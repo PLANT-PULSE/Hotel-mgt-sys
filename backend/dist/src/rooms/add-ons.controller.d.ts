@@ -9,6 +9,7 @@ export declare class AddOnsController {
         updatedAt: Date;
         name: string;
         description: string | null;
+        businessId: string;
         key: string;
         price: import("@prisma/client/runtime/library").Decimal;
     }[]>;

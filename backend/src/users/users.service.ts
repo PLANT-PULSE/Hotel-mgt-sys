@@ -1,7 +1,7 @@
 import { Injectable, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRole } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import { PasswordService } from '../common/services/password.service';
 
 export interface CreateUserInput {
   email: string;
@@ -14,7 +14,10 @@ export interface CreateUserInput {
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private passwordService: PasswordService,
+  ) {}
 
   async create(data: CreateUserInput) {
     const existing = await this.prisma.user.findUnique({
@@ -24,7 +27,8 @@ export class UsersService {
       throw new ConflictException('Email already registered');
     }
 
-    const passwordHash = await bcrypt.hash(data.password, 10);
+    const passwordHash = await this.passwordService.hash(data.password);
+    const role = data.role ?? UserRole.CUSTOMER;
 
     return this.prisma.user.create({
       data: {
@@ -33,7 +37,7 @@ export class UsersService {
         firstName: data.firstName,
         lastName: data.lastName,
         phone: data.phone,
-        role: data.role ?? UserRole.GUEST,
+        role: role === UserRole.GUEST ? UserRole.CUSTOMER : role,
       },
       select: {
         id: true,
@@ -48,7 +52,7 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({
+    return this.prisma.user.findFirst({
       where: { email: email.toLowerCase(), deletedAt: null },
       include: { guestProfile: true, staffProfile: true },
     });
@@ -64,6 +68,9 @@ export class UsersService {
         lastName: true,
         phone: true,
         role: true,
+        avatar: true,
+        preferredLanguage: true,
+        preferredCurrency: true,
         guestProfile: true,
         staffProfile: true,
         createdAt: true,

@@ -22,19 +22,40 @@ export declare class BookingsController {
         message: string;
     }>;
     create(dto: CreateBookingDto, user?: RequestUser): Promise<({
+        addOns: ({
+            addOn: {
+                id: string;
+                isActive: boolean;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                description: string | null;
+                businessId: string;
+                key: string;
+                price: import("@prisma/client/runtime/library").Decimal;
+            };
+        } & {
+            id: string;
+            price: import("@prisma/client/runtime/library").Decimal;
+            quantity: number;
+            bookingId: string;
+            addOnId: string;
+        })[];
         items: ({
             roomType: {
                 id: string;
+                isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
                 type: string;
+                description: string | null;
+                businessId: string;
                 basePrice: import("@prisma/client/runtime/library").Decimal;
                 size: string;
                 maxGuests: number;
                 beds: number;
                 amenities: string[];
-                description: string | null;
                 image: string | null;
                 totalUnits: number;
             };
@@ -46,40 +67,28 @@ export declare class BookingsController {
             totalPrice: import("@prisma/client/runtime/library").Decimal;
             bookingId: string;
         })[];
-        addOns: ({
-            addOn: {
-                id: string;
-                isActive: boolean;
-                createdAt: Date;
-                updatedAt: Date;
-                name: string;
-                description: string | null;
-                key: string;
-                price: import("@prisma/client/runtime/library").Decimal;
-            };
-        } & {
-            id: string;
-            price: import("@prisma/client/runtime/library").Decimal;
-            quantity: number;
-            bookingId: string;
-            addOnId: string;
-        })[];
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.BookingStatus;
+        currency: import(".prisma/client").$Enums.SupportedCurrency;
+        businessId: string;
         bookingNumber: string;
+        bookingType: import(".prisma/client").$Enums.BookingType;
         checkInDate: Date;
         checkOutDate: Date;
         specialRequests: string | null;
         promoCodeId: string | null;
         totalAmount: import("@prisma/client/runtime/library").Decimal;
-        currency: string;
+        depositAmount: import("@prisma/client/runtime/library").Decimal | null;
+        paidAmount: import("@prisma/client/runtime/library").Decimal;
         guestEmail: string;
         guestFirstName: string;
         guestLastName: string;
         guestPhone: string | null;
+        groupSize: number;
+        recurringRule: import("@prisma/client/runtime/library").JsonValue | null;
         guestId: string | null;
         createdById: string | null;
     }) | null>;
@@ -103,16 +112,18 @@ export declare class BookingsController {
             items: ({
                 roomType: {
                     id: string;
+                    isActive: boolean;
                     createdAt: Date;
                     updatedAt: Date;
                     name: string;
                     type: string;
+                    description: string | null;
+                    businessId: string;
                     basePrice: import("@prisma/client/runtime/library").Decimal;
                     size: string;
                     maxGuests: number;
                     beds: number;
                     amenities: string[];
-                    description: string | null;
                     image: string | null;
                     totalUnits: number;
                 };
@@ -129,17 +140,23 @@ export declare class BookingsController {
             createdAt: Date;
             updatedAt: Date;
             status: import(".prisma/client").$Enums.BookingStatus;
+            currency: import(".prisma/client").$Enums.SupportedCurrency;
+            businessId: string;
             bookingNumber: string;
+            bookingType: import(".prisma/client").$Enums.BookingType;
             checkInDate: Date;
             checkOutDate: Date;
             specialRequests: string | null;
             promoCodeId: string | null;
             totalAmount: import("@prisma/client/runtime/library").Decimal;
-            currency: string;
+            depositAmount: import("@prisma/client/runtime/library").Decimal | null;
+            paidAmount: import("@prisma/client/runtime/library").Decimal;
             guestEmail: string;
             guestFirstName: string;
             guestLastName: string;
             guestPhone: string | null;
+            groupSize: number;
+            recurringRule: import("@prisma/client/runtime/library").JsonValue | null;
             guestId: string | null;
             createdById: string | null;
         })[];
@@ -169,16 +186,18 @@ export declare class BookingsController {
             items: ({
                 roomType: {
                     id: string;
+                    isActive: boolean;
                     createdAt: Date;
                     updatedAt: Date;
                     name: string;
                     type: string;
+                    description: string | null;
+                    businessId: string;
                     basePrice: import("@prisma/client/runtime/library").Decimal;
                     size: string;
                     maxGuests: number;
                     beds: number;
                     amenities: string[];
-                    description: string | null;
                     image: string | null;
                     totalUnits: number;
                 };
@@ -195,17 +214,23 @@ export declare class BookingsController {
             createdAt: Date;
             updatedAt: Date;
             status: import(".prisma/client").$Enums.BookingStatus;
+            currency: import(".prisma/client").$Enums.SupportedCurrency;
+            businessId: string;
             bookingNumber: string;
+            bookingType: import(".prisma/client").$Enums.BookingType;
             checkInDate: Date;
             checkOutDate: Date;
             specialRequests: string | null;
             promoCodeId: string | null;
             totalAmount: import("@prisma/client/runtime/library").Decimal;
-            currency: string;
+            depositAmount: import("@prisma/client/runtime/library").Decimal | null;
+            paidAmount: import("@prisma/client/runtime/library").Decimal;
             guestEmail: string;
             guestFirstName: string;
             guestLastName: string;
             guestPhone: string | null;
+            groupSize: number;
+            recurringRule: import("@prisma/client/runtime/library").JsonValue | null;
             guestId: string | null;
             createdById: string | null;
         })[];
@@ -216,19 +241,40 @@ export declare class BookingsController {
         };
     }>;
     lookup(number: string): Promise<{
+        addOns: ({
+            addOn: {
+                id: string;
+                isActive: boolean;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                description: string | null;
+                businessId: string;
+                key: string;
+                price: import("@prisma/client/runtime/library").Decimal;
+            };
+        } & {
+            id: string;
+            price: import("@prisma/client/runtime/library").Decimal;
+            quantity: number;
+            bookingId: string;
+            addOnId: string;
+        })[];
         items: ({
             roomType: {
                 id: string;
+                isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
                 type: string;
+                description: string | null;
+                businessId: string;
                 basePrice: import("@prisma/client/runtime/library").Decimal;
                 size: string;
                 maxGuests: number;
                 beds: number;
                 amenities: string[];
-                description: string | null;
                 image: string | null;
                 totalUnits: number;
             };
@@ -240,34 +286,19 @@ export declare class BookingsController {
             totalPrice: import("@prisma/client/runtime/library").Decimal;
             bookingId: string;
         })[];
-        addOns: ({
-            addOn: {
-                id: string;
-                isActive: boolean;
-                createdAt: Date;
-                updatedAt: Date;
-                name: string;
-                description: string | null;
-                key: string;
-                price: import("@prisma/client/runtime/library").Decimal;
-            };
-        } & {
-            id: string;
-            price: import("@prisma/client/runtime/library").Decimal;
-            quantity: number;
-            bookingId: string;
-            addOnId: string;
-        })[];
         payments: {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             status: import(".prisma/client").$Enums.PaymentStatus;
-            currency: string;
-            bookingId: string;
+            currency: import(".prisma/client").$Enums.SupportedCurrency;
             amount: import("@prisma/client/runtime/library").Decimal;
+            bookingId: string;
             method: import(".prisma/client").$Enums.PaymentMethod;
             transactionId: string | null;
+            isDeposit: boolean;
+            isInstallment: boolean;
+            installmentNumber: number | null;
             stripePaymentIntentId: string | null;
             stripeCustomerId: string | null;
             stripePaymentMethodId: string | null;
@@ -280,17 +311,23 @@ export declare class BookingsController {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.BookingStatus;
+        currency: import(".prisma/client").$Enums.SupportedCurrency;
+        businessId: string;
         bookingNumber: string;
+        bookingType: import(".prisma/client").$Enums.BookingType;
         checkInDate: Date;
         checkOutDate: Date;
         specialRequests: string | null;
         promoCodeId: string | null;
         totalAmount: import("@prisma/client/runtime/library").Decimal;
-        currency: string;
+        depositAmount: import("@prisma/client/runtime/library").Decimal | null;
+        paidAmount: import("@prisma/client/runtime/library").Decimal;
         guestEmail: string;
         guestFirstName: string;
         guestLastName: string;
         guestPhone: string | null;
+        groupSize: number;
+        recurringRule: import("@prisma/client/runtime/library").JsonValue | null;
         guestId: string | null;
         createdById: string | null;
     }>;
@@ -307,6 +344,11 @@ export declare class BookingsController {
                 isActive: boolean;
                 emailVerified: boolean;
                 lastLoginAt: Date | null;
+                failedLoginAttempts: number;
+                lockedUntil: Date | null;
+                preferredLanguage: import(".prisma/client").$Enums.SupportedLanguage;
+                preferredCurrency: import(".prisma/client").$Enums.SupportedCurrency;
+                avatar: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 deletedAt: Date | null;
@@ -320,19 +362,40 @@ export declare class BookingsController {
             loyaltyTier: string;
             preferences: import("@prisma/client/runtime/library").JsonValue | null;
         }) | null;
+        addOns: ({
+            addOn: {
+                id: string;
+                isActive: boolean;
+                createdAt: Date;
+                updatedAt: Date;
+                name: string;
+                description: string | null;
+                businessId: string;
+                key: string;
+                price: import("@prisma/client/runtime/library").Decimal;
+            };
+        } & {
+            id: string;
+            price: import("@prisma/client/runtime/library").Decimal;
+            quantity: number;
+            bookingId: string;
+            addOnId: string;
+        })[];
         items: ({
             roomType: {
                 id: string;
+                isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
                 type: string;
+                description: string | null;
+                businessId: string;
                 basePrice: import("@prisma/client/runtime/library").Decimal;
                 size: string;
                 maxGuests: number;
                 beds: number;
                 amenities: string[];
-                description: string | null;
                 image: string | null;
                 totalUnits: number;
             };
@@ -344,34 +407,19 @@ export declare class BookingsController {
             totalPrice: import("@prisma/client/runtime/library").Decimal;
             bookingId: string;
         })[];
-        addOns: ({
-            addOn: {
-                id: string;
-                isActive: boolean;
-                createdAt: Date;
-                updatedAt: Date;
-                name: string;
-                description: string | null;
-                key: string;
-                price: import("@prisma/client/runtime/library").Decimal;
-            };
-        } & {
-            id: string;
-            price: import("@prisma/client/runtime/library").Decimal;
-            quantity: number;
-            bookingId: string;
-            addOnId: string;
-        })[];
         payments: {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             status: import(".prisma/client").$Enums.PaymentStatus;
-            currency: string;
-            bookingId: string;
+            currency: import(".prisma/client").$Enums.SupportedCurrency;
             amount: import("@prisma/client/runtime/library").Decimal;
+            bookingId: string;
             method: import(".prisma/client").$Enums.PaymentMethod;
             transactionId: string | null;
+            isDeposit: boolean;
+            isInstallment: boolean;
+            installmentNumber: number | null;
             stripePaymentIntentId: string | null;
             stripeCustomerId: string | null;
             stripePaymentMethodId: string | null;
@@ -384,17 +432,23 @@ export declare class BookingsController {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.BookingStatus;
+        currency: import(".prisma/client").$Enums.SupportedCurrency;
+        businessId: string;
         bookingNumber: string;
+        bookingType: import(".prisma/client").$Enums.BookingType;
         checkInDate: Date;
         checkOutDate: Date;
         specialRequests: string | null;
         promoCodeId: string | null;
         totalAmount: import("@prisma/client/runtime/library").Decimal;
-        currency: string;
+        depositAmount: import("@prisma/client/runtime/library").Decimal | null;
+        paidAmount: import("@prisma/client/runtime/library").Decimal;
         guestEmail: string;
         guestFirstName: string;
         guestLastName: string;
         guestPhone: string | null;
+        groupSize: number;
+        recurringRule: import("@prisma/client/runtime/library").JsonValue | null;
         guestId: string | null;
         createdById: string | null;
     }>;
@@ -402,16 +456,18 @@ export declare class BookingsController {
         items: ({
             roomType: {
                 id: string;
+                isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
                 type: string;
+                description: string | null;
+                businessId: string;
                 basePrice: import("@prisma/client/runtime/library").Decimal;
                 size: string;
                 maxGuests: number;
                 beds: number;
                 amenities: string[];
-                description: string | null;
                 image: string | null;
                 totalUnits: number;
             };
@@ -428,17 +484,23 @@ export declare class BookingsController {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.BookingStatus;
+        currency: import(".prisma/client").$Enums.SupportedCurrency;
+        businessId: string;
         bookingNumber: string;
+        bookingType: import(".prisma/client").$Enums.BookingType;
         checkInDate: Date;
         checkOutDate: Date;
         specialRequests: string | null;
         promoCodeId: string | null;
         totalAmount: import("@prisma/client/runtime/library").Decimal;
-        currency: string;
+        depositAmount: import("@prisma/client/runtime/library").Decimal | null;
+        paidAmount: import("@prisma/client/runtime/library").Decimal;
         guestEmail: string;
         guestFirstName: string;
         guestLastName: string;
         guestPhone: string | null;
+        groupSize: number;
+        recurringRule: import("@prisma/client/runtime/library").JsonValue | null;
         guestId: string | null;
         createdById: string | null;
     }>;

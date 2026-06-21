@@ -22,6 +22,9 @@ const guests_module_1 = require("./guests/guests.module");
 const staff_module_1 = require("./staff/staff.module");
 const dashboard_module_1 = require("./dashboard/dashboard.module");
 const notifications_module_1 = require("./notifications/notifications.module");
+const common_module_1 = require("./common/common.module");
+const businesses_module_1 = require("./businesses/businesses.module");
+const activity_logs_module_1 = require("./activity-logs/activity-logs.module");
 const logger_service_1 = require("./common/logger/logger.service");
 let AppModule = class AppModule {
 };
@@ -40,7 +43,10 @@ exports.AppModule = AppModule = __decorate([
                 },
             ]),
             prisma_module_1.PrismaModule,
+            common_module_1.CommonModule,
             auth_module_1.AuthModule,
+            businesses_module_1.BusinessesModule,
+            activity_logs_module_1.ActivityLogsModule,
             users_module_1.UsersModule,
             rooms_module_1.RoomsModule,
             bookings_module_1.BookingsModule,

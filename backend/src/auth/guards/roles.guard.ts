@@ -22,7 +22,18 @@ export class RolesGuard implements CanActivate {
     if (!requiredRoles?.length) return true;
 
     const { user } = context.switchToHttp().getRequest<{ user: RequestUser }>();
-    const hasRole = requiredRoles.some((role) => user.role === role);
+
+    const roleAliases: Record<string, UserRole[]> = {
+      [UserRole.ADMIN]: [UserRole.ADMIN, UserRole.BUSINESS_OWNER],
+      [UserRole.BUSINESS_OWNER]: [UserRole.BUSINESS_OWNER, UserRole.ADMIN],
+      [UserRole.GUEST]: [UserRole.GUEST, UserRole.CUSTOMER],
+      [UserRole.CUSTOMER]: [UserRole.CUSTOMER, UserRole.GUEST],
+    };
+
+    const hasRole = requiredRoles.some((role) => {
+      const aliases = roleAliases[role] ?? [role];
+      return aliases.includes(user.role);
+    });
 
     if (!hasRole) {
       throw new ForbiddenException(

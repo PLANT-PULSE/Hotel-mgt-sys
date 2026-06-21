@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 import { PrismaService } from '../prisma/prisma.service';
-import { PaymentStatus } from '@prisma/client';
+import { SupportedCurrency, PaymentStatus } from '@prisma/client';
 
 @Injectable()
 export class StripeService {
@@ -70,7 +70,7 @@ export class StripeService {
       data: {
         bookingId: booking.id,
         amount: paymentAmount,
-        currency: currency.toUpperCase(),
+        currency: (currency.toUpperCase() as SupportedCurrency) || SupportedCurrency.GHS,
         method: 'CARD' as any,
         status: PaymentStatus.PENDING,
         stripePaymentIntentId: paymentIntent.id,

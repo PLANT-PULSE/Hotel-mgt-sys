@@ -38,7 +38,7 @@ export default function Navbar() {
               </Link>
             ))}
             <Link
-              href="/admin"
+              href="/admin-login"
               className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium transition-colors"
             >
               Admin
@@ -77,7 +77,7 @@ export default function Navbar() {
             </Link>
           ))}
           <Link
-            href="/admin"
+            href="/admin-login"
             className="block px-4 py-3 mt-4 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium text-center transition-colors"
             onClick={() => setIsOpen(false)}
           >

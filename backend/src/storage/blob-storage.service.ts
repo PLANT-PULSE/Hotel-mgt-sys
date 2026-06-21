@@ -1,5 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { mkdir, writeFile } from 'fs/promises';
+import { join } from 'path';
 
 // Vercel Blob import - using the newer API
 // If this causes issues, you can use a simpler approach with direct HTTP calls
@@ -44,9 +46,7 @@ export class BlobStorageService {
     }
 
     if (!this.blobToken) {
-      // Return placeholder URL if blob not configured
-      const placeholderUrl = `/placeholder.jpg`;
-      return { url: placeholderUrl, pathname: filename };
+      return this.saveLocalImage(file, filename, contentType);
     }
 
     // Generate unique filename
@@ -85,9 +85,33 @@ export class BlobStorageService {
       return { url: result.url, pathname: result.pathname };
     } catch (error) {
       console.error('Blob upload error:', error);
-      // Return placeholder on error
-      return { url: '/placeholder.jpg', pathname: path };
+      return this.saveLocalImage(file, filename, contentType);
     }
+  }
+
+  private async saveLocalImage(
+    file: Buffer,
+    filename: string,
+    contentType: string,
+  ): Promise<{ url: string; pathname: string }> {
+    const timestamp = Date.now();
+    const ext =
+      (filename.includes('.') ? filename.split('.').pop() : contentType.split('/').pop()) ||
+      'jpg';
+    const storedName = `${timestamp}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+    const uploadDir = join(process.cwd(), 'uploads', 'rooms');
+
+    await mkdir(uploadDir, { recursive: true });
+    await writeFile(join(uploadDir, storedName), file);
+
+    const publicBase =
+      this.configService.get<string>('PUBLIC_API_URL') || 'http://localhost:4000';
+    const pathname = `rooms/${storedName}`;
+
+    return {
+      url: `${publicBase.replace(/\/$/, '')}/uploads/${pathname}`,
+      pathname,
+    };
   }
 
   /**

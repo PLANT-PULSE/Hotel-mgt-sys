@@ -1,5 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { backendFetch, mapRoomTypeForAdmin } from '@/lib/backend-api';
+import { normalizeRoomImages } from '@/lib/room-images';
+
+function mapRoomType(roomType: Record<string, unknown>) {
+  const mapped = mapRoomTypeForAdmin(roomType);
+  return {
+    ...mapped,
+    images: normalizeRoomImages(
+      mapped.images as { url: string; isPrimary: boolean }[],
+      roomType.image as string | undefined,
+    ),
+  };
+}
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -14,22 +26,15 @@ export async function GET(request: NextRequest) {
     if (maxPrice) params.set('maxPrice', maxPrice);
 
     const response = await backendFetch(`/rooms?${params}`);
-    const data = await response.json();
-    const roomTypes = Array.isArray(data) ? data : [];
+    const payload = await response.json();
+    const roomTypes = Array.isArray(payload)
+      ? payload
+      : Array.isArray(payload?.data)
+        ? payload.data
+        : [];
 
     return NextResponse.json(
-      roomTypes.map((roomType) => ({
-        ...roomType,
-        basePrice: Number(roomType.basePrice),
-        maxOccupancy: roomType.maxGuests,
-        bedType: `${roomType.beds} bed${Number(roomType.beds) > 1 ? 's' : ''}`,
-        images:
-          roomType.images?.length > 0
-            ? roomType.images
-            : roomType.image
-              ? [{ url: roomType.image, isPrimary: true }]
-              : [],
-      })),
+      roomTypes.map((roomType) => mapRoomType(roomType)),
     );
   } catch (error) {
     return NextResponse.json([]);
@@ -78,9 +83,13 @@ export async function POST(request: NextRequest) {
           method: 'POST',
           body: backendFormData,
         }, true);
+
+        const refreshed = await backendFetch(`/rooms/${newRoomType.id}`);
+        const refreshedData = await refreshed.json();
+        return NextResponse.json(mapRoomType(refreshedData));
       }
       
-      return NextResponse.json(newRoomType);
+      return NextResponse.json(mapRoomType(newRoomType));
     } else {
       // Regular JSON request
       const body = await request.json();

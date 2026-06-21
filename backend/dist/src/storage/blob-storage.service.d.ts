@@ -9,6 +9,7 @@ export declare class BlobStorageService {
         url: string;
         pathname: string;
     }>;
+    private saveLocalImage;
     uploadFromBase64(base64Data: string, filename: string): Promise<{
         url: string;
         pathname: string;

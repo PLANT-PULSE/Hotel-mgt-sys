@@ -12,6 +12,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BlobStorageService = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
+const promises_1 = require("fs/promises");
+const path_1 = require("path");
 let BlobClient;
 try {
     const blobModule = require('@vercel/blob');
@@ -36,8 +38,7 @@ let BlobStorageService = class BlobStorageService {
             throw new common_1.BadRequestException('File size too large. Maximum 5MB allowed');
         }
         if (!this.blobToken) {
-            const placeholderUrl = `/placeholder.jpg`;
-            return { url: placeholderUrl, pathname: filename };
+            return this.saveLocalImage(file, filename, contentType);
         }
         const timestamp = Date.now();
         const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
@@ -69,8 +70,23 @@ let BlobStorageService = class BlobStorageService {
         }
         catch (error) {
             console.error('Blob upload error:', error);
-            return { url: '/placeholder.jpg', pathname: path };
+            return this.saveLocalImage(file, filename, contentType);
         }
+    }
+    async saveLocalImage(file, filename, contentType) {
+        const timestamp = Date.now();
+        const ext = (filename.includes('.') ? filename.split('.').pop() : contentType.split('/').pop()) ||
+            'jpg';
+        const storedName = `${timestamp}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+        const uploadDir = (0, path_1.join)(process.cwd(), 'uploads', 'rooms');
+        await (0, promises_1.mkdir)(uploadDir, { recursive: true });
+        await (0, promises_1.writeFile)((0, path_1.join)(uploadDir, storedName), file);
+        const publicBase = this.configService.get('PUBLIC_API_URL') || 'http://localhost:4000';
+        const pathname = `rooms/${storedName}`;
+        return {
+            url: `${publicBase.replace(/\/$/, '')}/uploads/${pathname}`,
+            pathname,
+        };
     }
     async uploadFromBase64(base64Data, filename) {
         const matches = base64Data.match(/^data:([^;]+);base64,(.+)$/);

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import { BookingStatus, Prisma } from '@prisma/client';
+import { BookingStatus, Prisma, UserRole } from '@prisma/client';
 import { RequestUser } from '../auth/strategies/jwt.strategy';
 import { ReservationLockService } from './reservation-lock.service';
 
@@ -92,6 +92,14 @@ export class BookingsService {
       guestId = guest?.id ?? null;
     }
 
+    const firstRoomType = await this.prisma.roomType.findUnique({
+      where: { id: dto.items[0].roomTypeId },
+      select: { businessId: true },
+    });
+    if (!firstRoomType) {
+      throw new BadRequestException('Invalid room type');
+    }
+
     const booking = await this.prisma.$transaction(
       async (tx) => {
         await this.reservationLockService.assertItemsAvailable(
@@ -104,9 +112,10 @@ export class BookingsService {
 
         const created = await tx.booking.create({
           data: {
+            businessId: firstRoomType.businessId,
             bookingNumber: this.generateBookingNumber(),
             guestId,
-            createdById: user?.role && user.role !== 'GUEST' ? user.id : null,
+            createdById: user?.role && user.role !== UserRole.CUSTOMER && user.role !== UserRole.GUEST ? user.id : null,
             checkInDate: checkIn,
             checkOutDate: checkOut,
             guestEmail: dto.guestEmail,

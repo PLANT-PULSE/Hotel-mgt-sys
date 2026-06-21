@@ -39,16 +39,18 @@ export declare class DashboardController {
         items: ({
             roomType: {
                 id: string;
+                isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
                 name: string;
                 type: string;
+                description: string | null;
+                businessId: string;
                 basePrice: import("@prisma/client/runtime/library").Decimal;
                 size: string;
                 maxGuests: number;
                 beds: number;
                 amenities: string[];
-                description: string | null;
                 image: string | null;
                 totalUnits: number;
             };
@@ -65,17 +67,23 @@ export declare class DashboardController {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.BookingStatus;
+        currency: import(".prisma/client").$Enums.SupportedCurrency;
+        businessId: string;
         bookingNumber: string;
+        bookingType: import(".prisma/client").$Enums.BookingType;
         checkInDate: Date;
         checkOutDate: Date;
         specialRequests: string | null;
         promoCodeId: string | null;
         totalAmount: import("@prisma/client/runtime/library").Decimal;
-        currency: string;
+        depositAmount: import("@prisma/client/runtime/library").Decimal | null;
+        paidAmount: import("@prisma/client/runtime/library").Decimal;
         guestEmail: string;
         guestFirstName: string;
         guestLastName: string;
         guestPhone: string | null;
+        groupSize: number;
+        recurringRule: import("@prisma/client/runtime/library").JsonValue | null;
         guestId: string | null;
         createdById: string | null;
     })[]>;
@@ -131,9 +139,9 @@ export declare class DashboardController {
     }): Promise<{
         id: string;
         createdAt: Date;
+        reason: string | null;
         startDate: Date;
         endDate: Date;
-        reason: string | null;
         roomId: string;
     }>;
     getBlockedDates(roomId?: string): Promise<({
@@ -142,24 +150,24 @@ export declare class DashboardController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            status: import(".prisma/client").$Enums.RoomStatus;
             roomTypeId: string;
             floor: number;
-            status: import(".prisma/client").$Enums.RoomStatus;
         };
     } & {
         id: string;
         createdAt: Date;
+        reason: string | null;
         startDate: Date;
         endDate: Date;
-        reason: string | null;
         roomId: string;
     })[]>;
     deleteBlockedDate(id: string): Promise<{
         id: string;
         createdAt: Date;
+        reason: string | null;
         startDate: Date;
         endDate: Date;
-        reason: string | null;
         roomId: string;
     }>;
 }

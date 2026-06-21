@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RolesGuard = void 0;
 const common_1 = require("@nestjs/common");
 const core_1 = require("@nestjs/core");
+const client_1 = require("@prisma/client");
 const roles_decorator_1 = require("../decorators/roles.decorator");
 let RolesGuard = class RolesGuard {
     constructor(reflector) {
@@ -22,7 +23,16 @@ let RolesGuard = class RolesGuard {
         if (!requiredRoles?.length)
             return true;
         const { user } = context.switchToHttp().getRequest();
-        const hasRole = requiredRoles.some((role) => user.role === role);
+        const roleAliases = {
+            [client_1.UserRole.ADMIN]: [client_1.UserRole.ADMIN, client_1.UserRole.BUSINESS_OWNER],
+            [client_1.UserRole.BUSINESS_OWNER]: [client_1.UserRole.BUSINESS_OWNER, client_1.UserRole.ADMIN],
+            [client_1.UserRole.GUEST]: [client_1.UserRole.GUEST, client_1.UserRole.CUSTOMER],
+            [client_1.UserRole.CUSTOMER]: [client_1.UserRole.CUSTOMER, client_1.UserRole.GUEST],
+        };
+        const hasRole = requiredRoles.some((role) => {
+            const aliases = roleAliases[role] ?? [role];
+            return aliases.includes(user.role);
+        });
         if (!hasRole) {
             throw new common_1.ForbiddenException(`Access denied. Required roles: ${requiredRoles.join(', ')}`);
         }

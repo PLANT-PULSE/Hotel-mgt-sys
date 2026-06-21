@@ -9,4 +9,5 @@ export declare class CreateRoomTypeDto {
     description?: string;
     image?: string;
     totalUnits?: number;
+    businessId?: string;
 }

@@ -10,6 +10,9 @@ export declare class UsersController {
         lastName: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.UserRole;
+        preferredLanguage: import(".prisma/client").$Enums.SupportedLanguage;
+        preferredCurrency: import(".prisma/client").$Enums.SupportedCurrency;
+        avatar: string | null;
         createdAt: Date;
         guestProfile: {
             id: string;
@@ -25,8 +28,9 @@ export declare class UsersController {
             createdAt: Date;
             updatedAt: Date;
             userId: string;
-            employeeId: string;
+            businessId: string;
             department: string;
+            employeeId: string;
             hireDate: Date;
         } | null;
     } | null>;

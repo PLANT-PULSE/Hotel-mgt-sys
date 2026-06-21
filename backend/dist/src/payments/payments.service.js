@@ -51,6 +51,60 @@ let PaymentsService = class PaymentsService {
         }
         return payment;
     }
+    async guestCheckout(dto) {
+        const booking = await this.prisma.booking.findUnique({
+            where: { id: dto.bookingId },
+            include: { payments: true },
+        });
+        if (!booking)
+            throw new common_1.NotFoundException('Booking not found');
+        if (booking.status !== client_1.BookingStatus.PENDING) {
+            throw new common_1.BadRequestException('This booking is no longer awaiting payment');
+        }
+        const paidTotal = booking.payments
+            .filter((p) => p.status === client_1.PaymentStatus.COMPLETED)
+            .reduce((sum, p) => sum + Number(p.amount), 0);
+        const remaining = Number(booking.totalAmount) - paidTotal;
+        if (dto.amount > remaining + 0.01) {
+            throw new common_1.BadRequestException(`Amount exceeds remaining balance ($${remaining.toFixed(2)})`);
+        }
+        if (dto.method === client_1.PaymentMethod.MOBILE && !dto.phoneNumber?.trim()) {
+            throw new common_1.BadRequestException('Phone number is required for mobile money payments');
+        }
+        if (dto.method === client_1.PaymentMethod.CARD && !dto.cardLast4?.trim()) {
+            throw new common_1.BadRequestException('Card details are required for card payments');
+        }
+        const transactionId = dto.method === client_1.PaymentMethod.MOBILE
+            ? `MOMO-${dto.phoneNumber.replace(/\D/g, '')}-${Date.now()}`
+            : dto.method === client_1.PaymentMethod.CARD
+                ? `CARD-${dto.cardLast4.replace(/\D/g, '')}-${Date.now()}`
+                : `${dto.method}-${Date.now()}`;
+        const payment = await this.prisma.payment.create({
+            data: {
+                bookingId: dto.bookingId,
+                amount: dto.amount,
+                method: dto.method,
+                transactionId,
+                metadata: {
+                    phoneNumber: dto.phoneNumber,
+                    cardLast4: dto.cardLast4,
+                },
+                status: client_1.PaymentStatus.COMPLETED,
+                paidAt: new Date(),
+            },
+        });
+        const newPaidTotal = paidTotal + dto.amount;
+        if (Math.abs(newPaidTotal - Number(booking.totalAmount)) < 0.01) {
+            await this.prisma.booking.update({
+                where: { id: dto.bookingId },
+                data: { status: client_1.BookingStatus.CONFIRMED },
+            });
+        }
+        return {
+            payment,
+            bookingConfirmed: Math.abs(newPaidTotal - Number(booking.totalAmount)) < 0.01,
+        };
+    }
     async findById(id) {
         const payment = await this.prisma.payment.findUnique({
             where: { id },

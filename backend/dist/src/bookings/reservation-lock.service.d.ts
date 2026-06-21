@@ -14,16 +14,18 @@ export declare class ReservationLockService {
     getLock(sessionToken: string): Promise<({
         roomType: {
             id: string;
+            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
             name: string;
             type: string;
+            description: string | null;
+            businessId: string;
             basePrice: Prisma.Decimal;
             size: string;
             maxGuests: number;
             beds: number;
             amenities: string[];
-            description: string | null;
             image: string | null;
             totalUnits: number;
         };

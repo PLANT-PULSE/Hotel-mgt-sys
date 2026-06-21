@@ -1,5 +1,6 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRole } from '@prisma/client';
+import { PasswordService } from '../common/services/password.service';
 export interface CreateUserInput {
     email: string;
     password: string;
@@ -10,7 +11,8 @@ export interface CreateUserInput {
 }
 export declare class UsersService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private passwordService;
+    constructor(prisma: PrismaService, passwordService: PasswordService);
     create(data: CreateUserInput): Promise<{
         id: string;
         email: string;
@@ -35,8 +37,9 @@ export declare class UsersService {
             createdAt: Date;
             updatedAt: Date;
             userId: string;
-            employeeId: string;
+            businessId: string;
             department: string;
+            employeeId: string;
             hireDate: Date;
         } | null;
     } & {
@@ -50,6 +53,11 @@ export declare class UsersService {
         isActive: boolean;
         emailVerified: boolean;
         lastLoginAt: Date | null;
+        failedLoginAttempts: number;
+        lockedUntil: Date | null;
+        preferredLanguage: import(".prisma/client").$Enums.SupportedLanguage;
+        preferredCurrency: import(".prisma/client").$Enums.SupportedCurrency;
+        avatar: string | null;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
@@ -61,6 +69,9 @@ export declare class UsersService {
         lastName: string;
         phone: string | null;
         role: import(".prisma/client").$Enums.UserRole;
+        preferredLanguage: import(".prisma/client").$Enums.SupportedLanguage;
+        preferredCurrency: import(".prisma/client").$Enums.SupportedCurrency;
+        avatar: string | null;
         createdAt: Date;
         guestProfile: {
             id: string;
@@ -76,8 +87,9 @@ export declare class UsersService {
             createdAt: Date;
             updatedAt: Date;
             userId: string;
-            employeeId: string;
+            businessId: string;
             department: string;
+            employeeId: string;
             hireDate: Date;
         } | null;
     } | null>;

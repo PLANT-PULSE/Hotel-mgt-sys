@@ -13,8 +13,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { BedDouble, Users, Star } from 'lucide-react';
+import { BedDouble, Users, Star, CreditCard, Smartphone } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { resolveRoomImageUrl } from '@/lib/room-images';
 
 interface RoomType {
   id: string;
@@ -46,6 +48,15 @@ export default function RoomsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
   const [bookingError, setBookingError] = useState<string | null>(null);
+  const [bookingStep, setBookingStep] = useState<'details' | 'payment' | 'success'>('details');
+  const [pendingBookingId, setPendingBookingId] = useState<string | null>(null);
+  const [pendingTotal, setPendingTotal] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState<'CARD' | 'MOBILE'>('CARD');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+  const [momoPhone, setMomoPhone] = useState('');
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchRoomTypes();
@@ -95,7 +106,19 @@ export default function RoomsPage() {
 
   const getPrimaryImage = (images: RoomType['images']) => {
     const primary = images.find((img) => img.isPrimary);
-    return primary?.url || images[0]?.url || 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800';
+    return resolveRoomImageUrl(primary?.url || images[0]?.url);
+  };
+
+  const getNights = () => {
+    if (!checkIn || !checkOut) return 0;
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    return Math.max(0, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+  };
+
+  const getEstimatedTotal = () => {
+    if (!bookingRoom) return 0;
+    return bookingRoom.basePrice * getNights();
   };
 
   const resetBookingForm = () => {
@@ -110,6 +133,15 @@ export default function RoomsPage() {
     setSessionToken(null);
     setBookingSuccess(null);
     setBookingError(null);
+    setBookingStep('details');
+    setPendingBookingId(null);
+    setPendingTotal(0);
+    setPaymentMethod('CARD');
+    setCardNumber('');
+    setCardExpiry('');
+    setCardCvv('');
+    setMomoPhone('');
+    setPaymentError(null);
   };
 
   const openBooking = (room: RoomType) => {
@@ -189,10 +221,57 @@ export default function RoomsPage() {
         throw new Error(bookingData.message || bookingData.error || 'Booking failed');
       }
 
-      setBookingSuccess(bookingData.bookingNumber);
-      await fetchRoomTypes();
+      setPendingBookingId(bookingData.id);
+      setPendingTotal(Number(bookingData.totalAmount) || getEstimatedTotal());
+      setBookingSuccess(bookingData.bookingNumber || null);
+      setBookingStep('payment');
     } catch (error) {
       setBookingError(error instanceof Error ? error.message : 'Booking failed');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePayment = async () => {
+    if (!pendingBookingId) return;
+
+    if (paymentMethod === 'CARD') {
+      const digits = cardNumber.replace(/\D/g, '');
+      if (digits.length < 13 || !cardExpiry || cardCvv.length < 3) {
+        setPaymentError('Please enter valid card details');
+        return;
+      }
+    } else if (!momoPhone.trim()) {
+      setPaymentError('Please enter your mobile money number');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setPaymentError(null);
+
+    try {
+      const res = await fetch('/api/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId: pendingBookingId,
+          amount: pendingTotal,
+          method: paymentMethod,
+          cardLast4: paymentMethod === 'CARD' ? cardNumber.replace(/\D/g, '').slice(-4) : undefined,
+          phoneNumber: paymentMethod === 'MOBILE' ? momoPhone : undefined,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || data.error || 'Payment failed');
+      }
+
+      setBookingStep('success');
+      await fetchRoomTypes();
+    } catch (error) {
+      setPaymentError(error instanceof Error ? error.message : 'Payment failed');
     } finally {
       setIsSubmitting(false);
     }
@@ -304,18 +383,111 @@ export default function RoomsPage() {
       </div>
 
       <Dialog open={!!bookingRoom} onOpenChange={(open) => !open && closeBooking()}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Book {bookingRoom?.name}</DialogTitle>
+            <DialogTitle>
+              {bookingStep === 'payment'
+                ? 'Complete Payment'
+                : bookingStep === 'success'
+                  ? 'Booking Confirmed'
+                  : `Book ${bookingRoom?.name}`}
+            </DialogTitle>
           </DialogHeader>
 
-          {bookingSuccess ? (
+          {bookingStep === 'success' ? (
             <div className="space-y-4 py-4">
-              <p className="text-green-600 font-medium">Booking confirmed!</p>
+              <p className="text-green-600 font-medium">Payment successful — your stay is confirmed!</p>
               <p className="text-sm text-gray-600">
                 Your booking number is <strong>{bookingSuccess}</strong>. We have sent a confirmation to your email.
               </p>
               <Button className="w-full" onClick={() => closeBooking()}>Close</Button>
+            </div>
+          ) : bookingStep === 'payment' ? (
+            <div className="space-y-4 py-2">
+              <div className="rounded-lg bg-gray-50 p-4 text-sm">
+                <p className="font-medium text-gray-900">{bookingRoom?.name}</p>
+                <p className="text-gray-600">
+                  {checkIn} → {checkOut} ({getNights()} night{getNights() !== 1 ? 's' : ''})
+                </p>
+                <p className="text-lg font-bold text-blue-600 mt-2">
+                  Total: ${pendingTotal.toFixed(2)}
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Payment Method</Label>
+                <RadioGroup
+                  value={paymentMethod}
+                  onValueChange={(value) => setPaymentMethod(value as 'CARD' | 'MOBILE')}
+                  className="grid gap-3"
+                >
+                  <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-gray-50">
+                    <RadioGroupItem value="CARD" />
+                    <CreditCard className="h-5 w-5 text-gray-600" />
+                    <span className="font-medium">Credit / Debit Card</span>
+                  </label>
+                  <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-gray-50">
+                    <RadioGroupItem value="MOBILE" />
+                    <Smartphone className="h-5 w-5 text-gray-600" />
+                    <span className="font-medium">Mobile Money (MoMo)</span>
+                  </label>
+                </RadioGroup>
+              </div>
+
+              {paymentMethod === 'CARD' ? (
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <Label>Card Number</Label>
+                    <Input
+                      placeholder="4242 4242 4242 4242"
+                      value={cardNumber}
+                      onChange={(e) => setCardNumber(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Expiry</Label>
+                      <Input
+                        placeholder="MM/YY"
+                        value={cardExpiry}
+                        onChange={(e) => setCardExpiry(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>CVV</Label>
+                      <Input
+                        placeholder="123"
+                        value={cardCvv}
+                        onChange={(e) => setCardCvv(e.target.value)}
+                        maxLength={4}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label>Mobile Money Number *</Label>
+                  <Input
+                    placeholder="+233 XX XXX XXXX"
+                    value={momoPhone}
+                    onChange={(e) => setMomoPhone(e.target.value)}
+                  />
+                  <p className="text-xs text-gray-500">
+                    You will receive a prompt on your phone to approve the payment.
+                  </p>
+                </div>
+              )}
+
+              {paymentError && <p className="text-sm text-red-600">{paymentError}</p>}
+
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => setBookingStep('details')}>
+                  Back
+                </Button>
+                <Button className="flex-1" onClick={handlePayment} disabled={isSubmitting}>
+                  {isSubmitting ? 'Processing...' : `Pay $${pendingTotal.toFixed(2)}`}
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="space-y-4 py-2">
@@ -368,8 +540,14 @@ export default function RoomsPage() {
 
               {bookingError && <p className="text-sm text-red-600">{bookingError}</p>}
 
+              {getNights() > 0 && (
+                <p className="text-sm text-gray-600">
+                  Estimated total: <strong>${getEstimatedTotal().toFixed(2)}</strong> ({getNights()} night{getNights() !== 1 ? 's' : ''})
+                </p>
+              )}
+
               <Button className="w-full" onClick={handleBook} disabled={isSubmitting}>
-                {isSubmitting ? 'Processing...' : `Confirm Booking — $${bookingRoom?.basePrice}/night`}
+                {isSubmitting ? 'Processing...' : 'Continue to Payment'}
               </Button>
             </div>
           )}

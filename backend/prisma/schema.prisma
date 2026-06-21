@@ -1,5 +1,5 @@
-// Hotel Management System - Database Schema
-// Normalized PostgreSQL schema (3NF+)
+// Enterprise Multi-Tenant SaaS Booking Platform
+// PostgreSQL schema with tenant isolation
 
 generator client {
   provider = "prisma-client-js"
@@ -10,13 +10,51 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ==================== CORE ENTITIES ====================
+// ==================== ENUMS ====================
 
 enum UserRole {
-  ADMIN
+  SUPER_ADMIN
+  BUSINESS_OWNER
+  ADMIN // legacy alias – maps to BUSINESS_OWNER in app logic
   MANAGER
   RECEPTIONIST
-  GUEST
+  CLEANER
+  CUSTOMER
+  GUEST // legacy alias – maps to CUSTOMER
+}
+
+enum BusinessType {
+  HOTEL
+  GUEST_HOUSE
+  RESORT
+  EVENT_CENTER
+  CAR_RENTAL
+}
+
+enum BusinessStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING
+  DELETED
+}
+
+enum SubscriptionPlan {
+  BASIC
+  PREMIUM
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
 }
 
 enum BookingStatus {
@@ -26,6 +64,14 @@ enum BookingStatus {
   CHECKED_OUT
   CANCELLED
   NO_SHOW
+  COMPLETED
+}
+
+enum BookingType {
+  INSTANT
+  RESERVATION
+  GROUP
+  RECURRING
 }
 
 enum PaymentStatus {
@@ -38,7 +84,12 @@ enum PaymentStatus {
 
 enum PaymentMethod {
   CARD
+  VISA
+  MASTERCARD
   MOBILE
+  MTN_MOMO
+  TELECEL_CASH
+  BANK_TRANSFER
   PAYSTACK
   FLUTTERWAVE
   HOTEL
@@ -53,27 +104,217 @@ enum RoomStatus {
   RESERVED
 }
 
-model User {
-  id            String   @id @default(uuid())
-  email         String   @unique
-  passwordHash  String   @map("password_hash")
-  firstName     String   @map("first_name")
-  lastName      String   @map("last_name")
-  phone         String?
-  role          UserRole @default(GUEST)
-  isActive      Boolean  @default(true) @map("is_active")
-  emailVerified Boolean  @default(false) @map("email_verified")
-  lastLoginAt   DateTime? @map("last_login_at")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  deletedAt     DateTime? @map("deleted_at")
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
 
-  // Relations
-  refreshTokens   RefreshToken[]
-  createdBookings Booking[]      @relation("CreatedByBookings")
-  guestProfile   Guest?
-  staffProfile   Staff?
-  auditLogs      AuditLog[]
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REPORTED
+}
+
+enum RefundStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  PROCESSING
+  COMPLETED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum ActivityStatus {
+  SUCCESS
+  FAILED
+  WARNING
+}
+
+enum ApiKeyStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+enum AffiliateCommissionStatus {
+  PENDING
+  APPROVED
+  PAID
+  REJECTED
+}
+
+enum SupportedLanguage {
+  EN
+  FR
+  ES
+  AR
+}
+
+enum SupportedCurrency {
+  GHS
+  USD
+  EUR
+  GBP
+}
+
+// ==================== PLATFORM & TENANT ====================
+
+model Business {
+  id              String         @id @default(uuid())
+  name            String
+  slug            String         @unique
+  type            BusinessType   @default(HOTEL)
+  status          BusinessStatus @default(PENDING)
+  description     String?
+  logo            String?
+  favicon         String?
+  coverImage      String?        @map("cover_image")
+
+  // White-label / theme
+  primaryColor    String         @default("#1a1a2e") @map("primary_color")
+  secondaryColor  String         @default("#e94560") @map("secondary_color")
+  customDomain    String?        @unique @map("custom_domain")
+  subdomain       String?        @unique
+
+  // Location
+  address         String?
+  city            String?
+  country         String?
+  latitude        Float?
+  longitude       Float?
+
+  // Settings
+  currency        SupportedCurrency @default(GHS)
+  language        SupportedLanguage @default(EN)
+  timezone        String         @default("Africa/Accra")
+  taxRate         Decimal        @default(0) @map("tax_rate") @db.Decimal(5, 4)
+  commissionRate  Decimal        @default(0.05) @map("commission_rate") @db.Decimal(5, 4)
+
+  // Payment config (encrypted at app layer)
+  paystackPublicKey  String? @map("paystack_public_key")
+  paystackSecretKey  String? @map("paystack_secret_key")
+  stripePublicKey    String? @map("stripe_public_key")
+  stripeSecretKey    String? @map("stripe_secret_key")
+
+  // Contact
+  email           String?
+  phone           String?
+  website         String?
+
+  ownerId         String?        @map("owner_id")
+  suspendedAt     DateTime?      @map("suspended_at")
+  suspendedReason String?        @map("suspended_reason")
+  deletedAt       DateTime?      @map("deleted_at")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  owner           User?          @relation("BusinessOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  members         BusinessMember[]
+  subscriptions   Subscription[]
+  roomTypes       RoomType[]
+  bookings        Booking[]
+  promoCodes      PromoCode[]
+  addOns          AddOn[]
+  reviews         Review[]
+  invoices        Invoice[]
+  refunds         Refund[]
+  apiKeys         ApiKey[]
+  webhooks        Webhook[]
+  favorites       Favorite[]
+  paymentLinks    PaymentLink[]
+  staffProfiles   Staff[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([type])
+  @@index([city, country])
+  @@map("businesses")
+}
+
+model BusinessMember {
+  id         String   @id @default(uuid())
+  businessId String   @map("business_id")
+  userId     String   @map("user_id")
+  role       UserRole
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, userId])
+  @@index([userId])
+  @@map("business_members")
+}
+
+model Subscription {
+  id                   String             @id @default(uuid())
+  businessId           String             @map("business_id")
+  plan                 SubscriptionPlan   @default(BASIC)
+  status               SubscriptionStatus @default(TRIALING)
+  billingCycle         BillingCycle       @default(MONTHLY) @map("billing_cycle")
+  amount               Decimal            @db.Decimal(10, 2)
+  currency             SupportedCurrency  @default(GHS)
+  currentPeriodStart   DateTime           @map("current_period_start")
+  currentPeriodEnd     DateTime           @map("current_period_end")
+  cancelledAt          DateTime?          @map("cancelled_at")
+  stripeSubscriptionId String?            @map("stripe_subscription_id")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+// ==================== USERS & AUTH ====================
+
+model User {
+  id                  String    @id @default(uuid())
+  email               String    @unique
+  passwordHash        String    @map("password_hash")
+  firstName           String    @map("first_name")
+  lastName            String    @map("last_name")
+  phone               String?
+  role                UserRole  @default(CUSTOMER)
+  isActive            Boolean   @default(true) @map("is_active")
+  emailVerified       Boolean   @default(false) @map("email_verified")
+  lastLoginAt         DateTime? @map("last_login_at")
+  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime? @map("locked_until")
+  preferredLanguage   SupportedLanguage @default(EN) @map("preferred_language")
+  preferredCurrency   SupportedCurrency @default(GHS) @map("preferred_currency")
+  avatar              String?
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  deletedAt           DateTime? @map("deleted_at")
+
+  refreshTokens     RefreshToken[]
+  createdBookings   Booking[]        @relation("CreatedByBookings")
+  guestProfile      Guest?
+  staffProfile      Staff?
+  auditLogs         AuditLog[]
+  activityLogs      ActivityLog[]
+  ownedBusinesses   Business[]       @relation("BusinessOwner")
+  businessMembers   BusinessMember[]
+  reviews           Review[]
+  reviewLikes       ReviewLike[]
+  favorites         Favorite[]
+  passwordResets    PasswordReset[]
+  emailVerifications EmailVerification[]
+  affiliateProfile  Affiliate?
+  chatSessions      ChatSession[]
 
   @@index([email])
   @@index([role])
@@ -94,16 +335,44 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
+model PasswordReset {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_resets")
+}
+
+model EmailVerification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  verifiedAt DateTime? @map("verified_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("email_verifications")
+}
+
 // ==================== GUEST & STAFF ====================
 
 model Guest {
-  id              String   @id @default(uuid())
-  userId          String   @unique @map("user_id")
-  loyaltyPoints   Int      @default(0) @map("loyalty_points")
-  loyaltyTier     String   @default("BRONZE") @map("loyalty_tier") // BRONZE, SILVER, GOLD, PLATINUM
-  preferences     Json?    // dietary, room preferences
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id            String   @id @default(uuid())
+  userId        String   @unique @map("user_id")
+  loyaltyPoints Int      @default(0) @map("loyalty_points")
+  loyaltyTier   String   @default("BRONZE") @map("loyalty_tier")
+  preferences   Json?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookings Booking[] @relation("GuestBookings")
@@ -114,61 +383,68 @@ model Guest {
 model Staff {
   id          String   @id @default(uuid())
   userId      String   @unique @map("user_id")
+  businessId  String   @map("business_id")
   department  String
-  employeeId  String   @unique @map("employee_id")
+  employeeId  String   @map("employee_id")
   hireDate    DateTime @map("hire_date")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
+  @@unique([businessId, employeeId])
+  @@index([businessId])
   @@map("staff")
 }
 
-// ==================== ROOMS ====================
+// ==================== ROOMS & SERVICES ====================
 
 model RoomType {
   id          String   @id @default(uuid())
-  name        String   // e.g., "Luxury Suite", "Deluxe King"
-  type        String   // suite, double, single, penthouse
+  businessId  String   @map("business_id")
+  name        String
+  type        String
   basePrice   Decimal  @map("base_price") @db.Decimal(10, 2)
-  size        String   // e.g., "65m²"
+  size        String
   maxGuests   Int      @map("max_guests")
   beds        Int
   amenities   String[] @default([])
   description String?
-  image       String?  // Primary image (legacy field)
-  totalUnits  Int      @default(1) @map("total_units") // Inventory count
+  image       String?
+  totalUnits  Int      @default(1) @map("total_units")
+  isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  rooms        Room[]
-  bookingItems BookingItem[]
-  images       RoomImage[]
+  business         Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  rooms            Room[]
+  bookingItems     BookingItem[]
+  images           RoomImage[]
   reservationLocks ReservationLock[]
 
+  @@index([businessId])
   @@index([type])
   @@map("room_types")
 }
 
 model Room {
-  id           String     @id @default(uuid())
-  roomTypeId   String     @map("room_type_id")
-  number       String     @unique // e.g., "101", "201A"
-  floor        Int
-  status       RoomStatus @default(AVAILABLE)
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
+  id         String     @id @default(uuid())
+  roomTypeId String     @map("room_type_id")
+  number     String
+  floor      Int
+  status     RoomStatus @default(AVAILABLE)
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
 
-  roomType    RoomType     @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
+  roomType     RoomType      @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
   blockedDates BlockedDate[]
 
+  @@unique([roomTypeId, number])
   @@index([status])
   @@index([roomTypeId])
   @@map("rooms")
 }
-
-// ==================== BLOCKED DATES ====================
 
 model BlockedDate {
   id        String   @id @default(uuid())
@@ -184,16 +460,14 @@ model BlockedDate {
   @@map("blocked_dates")
 }
 
-// ==================== ROOM IMAGES ====================
-
 model RoomImage {
-  id          String   @id @default(uuid())
-  roomTypeId  String   @map("room_type_id")
-  url         String
-  altText     String?  @map("alt_text")
-  isPrimary   Boolean  @default(false) @map("is_primary")
-  displayOrder Int    @default(0) @map("display_order")
-  createdAt   DateTime @default(now()) @map("created_at")
+  id           String   @id @default(uuid())
+  roomTypeId   String   @map("room_type_id")
+  url          String
+  altText      String?  @map("alt_text")
+  isPrimary    Boolean  @default(false) @map("is_primary")
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
 
   roomType RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
 
@@ -201,28 +475,34 @@ model RoomImage {
   @@map("room_images")
 }
 
-// ==================== PROMO CODES & ADD-ONS ====================
+// ==================== PROMOTIONS & EXTRAS ====================
 
 model PromoCode {
-  id          String    @id @default(uuid())
-  code        String    @unique
-  discount    Decimal   @db.Decimal(5, 4) // 0.10 = 10%
-  description String?
-  validFrom   DateTime  @map("valid_from")
-  validTo     DateTime  @map("valid_to")
-  maxUses     Int?      @map("max_uses")
-  usedCount   Int       @default(0) @map("used_count")
-  isActive    Boolean   @default(true) @map("is_active")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id           String       @id @default(uuid())
+  businessId   String       @map("business_id")
+  code         String
+  discountType DiscountType @default(PERCENTAGE) @map("discount_type")
+  discount     Decimal      @db.Decimal(10, 2)
+  description  String?
+  validFrom    DateTime     @map("valid_from")
+  validTo      DateTime     @map("valid_to")
+  maxUses      Int?         @map("max_uses")
+  usedCount    Int          @default(0) @map("used_count")
+  isActive     Boolean      @default(true) @map("is_active")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
 
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, code])
   @@index([code])
   @@map("promo_codes")
 }
 
 model AddOn {
   id          String   @id @default(uuid())
-  key         String   @unique // breakfast, airportPickup, etc.
+  businessId  String   @map("business_id")
+  key         String
   name        String
   price       Decimal  @db.Decimal(10, 2)
   description String?
@@ -230,8 +510,10 @@ model AddOn {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  business      Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
   bookingAddOns BookingAddOn[]
 
+  @@unique([businessId, key])
   @@map("add_ons")
 }
 
@@ -239,30 +521,41 @@ model AddOn {
 
 model Booking {
   id              String        @id @default(uuid())
-  bookingNumber   String        @unique @map("booking_number") // LXS-2024-00123
+  businessId      String        @map("business_id")
+  bookingNumber   String        @unique @map("booking_number")
+  bookingType     BookingType   @default(INSTANT) @map("booking_type")
   guestId         String?       @map("guest_id")
-  createdById     String?       @map("created_by_id") // Staff who created
+  createdById     String?       @map("created_by_id")
   checkInDate     DateTime      @map("check_in_date")
   checkOutDate    DateTime      @map("check_out_date")
   status          BookingStatus @default(PENDING)
   specialRequests String?       @map("special_requests")
   promoCodeId     String?       @map("promo_code_id")
   totalAmount     Decimal       @map("total_amount") @db.Decimal(10, 2)
-  currency        String        @default("USD")
+  depositAmount   Decimal?      @map("deposit_amount") @db.Decimal(10, 2)
+  paidAmount      Decimal       @default(0) @map("paid_amount") @db.Decimal(10, 2)
+  currency        SupportedCurrency @default(GHS)
   guestEmail      String        @map("guest_email")
   guestFirstName  String        @map("guest_first_name")
   guestLastName   String        @map("guest_last_name")
   guestPhone      String?       @map("guest_phone")
+  groupSize       Int           @default(1) @map("group_size")
+  recurringRule   Json?         @map("recurring_rule")
   createdAt       DateTime      @default(now()) @map("created_at")
   updatedAt       DateTime      @updatedAt @map("updated_at")
 
-  guest        Guest?      @relation("GuestBookings", fields: [guestId], references: [id], onDelete: SetNull)
-  createdBy    User?       @relation("CreatedByBookings", fields: [createdById], references: [id], onDelete: SetNull)
-  items        BookingItem[]
-  addOns       BookingAddOn[]
-  payments     Payment[]
+  business      Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  guest         Guest?         @relation("GuestBookings", fields: [guestId], references: [id], onDelete: SetNull)
+  createdBy     User?          @relation("CreatedByBookings", fields: [createdById], references: [id], onDelete: SetNull)
+  items         BookingItem[]
+  addOns        BookingAddOn[]
+  payments      Payment[]
   notifications Notification[]
+  invoices      Invoice[]
+  refunds       Refund[]
+  paymentLinks  PaymentLink[]
 
+  @@index([businessId])
   @@index([bookingNumber])
   @@index([guestId])
   @@index([status])
@@ -271,15 +564,15 @@ model Booking {
 }
 
 model BookingItem {
-  id              String   @id @default(uuid())
-  bookingId       String   @map("booking_id")
-  roomTypeId      String   @map("room_type_id")
-  quantity        Int      @default(1)
-  pricePerNight   Decimal  @map("price_per_night") @db.Decimal(10, 2)
-  totalPrice      Decimal  @map("total_price") @db.Decimal(10, 2)
+  id            String  @id @default(uuid())
+  bookingId     String  @map("booking_id")
+  roomTypeId    String  @map("room_type_id")
+  quantity      Int     @default(1)
+  pricePerNight Decimal @map("price_per_night") @db.Decimal(10, 2)
+  totalPrice    Decimal @map("total_price") @db.Decimal(10, 2)
 
-  booking  Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  roomType RoomType  @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
+  booking  Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  roomType RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
 
   @@unique([bookingId, roomTypeId])
   @@index([bookingId])
@@ -301,70 +594,198 @@ model BookingAddOn {
   @@map("booking_add_ons")
 }
 
-// ==================== PAYMENTS ====================
-
-// ==================== RESERVATION LOCKS (Double Booking Prevention) ====================
-
 model ReservationLock {
-  id              String   @id @default(uuid())
-  roomTypeId      String   @map("room_type_id")
-  checkInDate     DateTime @map("check_in_date")
-  checkOutDate    DateTime @map("check_out_date")
-  quantity        Int      @default(1) // Number of rooms locked
-  sessionToken    String   @unique @map("session_token") // Unique token for the lock holder
-  expiresAt       DateTime @map("expires_at") // Lock expiration (10 minutes)
-  bookingId       String?  @map("booking_id") // Associated booking if confirmed
-  createdAt       DateTime @default(now()) @map("created_at")
+  id           String   @id @default(uuid())
+  roomTypeId   String   @map("room_type_id")
+  checkInDate  DateTime @map("check_in_date")
+  checkOutDate DateTime @map("check_out_date")
+  quantity     Int      @default(1)
+  sessionToken String   @unique @map("session_token")
+  expiresAt    DateTime @map("expires_at")
+  bookingId    String?  @map("booking_id")
+  createdAt    DateTime @default(now()) @map("created_at")
 
   roomType RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
 
   @@index([roomTypeId])
   @@index([expiresAt])
   @@index([sessionToken])
-  @@index([bookingId])
   @@map("reservation_locks")
 }
 
+// ==================== PAYMENTS ====================
+
 model Payment {
-  id              String        @id @default(uuid())
-  bookingId       String        @map("booking_id")
-  amount          Decimal       @db.Decimal(10, 2)
-  currency        String        @default("USD")
-  method          PaymentMethod
-  status          PaymentStatus @default(PENDING)
-  transactionId   String?       @map("transaction_id")
-  
-  // Stripe-specific fields
-  stripePaymentIntentId String?  @map("stripe_payment_intent_id")
-  stripeCustomerId      String?  @map("stripe_customer_id")
-  stripePaymentMethodId String?  @map("stripe_payment_method_id")
-  clientSecret         String?  @map("client_secret")
-  
-  metadata        Json?
-  paidAt          DateTime?     @map("paid_at")
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
+  id                    String            @id @default(uuid())
+  bookingId             String            @map("booking_id")
+  amount                Decimal           @db.Decimal(10, 2)
+  currency              SupportedCurrency @default(GHS)
+  method                PaymentMethod
+  status                PaymentStatus     @default(PENDING)
+  transactionId         String?           @map("transaction_id")
+  isDeposit             Boolean           @default(false) @map("is_deposit")
+  isInstallment         Boolean           @default(false) @map("is_installment")
+  installmentNumber     Int?              @map("installment_number")
+  stripePaymentIntentId String?           @map("stripe_payment_intent_id")
+  stripeCustomerId      String?           @map("stripe_customer_id")
+  stripePaymentMethodId String?           @map("stripe_payment_method_id")
+  clientSecret          String?           @map("client_secret")
+  metadata              Json?
+  paidAt                DateTime?         @map("paid_at")
+  createdAt             DateTime          @default(now()) @map("created_at")
+  updatedAt             DateTime          @updatedAt @map("updated_at")
 
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Restrict)
 
   @@index([bookingId])
   @@index([transactionId])
   @@index([status])
-  @@index([stripePaymentIntentId])
   @@map("payments")
 }
 
-// ==================== NOTIFICATIONS ====================
+model PaymentLink {
+  id        String   @id @default(uuid())
+  businessId String  @map("business_id")
+  bookingId String   @map("booking_id")
+  token     String   @unique
+  amount    Decimal  @db.Decimal(10, 2)
+  currency  SupportedCurrency @default(GHS)
+  expiresAt DateTime @map("expires_at")
+  isUsed    Boolean  @default(false) @map("is_used")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  booking  Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([bookingId])
+  @@map("payment_links")
+}
+
+model Refund {
+  id          String       @id @default(uuid())
+  businessId  String       @map("business_id")
+  bookingId   String       @map("booking_id")
+  paymentId   String?      @map("payment_id")
+  amount      Decimal      @db.Decimal(10, 2)
+  reason      String?
+  status      RefundStatus @default(REQUESTED)
+  requestedBy String?      @map("requested_by")
+  approvedBy  String?      @map("approved_by")
+  processedAt DateTime?    @map("processed_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  booking  Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+  @@index([bookingId])
+  @@index([status])
+  @@map("refunds")
+}
+
+model Invoice {
+  id            String        @id @default(uuid())
+  businessId    String        @map("business_id")
+  bookingId     String        @map("booking_id")
+  invoiceNumber String        @unique @map("invoice_number")
+  subtotal      Decimal       @db.Decimal(10, 2)
+  taxAmount     Decimal       @default(0) @map("tax_amount") @db.Decimal(10, 2)
+  totalAmount   Decimal       @map("total_amount") @db.Decimal(10, 2)
+  currency      SupportedCurrency @default(GHS)
+  status        InvoiceStatus @default(DRAFT)
+  dueDate       DateTime?     @map("due_date")
+  paidAt        DateTime?     @map("paid_at")
+  pdfUrl        String?       @map("pdf_url")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  booking  Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+  @@index([bookingId])
+  @@map("invoices")
+}
+
+// ==================== REVIEWS ====================
+
+model Review {
+  id         String       @id @default(uuid())
+  businessId String       @map("business_id")
+  userId     String       @map("user_id")
+  bookingId  String?      @map("booking_id")
+  rating     Int
+  title      String?
+  content    String?
+  photos     String[]     @default([])
+  status     ReviewStatus @default(PENDING)
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+
+  business Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes    ReviewLike[]
+  reports  ReviewReport[]
+
+  @@index([businessId])
+  @@index([userId])
+  @@index([rating])
+  @@map("reviews")
+}
+
+model ReviewLike {
+  id        String   @id @default(uuid())
+  reviewId  String   @map("review_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+  @@map("review_likes")
+}
+
+model ReviewReport {
+  id        String   @id @default(uuid())
+  reviewId  String   @map("review_id")
+  userId    String   @map("user_id")
+  reason    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+  @@map("review_reports")
+}
+
+model Favorite {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  businessId String   @map("business_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, businessId])
+  @@map("favorites")
+}
+
+// ==================== NOTIFICATIONS & ALERTS ====================
 
 model Notification {
-  id         String   @id @default(uuid())
-  bookingId  String?  @map("booking_id")
-  type       String   // bookingConfirmation, reminder, paymentReceipt, cancellation
-  title      String
-  message    String
-  email      String?
-  sentAt     DateTime? @map("sent_at")
-  createdAt  DateTime @default(now()) @map("created_at")
+  id        String    @id @default(uuid())
+  bookingId String?   @map("booking_id")
+  type      String
+  title     String
+  message   String
+  email     String?
+  sentAt    DateTime? @map("sent_at")
+  createdAt DateTime  @default(now()) @map("created_at")
 
   booking Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
 
@@ -373,18 +794,66 @@ model Notification {
   @@map("notifications")
 }
 
-// ==================== AUDIT LOG (Optional) ====================
+model BroadcastMessage {
+  id          String   @id @default(uuid())
+  title       String
+  message     String
+  targetRole  UserRole? @map("target_role")
+  sentById    String   @map("sent_by_id")
+  sentCount   Int      @default(0) @map("sent_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("broadcast_messages")
+}
+
+model EmergencyAlert {
+  id          String   @id @default(uuid())
+  type        String
+  severity    String
+  message     String
+  metadata    Json?
+  isResolved  Boolean  @default(false) @map("is_resolved")
+  resolvedAt  DateTime? @map("resolved_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([isResolved])
+  @@map("emergency_alerts")
+}
+
+// ==================== ACTIVITY & AUDIT ====================
+
+model ActivityLog {
+  id        String         @id @default(uuid())
+  userId    String?        @map("user_id")
+  role      UserRole?
+  action    String
+  entity    String?
+  entityId  String?        @map("entity_id")
+  ipAddress String?        @map("ip_address")
+  userAgent String?        @map("user_agent")
+  browser   String?
+  status    ActivityStatus @default(SUCCESS)
+  metadata  Json?
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
 
 model AuditLog {
-  id         String   @id @default(uuid())
-  userId     String?  @map("user_id")
-  action     String
-  entity     String
-  entityId   String?  @map("entity_id")
-  changes    Json?
-  ipAddress  String?  @map("ip_address")
-  userAgent  String?  @map("user_agent")
-  createdAt  DateTime @default(now()) @map("created_at")
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  action    String
+  entity    String
+  entityId  String?  @map("entity_id")
+  changes   Json?
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
@@ -392,4 +861,155 @@ model AuditLog {
   @@index([entity, entityId])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ==================== PUBLIC API ====================
+
+model ApiKey {
+  id         String       @id @default(uuid())
+  businessId String       @map("business_id")
+  name       String
+  keyHash    String       @unique @map("key_hash")
+  prefix     String
+  status     ApiKeyStatus @default(ACTIVE)
+  lastUsedAt DateTime?    @map("last_used_at")
+  expiresAt  DateTime?    @map("expires_at")
+  createdAt  DateTime     @default(now()) @map("created_at")
+
+  business Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  logs     ApiLog[]
+
+  @@index([businessId])
+  @@map("api_keys")
+}
+
+model ApiLog {
+  id         String   @id @default(uuid())
+  apiKeyId   String   @map("api_key_id")
+  method     String
+  path       String
+  statusCode Int      @map("status_code")
+  duration   Int
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  apiKey ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+
+  @@index([apiKeyId])
+  @@index([createdAt])
+  @@map("api_logs")
+}
+
+model Webhook {
+  id         String   @id @default(uuid())
+  businessId String   @map("business_id")
+  url        String
+  events     String[]
+  secret     String
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  business Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  deliveries WebhookDelivery[]
+
+  @@index([businessId])
+  @@map("webhooks")
+}
+
+model WebhookDelivery {
+  id           String   @id @default(uuid())
+  webhookId    String   @map("webhook_id")
+  event        String
+  payload      Json
+  statusCode   Int?     @map("status_code")
+  response     String?
+  success      Boolean  @default(false)
+  attempts     Int      @default(1)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@map("webhook_deliveries")
+}
+
+// ==================== AFFILIATE SYSTEM ====================
+
+model Affiliate {
+  id            String   @id @default(uuid())
+  userId        String   @unique @map("user_id")
+  code          String   @unique
+  commissionRate Decimal @default(0.10) @map("commission_rate") @db.Decimal(5, 4)
+  totalClicks   Int      @default(0) @map("total_clicks")
+  totalSignups  Int      @default(0) @map("total_signups")
+  totalEarnings Decimal  @default(0) @map("total_earnings") @db.Decimal(10, 2)
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clicks      AffiliateClick[]
+  commissions AffiliateCommission[]
+
+  @@map("affiliates")
+}
+
+model AffiliateClick {
+  id          String   @id @default(uuid())
+  affiliateId String   @map("affiliate_id")
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  referrer    String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  affiliate Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@index([affiliateId])
+  @@map("affiliate_clicks")
+}
+
+model AffiliateCommission {
+  id          String                    @id @default(uuid())
+  affiliateId String                    @map("affiliate_id")
+  businessId  String?                   @map("business_id")
+  bookingId   String?                   @map("booking_id")
+  amount      Decimal                   @db.Decimal(10, 2)
+  status      AffiliateCommissionStatus @default(PENDING)
+  createdAt   DateTime                  @default(now()) @map("created_at")
+  paidAt      DateTime?                 @map("paid_at")
+
+  affiliate Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@index([affiliateId])
+  @@map("affiliate_commissions")
+}
+
+// ==================== AI CHAT ====================
+
+model ChatSession {
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  businessId String? @map("business_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user     User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  messages ChatMessage[]
+
+  @@index([userId])
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  sessionId String   @map("session_id")
+  role      String
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("chat_messages")
 }

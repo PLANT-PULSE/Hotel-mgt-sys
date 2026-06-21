@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRoomTypeDto } from './dto/create-room-type.dto';
 import { UpdateRoomTypeDto } from './dto/update-room-type.dto';
@@ -56,8 +56,23 @@ export class RoomsService {
   }
 
   async createRoomType(dto: CreateRoomTypeDto) {
-    return this.prisma.roomType.create({
+    const totalUnits = dto.totalUnits ?? 1;
+
+    let businessId = dto.businessId;
+    if (!businessId) {
+      const defaultBusiness = await this.prisma.business.findFirst({
+        where: { status: 'ACTIVE' },
+        select: { id: true },
+      });
+      if (!defaultBusiness) {
+        throw new BadRequestException('No active business found. Provide businessId.');
+      }
+      businessId = defaultBusiness.id;
+    }
+
+    const roomType = await this.prisma.roomType.create({
       data: {
+        businessId,
         name: dto.name,
         type: dto.type,
         basePrice: dto.basePrice,
@@ -67,9 +82,22 @@ export class RoomsService {
         amenities: dto.amenities,
         description: dto.description,
         image: dto.image,
-        totalUnits: dto.totalUnits ?? 1,
+        totalUnits,
       },
     });
+
+    for (let i = 0; i < totalUnits; i++) {
+      const roomNumber = `${roomType.name.replace(/\s+/g, '').slice(0, 3).toUpperCase()}-${String(i + 1).padStart(3, '0')}`;
+      await this.prisma.room.create({
+        data: {
+          roomTypeId: roomType.id,
+          number: `${roomNumber}-${Date.now().toString().slice(-4)}`,
+          floor: 1,
+        },
+      });
+    }
+
+    return roomType;
   }
 
   async updateRoomType(id: string, dto: UpdateRoomTypeDto) {

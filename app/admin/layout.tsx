@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, 
   Calendar, 
@@ -14,7 +14,7 @@ import {
   X,
   Hotel
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 
 const navItems = [
@@ -32,7 +32,29 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+
+  useEffect(() => {
+    // Check if admin is authenticated
+    const adminAuth = localStorage.getItem('adminAuthenticated');
+    if (!adminAuth || adminAuth !== 'true') {
+      router.push('/admin-login');
+      return;
+    }
+    setIsAuthenticated(true);
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminAuthenticated');
+    localStorage.removeItem('adminLoginTime');
+    router.push('/admin-login');
+  };
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -102,6 +124,7 @@ export default function AdminLayout({
               Settings
             </Link>
             <button
+              onClick={handleLogout}
               className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors w-full"
             >
               <LogOut className="h-5 w-5" />

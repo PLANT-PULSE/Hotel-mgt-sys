@@ -13,6 +13,9 @@ import { GuestsModule } from './guests/guests.module';
 import { StaffModule } from './staff/staff.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { CommonModule } from './common/common.module';
+import { BusinessesModule } from './businesses/businesses.module';
+import { ActivityLogsModule } from './activity-logs/activity-logs.module';
 import { LoggerService } from './common/logger/logger.service';
 
 @Module({
@@ -28,7 +31,10 @@ import { LoggerService } from './common/logger/logger.service';
       },
     ]),
     PrismaModule,
+    CommonModule,
     AuthModule,
+    BusinessesModule,
+    ActivityLogsModule,
     UsersModule,
     RoomsModule,
     BookingsModule,

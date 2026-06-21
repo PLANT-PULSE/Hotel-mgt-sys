@@ -62,8 +62,21 @@ let RoomsService = class RoomsService {
         };
     }
     async createRoomType(dto) {
-        return this.prisma.roomType.create({
+        const totalUnits = dto.totalUnits ?? 1;
+        let businessId = dto.businessId;
+        if (!businessId) {
+            const defaultBusiness = await this.prisma.business.findFirst({
+                where: { status: 'ACTIVE' },
+                select: { id: true },
+            });
+            if (!defaultBusiness) {
+                throw new common_1.BadRequestException('No active business found. Provide businessId.');
+            }
+            businessId = defaultBusiness.id;
+        }
+        const roomType = await this.prisma.roomType.create({
             data: {
+                businessId,
                 name: dto.name,
                 type: dto.type,
                 basePrice: dto.basePrice,
@@ -73,9 +86,20 @@ let RoomsService = class RoomsService {
                 amenities: dto.amenities,
                 description: dto.description,
                 image: dto.image,
-                totalUnits: dto.totalUnits ?? 1,
+                totalUnits,
             },
         });
+        for (let i = 0; i < totalUnits; i++) {
+            const roomNumber = `${roomType.name.replace(/\s+/g, '').slice(0, 3).toUpperCase()}-${String(i + 1).padStart(3, '0')}`;
+            await this.prisma.room.create({
+                data: {
+                    roomTypeId: roomType.id,
+                    number: `${roomNumber}-${Date.now().toString().slice(-4)}`,
+                    floor: 1,
+                },
+            });
+        }
+        return roomType;
     }
     async updateRoomType(id, dto) {
         await this.getRoomTypeById(id);

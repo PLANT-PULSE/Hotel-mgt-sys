@@ -73,4 +73,10 @@ __decorate([
     (0, class_validator_1.Min)(1),
     __metadata("design:type", Number)
 ], CreateRoomTypeDto.prototype, "totalUnits", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateRoomTypeDto.prototype, "businessId", void 0);
 //# sourceMappingURL=create-room-type.dto.js.map

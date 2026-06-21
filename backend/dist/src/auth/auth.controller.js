@@ -26,11 +26,23 @@ let AuthController = class AuthController {
     constructor(authService) {
         this.authService = authService;
     }
-    async register(dto) {
-        return this.authService.register(dto);
+    async register(dto, req) {
+        return this.authService.register(dto, {
+            ip: req.ip,
+            userAgent: req.headers['user-agent'],
+        });
     }
-    async login(dto) {
-        return this.authService.login(dto);
+    async login(dto, req) {
+        return this.authService.login(dto, {
+            ip: req.ip,
+            userAgent: req.headers['user-agent'],
+        });
+    }
+    async forgotPassword(email) {
+        return this.authService.requestPasswordReset(email);
+    }
+    async resetPassword(body) {
+        return this.authService.resetPassword(body.token, body.password);
     }
     async refresh(dto) {
         return this.authService.refresh(dto.refreshToken);
@@ -47,8 +59,9 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 201, description: 'User registered successfully' }),
     (0, swagger_1.ApiResponse)({ status: 409, description: 'Email already registered' }),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [register_dto_1.RegisterDto]),
+    __metadata("design:paramtypes", [register_dto_1.RegisterDto, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "register", null);
 __decorate([
@@ -58,10 +71,29 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Login successful' }),
     (0, swagger_1.ApiResponse)({ status: 401, description: 'Invalid credentials' }),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [login_dto_1.LoginDto]),
+    __metadata("design:paramtypes", [login_dto_1.LoginDto, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
+__decorate([
+    (0, common_1.Post)('forgot-password'),
+    (0, public_decorator_1.Public)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Request password reset' }),
+    __param(0, (0, common_1.Body)('email')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "forgotPassword", null);
+__decorate([
+    (0, common_1.Post)('reset-password'),
+    (0, public_decorator_1.Public)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Reset password with token' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "resetPassword", null);
 __decorate([
     (0, common_1.Post)('refresh'),
     (0, public_decorator_1.Public)(),

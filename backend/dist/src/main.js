@@ -4,6 +4,7 @@ require("reflect-metadata");
 const core_1 = require("@nestjs/core");
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const path_1 = require("path");
 const helmet_1 = require("helmet");
 const app_module_1 = require("./app.module");
 const http_exception_filter_1 = require("./common/filters/http-exception.filter");
@@ -11,6 +12,9 @@ const logger_service_1 = require("./common/logger/logger.service");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule, {
         bufferLogs: true,
+    });
+    app.useStaticAssets((0, path_1.join)(process.cwd(), 'uploads'), {
+        prefix: '/uploads/',
     });
     app.useLogger(app.get(logger_service_1.LoggerService));
     app.use((0, helmet_1.default)());

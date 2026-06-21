@@ -14,10 +14,12 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { StripeService } from './stripe.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
+import { GuestCheckoutDto } from './dto/guest-checkout.dto';
 import { CreateStripePaymentIntentDto } from './dto/create-stripe-payment.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 import { UserRole, PaymentStatus } from '@prisma/client';
 import { Request } from 'express';
 
@@ -28,6 +30,13 @@ export class PaymentsController {
     private paymentsService: PaymentsService,
     private stripeService: StripeService,
   ) {}
+
+  @Post('checkout')
+  @Public()
+  @ApiOperation({ summary: 'Guest checkout payment (card, mobile money, etc.)' })
+  async guestCheckout(@Body() dto: GuestCheckoutDto) {
+    return this.paymentsService.guestCheckout(dto);
+  }
 
   @Post()
   @UseGuards(JwtAuthGuard)

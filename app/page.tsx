@@ -23,7 +23,9 @@ export default function Home() {
               Browse Rooms
             </Link>
             <a 
-              href="/rooms.html" 
+              href="https://hotel-frontend-website.netlify.app/" 
+              target="_blank"
+              rel="noopener noreferrer"
               className="px-6 sm:px-8 py-3 sm:py-4 border-2 border-white text-white hover:bg-white hover:text-slate-900 text-base sm:text-lg font-semibold rounded-lg transition-colors"
             >
               View Hotel Site

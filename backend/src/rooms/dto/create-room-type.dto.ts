@@ -49,4 +49,9 @@ export class CreateRoomTypeDto {
   @IsNumber()
   @Min(1)
   totalUnits?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  businessId?: string;
 }

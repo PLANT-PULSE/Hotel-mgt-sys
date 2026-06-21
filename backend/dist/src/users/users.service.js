@@ -13,10 +13,11 @@ exports.UsersService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
-const bcrypt = require("bcrypt");
+const password_service_1 = require("../common/services/password.service");
 let UsersService = class UsersService {
-    constructor(prisma) {
+    constructor(prisma, passwordService) {
         this.prisma = prisma;
+        this.passwordService = passwordService;
     }
     async create(data) {
         const existing = await this.prisma.user.findUnique({
@@ -25,7 +26,8 @@ let UsersService = class UsersService {
         if (existing) {
             throw new common_1.ConflictException('Email already registered');
         }
-        const passwordHash = await bcrypt.hash(data.password, 10);
+        const passwordHash = await this.passwordService.hash(data.password);
+        const role = data.role ?? client_1.UserRole.CUSTOMER;
         return this.prisma.user.create({
             data: {
                 email: data.email.toLowerCase(),
@@ -33,7 +35,7 @@ let UsersService = class UsersService {
                 firstName: data.firstName,
                 lastName: data.lastName,
                 phone: data.phone,
-                role: data.role ?? client_1.UserRole.GUEST,
+                role: role === client_1.UserRole.GUEST ? client_1.UserRole.CUSTOMER : role,
             },
             select: {
                 id: true,
@@ -47,7 +49,7 @@ let UsersService = class UsersService {
         });
     }
     async findByEmail(email) {
-        return this.prisma.user.findUnique({
+        return this.prisma.user.findFirst({
             where: { email: email.toLowerCase(), deletedAt: null },
             include: { guestProfile: true, staffProfile: true },
         });
@@ -62,6 +64,9 @@ let UsersService = class UsersService {
                 lastName: true,
                 phone: true,
                 role: true,
+                avatar: true,
+                preferredLanguage: true,
+                preferredCurrency: true,
                 guestProfile: true,
                 staffProfile: true,
                 createdAt: true,
@@ -78,6 +83,7 @@ let UsersService = class UsersService {
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        password_service_1.PasswordService])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map
